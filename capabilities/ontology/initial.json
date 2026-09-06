@@ -1,0 +1,1172 @@
+[
+  {
+    "capability_id": "game_direction",
+    "version": "1.0.0",
+    "family": "direction_production",
+    "description": "game direction",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "creative_direction",
+    "version": "1.0.0",
+    "family": "direction_production",
+    "description": "creative direction",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "product_strategy",
+    "version": "1.0.0",
+    "family": "direction_production",
+    "description": "product strategy",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "production_planning",
+    "version": "1.0.0",
+    "family": "direction_production",
+    "description": "production planning",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "milestone_planning",
+    "version": "1.0.0",
+    "family": "direction_production",
+    "description": "milestone planning",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "dependency_management",
+    "version": "1.0.0",
+    "family": "direction_production",
+    "description": "dependency management",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "scope_management",
+    "version": "1.0.0",
+    "family": "direction_production",
+    "description": "scope management",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "risk_management",
+    "version": "1.0.0",
+    "family": "direction_production",
+    "description": "risk management",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "documentation",
+    "version": "1.0.0",
+    "family": "direction_production",
+    "description": "documentation",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "asset_tracking",
+    "version": "1.0.0",
+    "family": "direction_production",
+    "description": "asset tracking",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "build_coordination",
+    "version": "1.0.0",
+    "family": "direction_production",
+    "description": "build coordination",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "systems_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "systems design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "mechanics_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "mechanics design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "combat_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "combat design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "economy_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "economy design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "progression_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "progression design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "balance_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "balance design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "encounter_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "encounter design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "level_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "level design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "puzzle_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "puzzle design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "multiplayer_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "multiplayer design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "social_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "social design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "onboarding_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "onboarding design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "tutorial_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "tutorial design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "accessibility_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "accessibility design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "retention_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "retention design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "liveops_design",
+    "version": "1.0.0",
+    "family": "game_design",
+    "description": "liveops design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "narrative_design",
+    "version": "1.0.0",
+    "family": "narrative",
+    "description": "narrative design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "worldbuilding",
+    "version": "1.0.0",
+    "family": "narrative",
+    "description": "worldbuilding",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "character_writing",
+    "version": "1.0.0",
+    "family": "narrative",
+    "description": "character writing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "dialogue_writing",
+    "version": "1.0.0",
+    "family": "narrative",
+    "description": "dialogue writing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "interactive_dialogue",
+    "version": "1.0.0",
+    "family": "narrative",
+    "description": "interactive dialogue",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "quest_design",
+    "version": "1.0.0",
+    "family": "narrative",
+    "description": "quest design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "cinematic_writing",
+    "version": "1.0.0",
+    "family": "narrative",
+    "description": "cinematic writing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "continuity_review",
+    "version": "1.0.0",
+    "family": "narrative",
+    "description": "continuity review",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "lore_management",
+    "version": "1.0.0",
+    "family": "narrative",
+    "description": "lore management",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "localization_ready_writing",
+    "version": "1.0.0",
+    "family": "narrative",
+    "description": "localization ready writing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "ux_architecture",
+    "version": "1.0.0",
+    "family": "ux",
+    "description": "ux architecture",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "interaction_design",
+    "version": "1.0.0",
+    "family": "ux",
+    "description": "interaction design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "menu_design",
+    "version": "1.0.0",
+    "family": "ux",
+    "description": "menu design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "hud_design",
+    "version": "1.0.0",
+    "family": "ux",
+    "description": "hud design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "controller_navigation",
+    "version": "1.0.0",
+    "family": "ux",
+    "description": "controller navigation",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "onboarding_ux",
+    "version": "1.0.0",
+    "family": "ux",
+    "description": "onboarding ux",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "accessibility_ux",
+    "version": "1.0.0",
+    "family": "ux",
+    "description": "accessibility ux",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "usability_analysis",
+    "version": "1.0.0",
+    "family": "ux",
+    "description": "usability analysis",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "player_feedback_design",
+    "version": "1.0.0",
+    "family": "ux",
+    "description": "player feedback design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "art_direction",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "art direction",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "concept_art",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "concept art",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "visual_development",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "visual development",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "ui_art",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "ui art",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "pixel_art",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "pixel art",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "illustration",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "illustration",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "character_art",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "character art",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "environment_art",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "environment art",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "prop_art",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "prop art",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "texture_creation",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "texture creation",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "material_creation",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "material creation",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "animation",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "animation",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "rigging",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "rigging",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "vfx",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "vfx",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "lighting",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "lighting",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "cinematics",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "cinematics",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "technical_art",
+    "version": "1.0.0",
+    "family": "art",
+    "description": "technical art",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "gameplay_engineering",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "gameplay engineering",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "engine_architecture",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "engine architecture",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "tooling",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "tooling",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "editor_extensions",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "editor extensions",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "ui_engineering",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "ui engineering",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "game_ai",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "game ai",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "physics",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "physics",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "networking",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "networking",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "backend",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "backend",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "persistence",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "persistence",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "procedural_generation",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "procedural generation",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "performance",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "performance",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "shader_engineering",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "shader engineering",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "platform_integration",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "platform integration",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "build_engineering",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "build engineering",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "audio_direction",
+    "version": "1.0.0",
+    "family": "audio",
+    "description": "audio direction",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "composition",
+    "version": "1.0.0",
+    "family": "audio",
+    "description": "composition",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "adaptive_music",
+    "version": "1.0.0",
+    "family": "audio",
+    "description": "adaptive music",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "sound_design",
+    "version": "1.0.0",
+    "family": "audio",
+    "description": "sound design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "ambience",
+    "version": "1.0.0",
+    "family": "audio",
+    "description": "ambience",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "dialogue_audio",
+    "version": "1.0.0",
+    "family": "audio",
+    "description": "dialogue audio",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "vo_pipeline",
+    "version": "1.0.0",
+    "family": "audio",
+    "description": "vo pipeline",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "audio_implementation",
+    "version": "1.0.0",
+    "family": "audio",
+    "description": "audio implementation",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "mixing",
+    "version": "1.0.0",
+    "family": "audio",
+    "description": "mixing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "mastering",
+    "version": "1.0.0",
+    "family": "audio",
+    "description": "mastering",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "functional_testing",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "functional testing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "regression_testing",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "regression testing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "gameplay_testing",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "gameplay testing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "balance_testing",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "balance testing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "ux_testing",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "ux testing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "automated_testing",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "automated testing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "visual_regression",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "visual regression",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "compatibility_testing",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "compatibility testing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "performance_testing",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "performance testing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "save_compatibility",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "save compatibility",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "multiplayer_testing",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "multiplayer testing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "localization_qa",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "localization qa",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "accessibility_qa",
+    "version": "1.0.0",
+    "family": "qa",
+    "description": "accessibility qa",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "telemetry_design",
+    "version": "1.0.0",
+    "family": "product_data",
+    "description": "telemetry design",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "analytics",
+    "version": "1.0.0",
+    "family": "product_data",
+    "description": "analytics",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "experimentation",
+    "version": "1.0.0",
+    "family": "product_data",
+    "description": "experimentation",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "economy_analysis",
+    "version": "1.0.0",
+    "family": "product_data",
+    "description": "economy analysis",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "balance_simulation",
+    "version": "1.0.0",
+    "family": "product_data",
+    "description": "balance simulation",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "funnel_analysis",
+    "version": "1.0.0",
+    "family": "product_data",
+    "description": "funnel analysis",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "ab_testing",
+    "version": "1.0.0",
+    "family": "product_data",
+    "description": "ab testing",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "crash_analysis",
+    "version": "1.0.0",
+    "family": "product_data",
+    "description": "crash analysis",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "localization",
+    "version": "1.0.0",
+    "family": "shipping",
+    "description": "localization",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "ratings_compliance",
+    "version": "1.0.0",
+    "family": "shipping",
+    "description": "ratings compliance",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "accessibility_compliance",
+    "version": "1.0.0",
+    "family": "shipping",
+    "description": "accessibility compliance",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "achievements",
+    "version": "1.0.0",
+    "family": "shipping",
+    "description": "achievements",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "platform_certification",
+    "version": "1.0.0",
+    "family": "shipping",
+    "description": "platform certification",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "store_assets",
+    "version": "1.0.0",
+    "family": "shipping",
+    "description": "store assets",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "packaging",
+    "version": "1.0.0",
+    "family": "shipping",
+    "description": "packaging",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "patching",
+    "version": "1.0.0",
+    "family": "shipping",
+    "description": "patching",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "deployment",
+    "version": "1.0.0",
+    "family": "shipping",
+    "description": "deployment",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "release_management",
+    "version": "1.0.0",
+    "family": "shipping",
+    "description": "release management",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "monetization",
+    "version": "1.0.0",
+    "family": "post_launch_commercial",
+    "description": "monetization",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "live_operations",
+    "version": "1.0.0",
+    "family": "post_launch_commercial",
+    "description": "live operations",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "community_support",
+    "version": "1.0.0",
+    "family": "post_launch_commercial",
+    "description": "community support",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "publishing_support",
+    "version": "1.0.0",
+    "family": "post_launch_commercial",
+    "description": "publishing support",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "marketing_assets",
+    "version": "1.0.0",
+    "family": "post_launch_commercial",
+    "description": "marketing assets",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "trailers",
+    "version": "1.0.0",
+    "family": "post_launch_commercial",
+    "description": "trailers",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "screenshots",
+    "version": "1.0.0",
+    "family": "post_launch_commercial",
+    "description": "screenshots",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "store_copy",
+    "version": "1.0.0",
+    "family": "post_launch_commercial",
+    "description": "store copy",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "patch_notes",
+    "version": "1.0.0",
+    "family": "post_launch_commercial",
+    "description": "patch notes",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "customer_support",
+    "version": "1.0.0",
+    "family": "post_launch_commercial",
+    "description": "customer support",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "player_sentiment_analysis",
+    "version": "1.0.0",
+    "family": "post_launch_commercial",
+    "description": "player sentiment analysis",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance"]
+  }
+]

@@ -1,0 +1,209 @@
+{
+  "Capability": {
+    "capability_id": "usability_analysis",
+    "version": "1.0.0",
+    "family": "ux",
+    "description": "Analyze interaction outcomes",
+    "required_inputs": ["task"],
+    "expected_outputs": ["findings"],
+    "evaluation_requirements": ["evidence_review"]
+  },
+  "AgentDefinition": {
+    "agent_id": "test-specialist",
+    "name": "Test capability package",
+    "version": "1.0.0",
+    "description": "Contract fixture only",
+    "capabilities": ["usability_analysis"],
+    "instructions": {
+      "base": "Inspect supplied task context",
+      "constraints": []
+    },
+    "models": {
+      "preferred": ["codex_authenticated"],
+      "alternatives": []
+    },
+    "allowed_tool_ids": ["test-tool"],
+    "permissions": {},
+    "required_inputs": ["task"],
+    "output_contract": "artifact_manifest.v1",
+    "required_gates": ["evidence_review"],
+    "resource_policy": {}
+  },
+  "AgentAssignment": {
+    "assignment_id": "assignment-a",
+    "project_id": "project-a",
+    "task_id": "task-a",
+    "agent_id": "test-specialist",
+    "agent_version": "1.0.0",
+    "thread_id": "thread-a",
+    "working_directory": "C:/test/project-a",
+    "granted_permissions": {},
+    "assigned_by": "gm"
+  },
+  "ToolDefinition": {
+    "tool_id": "test-tool",
+    "version": "1.0.0",
+    "capabilities": ["usability_analysis"],
+    "install_state": "missing",
+    "invocation": "cli",
+    "input_contract": "input.v1",
+    "output_contract": "output.v1",
+    "permissions": {},
+    "health_check": "version",
+    "location": "local",
+    "cost_policy": {}
+  },
+  "EngineAdapter": {
+    "adapter_id": "example-adapter",
+    "version": "1.0.0",
+    "engine_type": "example-engine",
+    "supported_versions": ">=1",
+    "capabilities": ["usability_analysis"],
+    "tool_ids": ["test-tool"]
+  },
+  "Project": {
+    "project": {
+      "id": "project-a",
+      "name": "Tabletop fixture",
+      "description": "Engine-free schema example"
+    },
+    "medium": "tabletop",
+    "rendering": "non_applicable",
+    "platforms": [],
+    "input_methods": ["cards"],
+    "multiplayer": {
+      "type": "local",
+      "max_players": 4
+    },
+    "visual": {
+      "direction": "Printed cards",
+      "references": []
+    },
+    "audio": {
+      "direction": "Not applicable",
+      "references": []
+    },
+    "production": {
+      "stage": "prototype",
+      "team_size": 1,
+      "current_milestone": null
+    },
+    "constraints": [],
+    "locked_decision_ids": []
+  },
+  "TaskContract": {
+    "task_id": "task-a",
+    "project_id": "project-a",
+    "title": "Inspect turn instructions",
+    "objective": "Players can identify their next action",
+    "entities": [],
+    "references": [],
+    "required_capabilities": ["usability_analysis"],
+    "requirements": {
+      "functional": ["Instructions identify next action"],
+      "visual": [],
+      "technical": [],
+      "accessibility": [],
+      "production": []
+    },
+    "constraints": [],
+    "deliverables": ["Usability findings with evidence"],
+    "dependency_ids": [],
+    "permissions": {},
+    "required_evaluations": ["evidence_review"],
+    "escalation_criteria": ["Creative direction changes"]
+  },
+  "Policy": {
+    "project_id": "project-a"
+  },
+  "Evidence": {
+    "evidence_id": "evidence-a",
+    "project_id": "project-a",
+    "task_id": "task-a",
+    "evidence_class": "deterministic",
+    "producer_type": "tool",
+    "producer_id": "test-tool",
+    "captured_at": "2026-09-06T12:00:00Z",
+    "source": {
+      "uri": "artifact://test/capture",
+      "media_type": "image/png",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "capture_origin": "runtime",
+    "summary": "Runtime capture reference for contract tests"
+  },
+  "Evaluation": {
+    "evaluation_id": "evaluation-a",
+    "project_id": "project-a",
+    "task_id": "task-a",
+    "gate_id": "evidence_review",
+    "claim": "visual",
+    "result": "passed",
+    "evidence_ids": ["evidence-a"],
+    "evaluator_id": "reviewer-a",
+    "rationale": "Test evaluation with independent capture",
+    "evaluated_at": "2026-09-06T12:00:00Z"
+  },
+  "Decision": {
+    "decision_id": "decision-a",
+    "project_id": "project-a",
+    "task_id": "task-a",
+    "title": "Keep existing direction",
+    "reason": "Preserve creative intent",
+    "options": ["keep", "change"],
+    "recommendation": "keep",
+    "consequences": ["No scope change"],
+    "urgency": "normal",
+    "evidence_ids": ["evidence-a"],
+    "decided_by": "human",
+    "selected_option": "keep",
+    "decided_at": "2026-09-06T12:00:00Z"
+  },
+  "KnowledgeEntry": {
+    "knowledge_id": "knowledge-a",
+    "project_id": "project-a",
+    "kind": "source_fact",
+    "statement": "Instructions contain a turn marker",
+    "source": {
+      "uri": "artifact://test/capture",
+      "media_type": "image/png",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "confidence": 1,
+    "created_at": "2026-09-06T12:00:00Z",
+    "entities": [],
+    "evidence_ids": ["evidence-a"]
+  },
+  "Provider": {
+    "provider_id": "provider-a",
+    "billing": "paid",
+    "state": "ACTIVE",
+    "cap": {
+      "verified": true,
+      "amount_cents": 2500,
+      "verification_method": "manual_provider_console",
+      "verified_at": "2026-09-01T00:00:00Z",
+      "expires_at": "2026-10-01T00:00:00Z",
+      "proof": {
+        "uri": "artifact://test/capture",
+        "media_type": "image/png",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "provider_side": true
+    }
+  },
+  "TaskEvent": {
+    "event_id": "evt-a",
+    "project_id": "project-a",
+    "timestamp": "2026-09-06T12:00:00Z",
+    "event_type": "task.created",
+    "actor_type": "gm",
+    "actor_id": "gm-a",
+    "correlation_id": "correlation-a",
+    "task_id": "task-a",
+    "payload": {
+      "task_id": "task-a",
+      "detail": "Registered task"
+    }
+  }
+}

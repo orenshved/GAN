@@ -1,0 +1,33 @@
+{
+  "name": "gameagent",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "pnpm@11.20.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @gameagent/studio dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "eslint . && node scripts/python.mjs lint",
+    "format": "prettier --write . && node scripts/python.mjs format",
+    "format:check": "prettier --check . && node scripts/python.mjs format-check",
+    "test": "turbo run test",
+    "protocol:generate": "node scripts/protocol.mjs",
+    "protocol:check": "node scripts/protocol.mjs --check",
+    "check": "pnpm format:check && pnpm lint && pnpm protocol:check && pnpm typecheck && pnpm test && pnpm build && pnpm smoke",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.10.0",
+    "typescript-eslint": "^8.0.0",
+    "typescript": "^5.9.0",
+    "@types/node": "^24.0.0",
+    "prettier": "^3.6.0",
+    "turbo": "2.10.12",
+    "dotenv": "^17.0.0",
+    "json-schema-to-typescript": "^15.0.0"
+  }
+}

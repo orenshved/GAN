@@ -1,0 +1,11 @@
+node_modules
+.next
+.turbo
+dist
+.venv
+uv.lock
+pnpm-lock.yaml
+**/schema/protocol.schema.json
+**/src/generated.ts
+**/next-env.d.ts
+Game Agent Network - Product Requirements & Technical Architecture.md

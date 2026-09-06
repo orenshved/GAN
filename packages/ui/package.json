@@ -1,0 +1,24 @@
+{
+  "name": "@gameagent/ui",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./tokens.css": "./src/tokens.css"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "@gameagent/protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0"
+  }
+}

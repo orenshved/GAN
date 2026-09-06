@@ -1,0 +1,10 @@
+{
+  "name": "@gameagent/daemon",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "node ../../scripts/python.mjs build",
+    "typecheck": "node ../../scripts/python.mjs typecheck",
+    "test": "node ../../scripts/python.mjs test"
+  }
+}

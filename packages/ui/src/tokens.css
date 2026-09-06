@@ -1,0 +1,41 @@
+:root {
+  color-scheme: dark;
+  --ga-background: #151719;
+  --ga-foreground: #f2f3f5;
+  --ga-muted: #b5bdc6;
+  --ga-border: #64748b;
+  --ga-focus: #93c5fd;
+  --ga-space: 1rem;
+}
+body {
+  margin: 0;
+  background: var(--ga-background);
+  color: var(--ga-foreground);
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+}
+main {
+  max-width: 52rem;
+  margin: auto;
+  padding: calc(var(--ga-space) * 2);
+}
+a {
+  color: var(--ga-focus);
+}
+:focus-visible {
+  outline: 3px solid var(--ga-focus);
+  outline-offset: 4px;
+}
+.ga-evidence {
+  border: 1px solid var(--ga-border);
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.5rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

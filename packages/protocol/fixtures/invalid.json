@@ -1,0 +1,481 @@
+[
+  {
+    "name": "invalid capability id",
+    "definition": "Capability",
+    "value": {
+      "capability_id": "Bad ID",
+      "version": "1.0.0",
+      "family": "ux",
+      "description": "Analyze interaction outcomes",
+      "required_inputs": ["task"],
+      "expected_outputs": ["findings"],
+      "evaluation_requirements": ["evidence_review"]
+    }
+  },
+  {
+    "name": "no outcome",
+    "definition": "Capability",
+    "value": {
+      "capability_id": "usability_analysis",
+      "version": "1.0.0",
+      "family": "ux",
+      "description": "Analyze interaction outcomes",
+      "required_inputs": ["task"],
+      "expected_outputs": [],
+      "evaluation_requirements": ["evidence_review"]
+    }
+  },
+  {
+    "name": "personality without capabilities",
+    "definition": "AgentDefinition",
+    "value": {
+      "agent_id": "test-specialist",
+      "name": "Test capability package",
+      "version": "1.0.0",
+      "description": "Contract fixture only",
+      "capabilities": [],
+      "instructions": {
+        "base": "Inspect supplied task context",
+        "constraints": []
+      },
+      "models": {
+        "preferred": ["codex_authenticated"],
+        "alternatives": []
+      },
+      "allowed_tool_ids": ["test-tool"],
+      "permissions": {},
+      "required_inputs": ["task"],
+      "output_contract": "artifact_manifest.v1",
+      "required_gates": ["evidence_review"],
+      "resource_policy": {}
+    }
+  },
+  {
+    "name": "global agent has project state",
+    "definition": "AgentDefinition",
+    "value": {
+      "agent_id": "test-specialist",
+      "name": "Test capability package",
+      "version": "1.0.0",
+      "description": "Contract fixture only",
+      "capabilities": ["usability_analysis"],
+      "instructions": {
+        "base": "Inspect supplied task context",
+        "constraints": []
+      },
+      "models": {
+        "preferred": ["codex_authenticated"],
+        "alternatives": []
+      },
+      "allowed_tool_ids": ["test-tool"],
+      "permissions": {},
+      "required_inputs": ["task"],
+      "output_contract": "artifact_manifest.v1",
+      "required_gates": ["evidence_review"],
+      "resource_policy": {},
+      "project_id": "project-b"
+    }
+  },
+  {
+    "name": "worker assigns workers",
+    "definition": "AgentAssignment",
+    "value": {
+      "assignment_id": "assignment-a",
+      "project_id": "project-a",
+      "task_id": "task-a",
+      "agent_id": "test-specialist",
+      "agent_version": "1.0.0",
+      "thread_id": "thread-a",
+      "working_directory": "C:/test/project-a",
+      "granted_permissions": {},
+      "assigned_by": "agent"
+    }
+  },
+  {
+    "name": "unexamined full access",
+    "definition": "AgentAssignment",
+    "value": {
+      "assignment_id": "assignment-a",
+      "project_id": "project-a",
+      "task_id": "task-a",
+      "agent_id": "test-specialist",
+      "agent_version": "1.0.0",
+      "thread_id": "thread-a",
+      "working_directory": "C:/test/project-a",
+      "granted_permissions": {},
+      "assigned_by": "gm",
+      "sandbox": "full_access"
+    }
+  },
+  {
+    "name": "tool is not agent",
+    "definition": "ToolDefinition",
+    "value": {
+      "tool_id": "test-tool",
+      "version": "1.0.0",
+      "capabilities": ["usability_analysis"],
+      "install_state": "missing",
+      "invocation": "cli",
+      "input_contract": "input.v1",
+      "output_contract": "output.v1",
+      "permissions": {},
+      "health_check": "version",
+      "location": "local",
+      "cost_policy": {},
+      "agent_id": "agent-a"
+    }
+  },
+  {
+    "name": "adapter with no capability",
+    "definition": "EngineAdapter",
+    "value": {
+      "adapter_id": "example-adapter",
+      "version": "1.0.0",
+      "engine_type": "example-engine",
+      "supported_versions": ">=1",
+      "capabilities": [],
+      "tool_ids": ["test-tool"]
+    }
+  },
+  {
+    "name": "unsupported rendering",
+    "definition": "Project",
+    "value": {
+      "project": {
+        "id": "project-a",
+        "name": "Tabletop fixture",
+        "description": "Engine-free schema example"
+      },
+      "medium": "tabletop",
+      "rendering": "4d",
+      "platforms": [],
+      "input_methods": ["cards"],
+      "multiplayer": {
+        "type": "local",
+        "max_players": 4
+      },
+      "visual": {
+        "direction": "Printed cards",
+        "references": []
+      },
+      "audio": {
+        "direction": "Not applicable",
+        "references": []
+      },
+      "production": {
+        "stage": "prototype",
+        "team_size": 1,
+        "current_milestone": null
+      },
+      "constraints": [],
+      "locked_decision_ids": []
+    }
+  },
+  {
+    "name": "missing outcome",
+    "definition": "TaskContract",
+    "value": {
+      "task_id": "task-a",
+      "project_id": "project-a",
+      "title": "Inspect turn instructions",
+      "objective": "",
+      "entities": [],
+      "references": [],
+      "required_capabilities": ["usability_analysis"],
+      "requirements": {
+        "functional": ["Instructions identify next action"],
+        "visual": [],
+        "technical": [],
+        "accessibility": [],
+        "production": []
+      },
+      "constraints": [],
+      "deliverables": ["Usability findings with evidence"],
+      "dependency_ids": [],
+      "permissions": {},
+      "required_evaluations": ["evidence_review"],
+      "escalation_criteria": ["Creative direction changes"]
+    }
+  },
+  {
+    "name": "invalid state",
+    "definition": "TaskContract",
+    "value": {
+      "task_id": "task-a",
+      "project_id": "project-a",
+      "title": "Inspect turn instructions",
+      "objective": "Players can identify their next action",
+      "entities": [],
+      "references": [],
+      "required_capabilities": ["usability_analysis"],
+      "requirements": {
+        "functional": ["Instructions identify next action"],
+        "visual": [],
+        "technical": [],
+        "accessibility": [],
+        "production": []
+      },
+      "constraints": [],
+      "deliverables": ["Usability findings with evidence"],
+      "dependency_ids": [],
+      "permissions": {},
+      "required_evaluations": ["evidence_review"],
+      "escalation_criteria": ["Creative direction changes"],
+      "state": "DONE"
+    }
+  },
+  {
+    "name": "hard caps cannot be disabled",
+    "definition": "Policy",
+    "value": {
+      "project_id": "project-a",
+      "require_provider_hard_cap": false
+    }
+  },
+  {
+    "name": "reconciliation cannot be disabled",
+    "definition": "Policy",
+    "value": {
+      "project_id": "project-a",
+      "require_registration_or_reconciliation": false
+    }
+  },
+  {
+    "name": "negative budget",
+    "definition": "Policy",
+    "value": {
+      "project_id": "project-a",
+      "monthly_external_budget_cents": -1
+    }
+  },
+  {
+    "name": "fractional cents",
+    "definition": "Policy",
+    "value": {
+      "project_id": "project-a",
+      "monthly_external_budget_cents": 1.5
+    }
+  },
+  {
+    "name": "invented evidence class",
+    "definition": "Evidence",
+    "value": {
+      "evidence_id": "evidence-a",
+      "project_id": "project-a",
+      "task_id": "task-a",
+      "evidence_class": "ai_certified",
+      "producer_type": "tool",
+      "producer_id": "test-tool",
+      "captured_at": "2026-09-06T12:00:00Z",
+      "source": {
+        "uri": "artifact://test/capture",
+        "media_type": "image/png",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "capture_origin": "runtime",
+      "summary": "Runtime capture reference for contract tests"
+    }
+  },
+  {
+    "name": "invalid timestamp",
+    "definition": "Evidence",
+    "value": {
+      "evidence_id": "evidence-a",
+      "project_id": "project-a",
+      "task_id": "task-a",
+      "evidence_class": "deterministic",
+      "producer_type": "tool",
+      "producer_id": "test-tool",
+      "captured_at": "yesterday",
+      "source": {
+        "uri": "artifact://test/capture",
+        "media_type": "image/png",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "capture_origin": "runtime",
+      "summary": "Runtime capture reference for contract tests"
+    }
+  },
+  {
+    "name": "invalid digest",
+    "definition": "Evidence",
+    "value": {
+      "evidence_id": "evidence-a",
+      "project_id": "project-a",
+      "task_id": "task-a",
+      "evidence_class": "deterministic",
+      "producer_type": "tool",
+      "producer_id": "test-tool",
+      "captured_at": "2026-09-06T12:00:00Z",
+      "source": {
+        "uri": "artifact://test/capture",
+        "media_type": "image/png",
+        "sha256": "short"
+      },
+      "capture_origin": "runtime",
+      "summary": "Runtime capture reference for contract tests"
+    }
+  },
+  {
+    "name": "evaluation with no evidence",
+    "definition": "Evaluation",
+    "value": {
+      "evaluation_id": "evaluation-a",
+      "project_id": "project-a",
+      "task_id": "task-a",
+      "gate_id": "evidence_review",
+      "claim": "visual",
+      "result": "passed",
+      "evidence_ids": [],
+      "evaluator_id": "reviewer-a",
+      "rationale": "Test evaluation with independent capture",
+      "evaluated_at": "2026-09-06T12:00:00Z"
+    }
+  },
+  {
+    "name": "agent human decision",
+    "definition": "Decision",
+    "value": {
+      "decision_id": "decision-a",
+      "project_id": "project-a",
+      "task_id": "task-a",
+      "title": "Keep existing direction",
+      "reason": "Preserve creative intent",
+      "options": ["keep", "change"],
+      "recommendation": "keep",
+      "consequences": ["No scope change"],
+      "urgency": "normal",
+      "evidence_ids": ["evidence-a"],
+      "decided_by": "agent",
+      "selected_option": "keep",
+      "decided_at": "2026-09-06T12:00:00Z"
+    }
+  },
+  {
+    "name": "untyped truth",
+    "definition": "KnowledgeEntry",
+    "value": {
+      "knowledge_id": "knowledge-a",
+      "project_id": "project-a",
+      "kind": "truth",
+      "statement": "Instructions contain a turn marker",
+      "source": {
+        "uri": "artifact://test/capture",
+        "media_type": "image/png",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "confidence": 1,
+      "created_at": "2026-09-06T12:00:00Z",
+      "entities": [],
+      "evidence_ids": ["evidence-a"]
+    }
+  },
+  {
+    "name": "invalid confidence",
+    "definition": "KnowledgeEntry",
+    "value": {
+      "knowledge_id": "knowledge-a",
+      "project_id": "project-a",
+      "kind": "source_fact",
+      "statement": "Instructions contain a turn marker",
+      "source": {
+        "uri": "artifact://test/capture",
+        "media_type": "image/png",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "confidence": 1.1,
+      "created_at": "2026-09-06T12:00:00Z",
+      "entities": [],
+      "evidence_ids": ["evidence-a"]
+    }
+  },
+  {
+    "name": "cap without proof",
+    "definition": "Provider",
+    "value": {
+      "provider_id": "provider-a",
+      "billing": "paid",
+      "state": "ACTIVE",
+      "cap": {
+        "verified": true
+      }
+    }
+  },
+  {
+    "name": "credential in protocol",
+    "definition": "Provider",
+    "value": {
+      "provider_id": "provider-a",
+      "billing": "paid",
+      "state": "ACTIVE",
+      "cap": {
+        "verified": true,
+        "amount_cents": 2500,
+        "verification_method": "manual_provider_console",
+        "verified_at": "2026-09-01T00:00:00Z",
+        "expires_at": "2026-10-01T00:00:00Z",
+        "proof": {
+          "uri": "artifact://test/capture",
+          "media_type": "image/png",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "provider_side": true
+      },
+      "api_key": "fixture-not-a-secret"
+    }
+  },
+  {
+    "name": "unsupported version",
+    "definition": "TaskEvent",
+    "value": {
+      "event_id": "evt-a",
+      "project_id": "project-a",
+      "timestamp": "2026-09-06T12:00:00Z",
+      "event_type": "task.created",
+      "actor_type": "gm",
+      "actor_id": "gm-a",
+      "correlation_id": "correlation-a",
+      "task_id": "task-a",
+      "payload": {
+        "task_id": "task-a",
+        "detail": "Registered task"
+      },
+      "schema_version": 2
+    }
+  },
+  {
+    "name": "untyped event payload",
+    "definition": "TaskEvent",
+    "value": {
+      "event_id": "evt-a",
+      "project_id": "project-a",
+      "timestamp": "2026-09-06T12:00:00Z",
+      "event_type": "task.created",
+      "actor_type": "gm",
+      "actor_id": "gm-a",
+      "correlation_id": "correlation-a",
+      "task_id": "task-a",
+      "payload": {}
+    }
+  },
+  {
+    "name": "impossible calendar date",
+    "definition": "Evidence",
+    "value": {
+      "evidence_id": "evidence-a",
+      "project_id": "project-a",
+      "task_id": "task-a",
+      "evidence_class": "deterministic",
+      "producer_type": "tool",
+      "producer_id": "test-tool",
+      "captured_at": "2026-02-30T12:00:00Z",
+      "source": {
+        "uri": "artifact://test/capture",
+        "media_type": "image/png",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "capture_origin": "runtime",
+      "summary": "Runtime capture reference for contract tests"
+    }
+  }
+]

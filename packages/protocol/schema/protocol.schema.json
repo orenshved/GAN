@@ -1,0 +1,2869 @@
+{
+  "$defs": {
+    "AgentAssignment": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Agent Id",
+          "type": "string"
+        },
+        "agent_version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "title": "Agent Version",
+          "type": "string"
+        },
+        "assigned_by": {
+          "const": "gm",
+          "title": "Assigned By",
+          "type": "string"
+        },
+        "assignment_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Assignment Id",
+          "type": "string"
+        },
+        "granted_permissions": {
+          "$ref": "#/$defs/Permissions"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "sandbox": {
+          "default": "read_only",
+          "enum": [
+            "read_only",
+            "workspace_write"
+          ],
+          "title": "Sandbox",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "thread_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Thread Id"
+        },
+        "working_directory": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Working Directory",
+          "type": "string"
+        }
+      },
+      "required": [
+        "assignment_id",
+        "project_id",
+        "task_id",
+        "agent_id",
+        "agent_version",
+        "working_directory",
+        "granted_permissions",
+        "assigned_by"
+      ],
+      "title": "AgentAssignment",
+      "type": "object"
+    },
+    "AgentDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Agent Id",
+          "type": "string"
+        },
+        "allowed_tool_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Allowed Tool Ids",
+          "type": "array"
+        },
+        "capabilities": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Capabilities",
+          "type": "array"
+        },
+        "description": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Description",
+          "type": "string"
+        },
+        "instructions": {
+          "$ref": "#/$defs/Instructions"
+        },
+        "models": {
+          "$ref": "#/$defs/ModelPreferences"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Name",
+          "type": "string"
+        },
+        "output_contract": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Output Contract",
+          "type": "string"
+        },
+        "permissions": {
+          "$ref": "#/$defs/Permissions"
+        },
+        "probationary": {
+          "default": true,
+          "title": "Probationary",
+          "type": "boolean"
+        },
+        "required_gates": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Gates",
+          "type": "array"
+        },
+        "required_inputs": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Required Inputs",
+          "type": "array"
+        },
+        "resource_policy": {
+          "$ref": "#/$defs/ResourcePolicy"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "agent_id",
+        "name",
+        "version",
+        "description",
+        "capabilities",
+        "instructions",
+        "models",
+        "allowed_tool_ids",
+        "permissions",
+        "required_inputs",
+        "output_contract",
+        "required_gates",
+        "resource_policy"
+      ],
+      "title": "AgentDefinition",
+      "type": "object"
+    },
+    "AgentEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "agent.assigned",
+            "agent.failed",
+            "agent.hired"
+          ],
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/AssignmentPayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "event_type",
+        "payload"
+      ],
+      "title": "AgentEvent",
+      "type": "object"
+    },
+    "ArtifactEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "artifact.created",
+            "artifact.modified"
+          ],
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ArtifactPayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "event_type",
+        "payload"
+      ],
+      "title": "ArtifactEvent",
+      "type": "object"
+    },
+    "ArtifactPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact": {
+          "$ref": "#/$defs/SourceRef"
+        }
+      },
+      "required": [
+        "artifact"
+      ],
+      "title": "ArtifactPayload",
+      "type": "object"
+    },
+    "AssignmentPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Agent Id",
+          "type": "string"
+        },
+        "assignment_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Assignment Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "assignment_id",
+        "agent_id"
+      ],
+      "title": "AssignmentPayload",
+      "type": "object"
+    },
+    "Capability": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Capability Id",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Description",
+          "type": "string"
+        },
+        "evaluation_requirements": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evaluation Requirements",
+          "type": "array"
+        },
+        "expected_outputs": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Expected Outputs",
+          "type": "array"
+        },
+        "family": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Family",
+          "type": "string"
+        },
+        "required_inputs": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Required Inputs",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "capability_id",
+        "version",
+        "family",
+        "description",
+        "required_inputs",
+        "expected_outputs",
+        "evaluation_requirements"
+      ],
+      "title": "Capability",
+      "type": "object"
+    },
+    "ChangeEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "project.external_change_detected",
+            "project.reconciled"
+          ],
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ChangePayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "event_type",
+        "payload"
+      ],
+      "title": "ChangeEvent",
+      "type": "object"
+    },
+    "ChangePayload": {
+      "additionalProperties": false,
+      "properties": {
+        "change_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Change Id",
+          "type": "string"
+        },
+        "paths": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Paths",
+          "type": "array"
+        }
+      },
+      "required": [
+        "change_id",
+        "paths"
+      ],
+      "title": "ChangePayload",
+      "type": "object"
+    },
+    "CommitEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "git.commit.created",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/CommitPayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "event_type",
+        "payload"
+      ],
+      "title": "CommitEvent",
+      "type": "object"
+    },
+    "CommitPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "commit_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Commit Id",
+          "type": "string"
+        },
+        "workspace": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Workspace",
+          "type": "string"
+        }
+      },
+      "required": [
+        "commit_id",
+        "workspace"
+      ],
+      "title": "CommitPayload",
+      "type": "object"
+    },
+    "Decision": {
+      "additionalProperties": false,
+      "properties": {
+        "consequences": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Consequences",
+          "type": "array"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Decided At",
+          "type": "string"
+        },
+        "decided_by": {
+          "const": "human",
+          "title": "Decided By",
+          "type": "string"
+        },
+        "decision_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "options": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Options",
+          "type": "array"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "recommendation": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Recommendation",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "selected_option": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Selected Option",
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "title": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        },
+        "urgency": {
+          "enum": [
+            "low",
+            "normal",
+            "urgent"
+          ],
+          "title": "Urgency",
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision_id",
+        "project_id",
+        "task_id",
+        "title",
+        "reason",
+        "options",
+        "recommendation",
+        "consequences",
+        "urgency",
+        "evidence_ids",
+        "decided_by",
+        "selected_option",
+        "decided_at"
+      ],
+      "title": "Decision",
+      "type": "object"
+    },
+    "DecisionEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "decision.requested",
+            "decision.resolved",
+            "gm.challenge_raised",
+            "gate.waived"
+          ],
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/DecisionPayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "event_type",
+        "payload"
+      ],
+      "title": "DecisionEvent",
+      "type": "object"
+    },
+    "DecisionPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision_id",
+        "reason"
+      ],
+      "title": "DecisionPayload",
+      "type": "object"
+    },
+    "Direction": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Direction",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "References",
+          "type": "array"
+        }
+      },
+      "required": [
+        "direction",
+        "references"
+      ],
+      "title": "Direction",
+      "type": "object"
+    },
+    "Engine": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Type",
+          "type": "string"
+        },
+        "version": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "version"
+      ],
+      "title": "Engine",
+      "type": "object"
+    },
+    "EngineAdapter": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Adapter Id",
+          "type": "string"
+        },
+        "capabilities": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Capabilities",
+          "type": "array"
+        },
+        "engine_type": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Engine Type",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "supported_versions": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Supported Versions",
+          "type": "string"
+        },
+        "tool_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Tool Ids",
+          "type": "array"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "adapter_id",
+        "version",
+        "engine_type",
+        "supported_versions",
+        "capabilities",
+        "tool_ids"
+      ],
+      "title": "EngineAdapter",
+      "type": "object"
+    },
+    "EntityRef": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "kind": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Kind",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "kind",
+        "entity_id"
+      ],
+      "title": "EntityRef",
+      "type": "object"
+    },
+    "Evaluation": {
+      "additionalProperties": false,
+      "properties": {
+        "claim": {
+          "enum": [
+            "technical",
+            "visual",
+            "subjective",
+            "fun"
+          ],
+          "title": "Claim",
+          "type": "string"
+        },
+        "evaluated_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Evaluated At",
+          "type": "string"
+        },
+        "evaluation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Evaluation Id",
+          "type": "string"
+        },
+        "evaluator_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Evaluator Id",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "gate_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Gate Id",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "rationale": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Rationale",
+          "type": "string"
+        },
+        "result": {
+          "enum": [
+            "passed",
+            "failed",
+            "inconclusive"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evaluation_id",
+        "project_id",
+        "task_id",
+        "gate_id",
+        "claim",
+        "result",
+        "evidence_ids",
+        "evaluator_id",
+        "rationale",
+        "evaluated_at"
+      ],
+      "title": "Evaluation",
+      "type": "object"
+    },
+    "EvaluationEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "evaluation.started",
+            "evaluation.failed",
+            "evaluation.passed"
+          ],
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/EvaluationPayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "event_type",
+        "payload"
+      ],
+      "title": "EvaluationEvent",
+      "type": "object"
+    },
+    "EvaluationPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "evaluation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Evaluation Id",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "evaluation_id",
+        "evidence_ids"
+      ],
+      "title": "EvaluationPayload",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "capture_origin": {
+          "enum": [
+            "runtime",
+            "source",
+            "simulation",
+            "human_observation",
+            "model_output"
+          ],
+          "title": "Capture Origin",
+          "type": "string"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Captured At",
+          "type": "string"
+        },
+        "evidence_class": {
+          "enum": [
+            "deterministic",
+            "measured",
+            "comparative",
+            "heuristic",
+            "human"
+          ],
+          "title": "Evidence Class",
+          "type": "string"
+        },
+        "evidence_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Evidence Id",
+          "type": "string"
+        },
+        "producer_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Producer Id",
+          "type": "string"
+        },
+        "producer_type": {
+          "enum": [
+            "tool",
+            "model",
+            "human"
+          ],
+          "title": "Producer Type",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "summary": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Summary",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "project_id",
+        "task_id",
+        "evidence_class",
+        "producer_type",
+        "producer_id",
+        "captured_at",
+        "source",
+        "capture_origin",
+        "summary"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "Instructions": {
+      "additionalProperties": false,
+      "properties": {
+        "base": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Base",
+          "type": "string"
+        },
+        "constraints": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        }
+      },
+      "required": [
+        "base",
+        "constraints"
+      ],
+      "title": "Instructions",
+      "type": "object"
+    },
+    "KnowledgeEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "created_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Created At",
+          "type": "string"
+        },
+        "entities": {
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "title": "Entities",
+          "type": "array"
+        },
+        "evidence_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "kind": {
+          "enum": [
+            "source_fact",
+            "deterministic_consequence",
+            "inferred_fact",
+            "production_decision",
+            "user_decision",
+            "technical_constraint",
+            "hypothesis",
+            "agent_recommendation",
+            "evaluation"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "knowledge_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Knowledge Id",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "statement": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Statement",
+          "type": "string"
+        },
+        "supersedes_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Supersedes Id"
+        }
+      },
+      "required": [
+        "knowledge_id",
+        "project_id",
+        "kind",
+        "statement",
+        "source",
+        "confidence",
+        "created_at",
+        "entities",
+        "evidence_ids"
+      ],
+      "title": "KnowledgeEntry",
+      "type": "object"
+    },
+    "ModelPreferences": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "preferred": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Preferred",
+          "type": "array"
+        }
+      },
+      "required": [
+        "preferred",
+        "alternatives"
+      ],
+      "title": "ModelPreferences",
+      "type": "object"
+    },
+    "Multiplayer": {
+      "additionalProperties": false,
+      "properties": {
+        "max_players": {
+          "minimum": 1,
+          "title": "Max Players",
+          "type": "integer"
+        },
+        "type": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "max_players"
+      ],
+      "title": "Multiplayer",
+      "type": "object"
+    },
+    "Permissions": {
+      "additionalProperties": false,
+      "properties": {
+        "access_secrets": {
+          "default": false,
+          "title": "Access Secrets",
+          "type": "boolean"
+        },
+        "execute_commands": {
+          "default": false,
+          "title": "Execute Commands",
+          "type": "boolean"
+        },
+        "execute_discovered_code": {
+          "default": "ask",
+          "enum": [
+            "allow",
+            "ask",
+            "never"
+          ],
+          "title": "Execute Discovered Code",
+          "type": "string"
+        },
+        "git_commit": {
+          "default": false,
+          "title": "Git Commit",
+          "type": "boolean"
+        },
+        "git_merge": {
+          "default": false,
+          "title": "Git Merge",
+          "type": "boolean"
+        },
+        "install_dependencies": {
+          "default": "ask",
+          "enum": [
+            "allow",
+            "ask",
+            "never"
+          ],
+          "title": "Install Dependencies",
+          "type": "string"
+        },
+        "modify_assets": {
+          "default": false,
+          "title": "Modify Assets",
+          "type": "boolean"
+        },
+        "modify_code": {
+          "default": false,
+          "title": "Modify Code",
+          "type": "boolean"
+        },
+        "modify_global_files": {
+          "default": false,
+          "title": "Modify Global Files",
+          "type": "boolean"
+        },
+        "modify_project_settings": {
+          "default": false,
+          "title": "Modify Project Settings",
+          "type": "boolean"
+        },
+        "network": {
+          "default": false,
+          "title": "Network",
+          "type": "boolean"
+        },
+        "read_project": {
+          "default": true,
+          "title": "Read Project",
+          "type": "boolean"
+        },
+        "write_task_workspace": {
+          "default": false,
+          "title": "Write Task Workspace",
+          "type": "boolean"
+        }
+      },
+      "title": "Permissions",
+      "type": "object"
+    },
+    "Policy": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_threshold_cents": {
+          "default": 100,
+          "exclusiveMinimum": 0,
+          "title": "Approval Threshold Cents",
+          "type": "integer"
+        },
+        "authority": {
+          "default": "recommend_and_proceed",
+          "enum": [
+            "ask_first",
+            "recommend_and_proceed",
+            "autonomous_within_policy"
+          ],
+          "title": "Authority",
+          "type": "string"
+        },
+        "currency": {
+          "const": "USD",
+          "default": "USD",
+          "title": "Currency",
+          "type": "string"
+        },
+        "monthly_external_budget_cents": {
+          "default": 2500,
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "title": "Monthly External Budget Cents",
+          "type": "integer"
+        },
+        "post_specialist_nonprogress_limit": {
+          "const": 3,
+          "default": 3,
+          "title": "Post Specialist Nonprogress Limit",
+          "type": "integer"
+        },
+        "proactivity": {
+          "default": "balanced",
+          "enum": [
+            "reactive",
+            "balanced",
+            "active"
+          ],
+          "title": "Proactivity",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "require_provider_hard_cap": {
+          "const": true,
+          "default": true,
+          "title": "Require Provider Hard Cap",
+          "type": "boolean"
+        },
+        "require_registration_or_reconciliation": {
+          "const": true,
+          "default": true,
+          "title": "Require Registration Or Reconciliation",
+          "type": "boolean"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "worker_permissions": {
+          "$ref": "#/$defs/Permissions"
+        }
+      },
+      "required": [
+        "project_id"
+      ],
+      "title": "Policy",
+      "type": "object"
+    },
+    "Production": {
+      "additionalProperties": false,
+      "properties": {
+        "current_milestone": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Current Milestone"
+        },
+        "stage": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Stage",
+          "type": "string"
+        },
+        "team_size": {
+          "minimum": 1,
+          "title": "Team Size",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "stage",
+        "team_size",
+        "current_milestone"
+      ],
+      "title": "Production",
+      "type": "object"
+    },
+    "Project": {
+      "additionalProperties": false,
+      "properties": {
+        "audio": {
+          "$ref": "#/$defs/Direction"
+        },
+        "constraints": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "engine": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Engine"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "input_methods": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Input Methods",
+          "type": "array"
+        },
+        "locked_decision_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Locked Decision Ids",
+          "type": "array"
+        },
+        "medium": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Medium",
+          "type": "string"
+        },
+        "multiplayer": {
+          "$ref": "#/$defs/Multiplayer"
+        },
+        "platforms": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Platforms",
+          "type": "array"
+        },
+        "production": {
+          "$ref": "#/$defs/Production"
+        },
+        "project": {
+          "$ref": "#/$defs/ProjectIdentity"
+        },
+        "rendering": {
+          "enum": [
+            "2d",
+            "2.5d",
+            "3d",
+            "non_applicable"
+          ],
+          "title": "Rendering",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "visual": {
+          "$ref": "#/$defs/Direction"
+        }
+      },
+      "required": [
+        "project",
+        "medium",
+        "rendering",
+        "platforms",
+        "input_methods",
+        "multiplayer",
+        "visual",
+        "audio",
+        "production",
+        "constraints",
+        "locked_decision_ids"
+      ],
+      "title": "Project",
+      "type": "object"
+    },
+    "ProjectIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Description",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description"
+      ],
+      "title": "ProjectIdentity",
+      "type": "object"
+    },
+    "Provider": {
+      "additionalProperties": false,
+      "properties": {
+        "billing": {
+          "enum": [
+            "local",
+            "codex_subscription",
+            "paid"
+          ],
+          "title": "Billing",
+          "type": "string"
+        },
+        "cap": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UnverifiedCap"
+            },
+            {
+              "$ref": "#/$defs/VerifiedCap"
+            }
+          ],
+          "title": "Cap"
+        },
+        "currency": {
+          "const": "USD",
+          "default": "USD",
+          "title": "Currency",
+          "type": "string"
+        },
+        "provider_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Provider Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "ACTIVE",
+            "DISABLED",
+            "DISABLED_UNCAPPED"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider_id",
+        "billing",
+        "state",
+        "cap"
+      ],
+      "title": "Provider",
+      "type": "object"
+    },
+    "ProviderEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "provider.disabled",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ProviderPayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "event_type",
+        "payload"
+      ],
+      "title": "ProviderEvent",
+      "type": "object"
+    },
+    "ProviderPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "provider_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Provider Id",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider_id",
+        "reason"
+      ],
+      "title": "ProviderPayload",
+      "type": "object"
+    },
+    "Requirements": {
+      "additionalProperties": false,
+      "properties": {
+        "accessibility": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Accessibility",
+          "type": "array"
+        },
+        "functional": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Functional",
+          "type": "array"
+        },
+        "production": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Production",
+          "type": "array"
+        },
+        "technical": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Technical",
+          "type": "array"
+        },
+        "visual": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Visual",
+          "type": "array"
+        }
+      },
+      "required": [
+        "functional",
+        "visual",
+        "technical",
+        "accessibility",
+        "production"
+      ],
+      "title": "Requirements",
+      "type": "object"
+    },
+    "ResourcePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "local_preferred": {
+          "default": true,
+          "title": "Local Preferred",
+          "type": "boolean"
+        },
+        "max_external_cost_cents": {
+          "default": 0,
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "title": "Max External Cost Cents",
+          "type": "integer"
+        }
+      },
+      "title": "ResourcePolicy",
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "locator": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "media_type": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Media Type",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "uri": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Uri",
+          "type": "string"
+        }
+      },
+      "required": [
+        "uri",
+        "media_type",
+        "sha256"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    },
+    "SpendEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "provider.spend_recorded",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/SpendPayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "event_type",
+        "payload"
+      ],
+      "title": "SpendEvent",
+      "type": "object"
+    },
+    "SpendPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "amount_cents": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "title": "Amount Cents",
+          "type": "integer"
+        },
+        "provider_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Provider Id",
+          "type": "string"
+        },
+        "reservation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Reservation Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider_id",
+        "amount_cents",
+        "reservation_id"
+      ],
+      "title": "SpendPayload",
+      "type": "object"
+    },
+    "TaskContract": {
+      "additionalProperties": false,
+      "properties": {
+        "constraints": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "deliverables": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Deliverables",
+          "type": "array"
+        },
+        "dependency_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Dependency Ids",
+          "type": "array"
+        },
+        "entities": {
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "title": "Entities",
+          "type": "array"
+        },
+        "escalation_criteria": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Escalation Criteria",
+          "type": "array"
+        },
+        "objective": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Objective",
+          "type": "string"
+        },
+        "parent_task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Task Id"
+        },
+        "permissions": {
+          "$ref": "#/$defs/Permissions"
+        },
+        "priority": {
+          "default": "normal",
+          "enum": [
+            "low",
+            "normal",
+            "high",
+            "urgent"
+          ],
+          "title": "Priority",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "References",
+          "type": "array"
+        },
+        "required_capabilities": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Capabilities",
+          "type": "array"
+        },
+        "required_evaluations": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Evaluations",
+          "type": "array"
+        },
+        "requirements": {
+          "$ref": "#/$defs/Requirements"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "state": {
+          "default": "PROPOSED",
+          "enum": [
+            "PROPOSED",
+            "QUEUED",
+            "READY",
+            "RUNNING",
+            "BLOCKED",
+            "REVIEW",
+            "FAILED",
+            "PASSED",
+            "RETRY",
+            "INTEGRATE",
+            "COMPLETE",
+            "CANCELLED",
+            "SUPERSEDED",
+            "NEEDS_HUMAN"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "project_id",
+        "title",
+        "objective",
+        "entities",
+        "references",
+        "required_capabilities",
+        "requirements",
+        "constraints",
+        "deliverables",
+        "dependency_ids",
+        "permissions",
+        "required_evaluations",
+        "escalation_criteria"
+      ],
+      "title": "TaskContract",
+      "type": "object"
+    },
+    "TaskEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "task.created",
+            "task.started",
+            "task.blocked",
+            "task.completed"
+          ],
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/TaskEventPayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "event_type",
+        "payload"
+      ],
+      "title": "TaskEvent",
+      "type": "object"
+    },
+    "TaskEventPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "detail"
+      ],
+      "title": "TaskEventPayload",
+      "type": "object"
+    },
+    "ToolDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "capabilities": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Capabilities",
+          "type": "array"
+        },
+        "cost_policy": {
+          "$ref": "#/$defs/ResourcePolicy"
+        },
+        "health_check": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Health Check",
+          "type": "string"
+        },
+        "input_contract": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Input Contract",
+          "type": "string"
+        },
+        "install_state": {
+          "enum": [
+            "missing",
+            "installed",
+            "unhealthy"
+          ],
+          "title": "Install State",
+          "type": "string"
+        },
+        "invocation": {
+          "enum": [
+            "cli",
+            "http",
+            "sdk",
+            "mcp"
+          ],
+          "title": "Invocation",
+          "type": "string"
+        },
+        "location": {
+          "enum": [
+            "local",
+            "cloud"
+          ],
+          "title": "Location",
+          "type": "string"
+        },
+        "output_contract": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Output Contract",
+          "type": "string"
+        },
+        "permissions": {
+          "$ref": "#/$defs/Permissions"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "tool_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Tool Id",
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool_id",
+        "version",
+        "capabilities",
+        "install_state",
+        "invocation",
+        "input_contract",
+        "output_contract",
+        "permissions",
+        "health_check",
+        "location",
+        "cost_policy"
+      ],
+      "title": "ToolDefinition",
+      "type": "object"
+    },
+    "UnverifiedCap": {
+      "additionalProperties": false,
+      "properties": {
+        "verified": {
+          "const": false,
+          "title": "Verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "verified"
+      ],
+      "title": "UnverifiedCap",
+      "type": "object"
+    },
+    "VerifiedCap": {
+      "additionalProperties": false,
+      "properties": {
+        "amount_cents": {
+          "exclusiveMinimum": 0,
+          "title": "Amount Cents",
+          "type": "integer"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Expires At",
+          "type": "string"
+        },
+        "proof": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "provider_side": {
+          "const": true,
+          "title": "Provider Side",
+          "type": "boolean"
+        },
+        "verification_method": {
+          "enum": [
+            "provider_api",
+            "manual_provider_console",
+            "prepaid_wallet"
+          ],
+          "title": "Verification Method",
+          "type": "string"
+        },
+        "verified": {
+          "const": true,
+          "title": "Verified",
+          "type": "boolean"
+        },
+        "verified_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Verified At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "verified",
+        "amount_cents",
+        "verification_method",
+        "verified_at",
+        "expires_at",
+        "proof",
+        "provider_side"
+      ],
+      "title": "VerifiedCap",
+      "type": "object"
+    }
+  },
+  "$id": "https://gameagent.local/protocol/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Discriminated export root; each document remains independently addressable.",
+  "properties": {
+    "agent": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AgentDefinition"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "assignment": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AgentAssignment"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "capability": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Capability"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "decision": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Decision"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "engine_adapter": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EngineAdapter"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "evaluation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Evaluation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "event": {
+      "anyOf": [
+        {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TaskEvent"
+            },
+            {
+              "$ref": "#/$defs/AgentEvent"
+            },
+            {
+              "$ref": "#/$defs/EvaluationEvent"
+            },
+            {
+              "$ref": "#/$defs/DecisionEvent"
+            },
+            {
+              "$ref": "#/$defs/ArtifactEvent"
+            },
+            {
+              "$ref": "#/$defs/ChangeEvent"
+            },
+            {
+              "$ref": "#/$defs/SpendEvent"
+            },
+            {
+              "$ref": "#/$defs/ProviderEvent"
+            },
+            {
+              "$ref": "#/$defs/CommitEvent"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Event"
+    },
+    "evidence": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Evidence"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "knowledge": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/KnowledgeEntry"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "policy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Policy"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "project": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Project"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "provider": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Provider"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "task": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TaskContract"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "tool": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ToolDefinition"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "title": "ProtocolDocument",
+  "type": "object"
+}
