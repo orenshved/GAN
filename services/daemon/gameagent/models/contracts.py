@@ -205,6 +205,23 @@ class Project(Contract):
     locked_decision_ids: list[Identifier]
 
 
+class InitializationFinding(Value):
+    kind: Literal["known", "inferred", "missing"]
+    field: Identifier
+    value: Text | None
+    source: Text
+
+
+class InitializationReport(Contract):
+    repository_root: Text
+    git_head: Text | None
+    git_recent_commits: list[Text]
+    inspected_documents: list[Text]
+    inspected_assets: list[Text]
+    findings: list[InitializationFinding]
+    required_capabilities: Annotated[list[Identifier], Field(min_length=1)]
+
+
 class Requirements(Value):
     functional: list[Text]
     visual: list[Text]
@@ -389,6 +406,7 @@ class EventBase(Contract):
     actor_id: Identifier
     correlation_id: Identifier
     task_id: Identifier | None
+    sequence: Annotated[int, Field(ge=1)]
 
 
 class TaskEvent(EventBase):
@@ -438,6 +456,50 @@ class CommitEvent(EventBase):
     payload: CommitPayload
 
 
+class ProjectInitializedPayload(Value):
+    project: Project
+    policy: Policy
+    intake: InitializationReport
+
+
+class ProjectInitializedEvent(EventBase):
+    event_type: Literal["project.initialized"]
+    payload: ProjectInitializedPayload
+
+
+class TaskProposedEvent(EventBase):
+    event_type: Literal["task.proposed"]
+    payload: TaskContract
+
+
+class PolicyUpdatedEvent(EventBase):
+    event_type: Literal["policy.updated"]
+    payload: Policy
+
+
+class WorkerResult(Value):
+    summary: Text
+    findings: list[Text]
+    next_steps: list[Text]
+
+
+class WorkerRecord(Contract):
+    worker_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    thread_id: Text
+    cwd: Text
+    state: Literal["ready", "running", "completed", "failed", "interrupted"]
+    turn_id: Text | None = None
+    result: WorkerResult | None = None
+    detail: Text
+
+
+class WorkerEvent(EventBase):
+    event_type: Literal["worker.updated"]
+    payload: WorkerRecord
+
+
 Event = Annotated[
     TaskEvent
     | AgentEvent
@@ -447,7 +509,11 @@ Event = Annotated[
     | ChangeEvent
     | SpendEvent
     | ProviderEvent
-    | CommitEvent,
+    | CommitEvent
+    | ProjectInitializedEvent
+    | TaskProposedEvent
+    | PolicyUpdatedEvent
+    | WorkerEvent,
     Field(discriminator="event_type"),
 ]
 

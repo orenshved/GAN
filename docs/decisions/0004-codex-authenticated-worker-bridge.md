@@ -1,6 +1,6 @@
 # ADR 0004: Authenticated Codex Python worker bridge
 
-Status: accepted architecture; live integration and dependency installation deferred to Phase 2.
+Status: accepted and implemented in Phase 2.
 
 ## Context
 
@@ -16,11 +16,13 @@ https://developers.openai.com/codex/sdk . The app-server integration surface cov
 account/login, thread lifecycle, approvals and streamed events:
 https://developers.openai.com/codex/app-server .
 
-Phase 2 verifies account state, browser/device login, existing-session reuse,
+The Phase 2 adapter verifies account state, browser login, existing-session reuse,
 thread start/resume, structured output and supported interrupt/steer operations
-against the pinned SDK release. No credential scraping or home-directory token
-copying. Store thread identifiers and assignment metadata in canonical project
-history. A thread is bound to one project; global agents never hold its memory.
+against `openai-codex` 0.147.0. It uses the current Codex executable when available
+because its model compatibility can advance ahead of the SDK-bundled runtime.
+No credential scraping or home-directory token copying. Thread identifiers and
+assignment metadata live in canonical project history. A thread is bound to one
+project; global agents never hold its memory.
 
 Worker access starts read-only and may receive task-workspace access according
 to contract permissions. Resolve/contain paths against the selected project/task
@@ -37,6 +39,7 @@ account availability are first-class worker states, not paid fallback triggers.
 ## Validation
 
 Phase 0 tests assignment project/version/capability/permission/thread isolation.
-Phase 2 must run an actual task in a test repository without an API key, resume
-it after restart and test cancellation and cross-project refusal. No real Codex
-task or login was performed during this foundation build.
+Phase 2 ran an actual structured task in `C:\AI local projects\Test game` with a
+ChatGPT account and API-key variables cleared, then resumed its stable thread after
+daemon restarts. Tests cover restart recovery, cancellation, immutable bindings,
+cross-worker refusal and API-key-account rejection.

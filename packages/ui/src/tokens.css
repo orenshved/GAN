@@ -1,9 +1,10 @@
 :root {
   color-scheme: dark;
-  --ga-background: #151719;
+  --ga-background: #172023;
+  --ga-surface: #1b262a;
   --ga-foreground: #f2f3f5;
   --ga-muted: #b5bdc6;
-  --ga-border: #64748b;
+  --ga-border: #344347;
   --ga-focus: #93c5fd;
   --ga-space: 1rem;
 }

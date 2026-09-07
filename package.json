@@ -7,7 +7,7 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "dev": "pnpm --filter @gameagent/studio dev",
+    "dev": "node scripts/studio.mjs dev --with-daemon",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "eslint . && node scripts/python.mjs lint",
@@ -21,13 +21,14 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "eslint": "10.10.0",
-    "typescript-eslint": "^8.0.0",
-    "typescript": "^5.9.0",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^24.0.0",
+    "dotenv": "^17.0.0",
+    "eslint": "10.10.0",
+    "json-schema-to-typescript": "^15.0.0",
     "prettier": "^3.6.0",
     "turbo": "2.10.12",
-    "dotenv": "^17.0.0",
-    "json-schema-to-typescript": "^15.0.0"
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.0.0"
   }
 }

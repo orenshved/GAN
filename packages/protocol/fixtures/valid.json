@@ -201,6 +201,7 @@
     "actor_id": "gm-a",
     "correlation_id": "correlation-a",
     "task_id": "task-a",
+    "sequence": 1,
     "payload": {
       "task_id": "task-a",
       "detail": "Registered task"

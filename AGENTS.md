@@ -1,6 +1,6 @@
 # Game Agent Network contributor instructions
 
-- Current delivery is Phase -1 and Phase 0 only. Stop before Phase 1.
+- Current delivery is Phase 2, authorized after the Studio review. Stop before Phase 3.
 - Read the PRD, `docs/GREENLIGHT_HARVEST.md`, architecture and decision records.
 - Do not edit the PRD without an explicit documented change request.
 - Pydantic models own contracts. Run `pnpm protocol:generate` after changes;

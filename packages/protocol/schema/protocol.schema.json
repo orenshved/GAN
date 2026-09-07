@@ -245,6 +245,11 @@
           "title": "Schema Version",
           "type": "integer"
         },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
         "task_id": {
           "anyOf": [
             {
@@ -272,6 +277,7 @@
         "actor_id",
         "correlation_id",
         "task_id",
+        "sequence",
         "event_type",
         "payload"
       ],
@@ -329,6 +335,11 @@
           "title": "Schema Version",
           "type": "integer"
         },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
         "task_id": {
           "anyOf": [
             {
@@ -356,6 +367,7 @@
         "actor_id",
         "correlation_id",
         "task_id",
+        "sequence",
         "event_type",
         "payload"
       ],
@@ -518,6 +530,11 @@
           "title": "Schema Version",
           "type": "integer"
         },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
         "task_id": {
           "anyOf": [
             {
@@ -545,6 +562,7 @@
         "actor_id",
         "correlation_id",
         "task_id",
+        "sequence",
         "event_type",
         "payload"
       ],
@@ -625,6 +643,11 @@
           "title": "Schema Version",
           "type": "integer"
         },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
         "task_id": {
           "anyOf": [
             {
@@ -652,6 +675,7 @@
         "actor_id",
         "correlation_id",
         "task_id",
+        "sequence",
         "event_type",
         "payload"
       ],
@@ -855,6 +879,11 @@
           "title": "Schema Version",
           "type": "integer"
         },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
         "task_id": {
           "anyOf": [
             {
@@ -882,6 +911,7 @@
         "actor_id",
         "correlation_id",
         "task_id",
+        "sequence",
         "event_type",
         "payload"
       ],
@@ -1185,6 +1215,11 @@
           "title": "Schema Version",
           "type": "integer"
         },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
         "task_id": {
           "anyOf": [
             {
@@ -1212,6 +1247,7 @@
         "actor_id",
         "correlation_id",
         "task_id",
+        "sequence",
         "event_type",
         "payload"
       ],
@@ -1241,6 +1277,74 @@
         "evidence_ids"
       ],
       "title": "EvaluationPayload",
+      "type": "object"
+    },
+    "EventPage": {
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "minimum": 0,
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "events": {
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TaskEvent"
+              },
+              {
+                "$ref": "#/$defs/AgentEvent"
+              },
+              {
+                "$ref": "#/$defs/EvaluationEvent"
+              },
+              {
+                "$ref": "#/$defs/DecisionEvent"
+              },
+              {
+                "$ref": "#/$defs/ArtifactEvent"
+              },
+              {
+                "$ref": "#/$defs/ChangeEvent"
+              },
+              {
+                "$ref": "#/$defs/SpendEvent"
+              },
+              {
+                "$ref": "#/$defs/ProviderEvent"
+              },
+              {
+                "$ref": "#/$defs/CommitEvent"
+              },
+              {
+                "$ref": "#/$defs/ProjectInitializedEvent"
+              },
+              {
+                "$ref": "#/$defs/TaskProposedEvent"
+              },
+              {
+                "$ref": "#/$defs/PolicyUpdatedEvent"
+              },
+              {
+                "$ref": "#/$defs/WorkerEvent"
+              }
+            ]
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "has_more": {
+          "title": "Has More",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "events",
+        "cursor",
+        "has_more"
+      ],
+      "title": "EventPage",
       "type": "object"
     },
     "Evidence": {
@@ -1332,6 +1436,136 @@
         "summary"
       ],
       "title": "Evidence",
+      "type": "object"
+    },
+    "InitializationFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Field",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "known",
+            "inferred",
+            "missing"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "source": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Source",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "kind",
+        "field",
+        "value",
+        "source"
+      ],
+      "title": "InitializationFinding",
+      "type": "object"
+    },
+    "InitializationReport": {
+      "additionalProperties": false,
+      "properties": {
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/InitializationFinding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "git_head": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Git Head"
+        },
+        "git_recent_commits": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Git Recent Commits",
+          "type": "array"
+        },
+        "inspected_assets": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Inspected Assets",
+          "type": "array"
+        },
+        "inspected_documents": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Inspected Documents",
+          "type": "array"
+        },
+        "repository_root": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Repository Root",
+          "type": "string"
+        },
+        "required_capabilities": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Capabilities",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "repository_root",
+        "git_head",
+        "git_recent_commits",
+        "inspected_documents",
+        "inspected_assets",
+        "findings",
+        "required_capabilities"
+      ],
+      "title": "InitializationReport",
       "type": "object"
     },
     "Instructions": {
@@ -1672,6 +1906,118 @@
       "title": "Policy",
       "type": "object"
     },
+    "PolicyCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_cursor": {
+          "minimum": 0,
+          "title": "Expected Cursor",
+          "type": "integer"
+        },
+        "policy": {
+          "$ref": "#/$defs/Policy"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "expected_cursor",
+        "policy"
+      ],
+      "title": "PolicyCommand",
+      "type": "object"
+    },
+    "PolicyUpdatedEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "policy.updated",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/Policy"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "PolicyUpdatedEvent",
+      "type": "object"
+    },
     "Production": {
       "additionalProperties": false,
       "properties": {
@@ -1838,6 +2184,158 @@
       "title": "ProjectIdentity",
       "type": "object"
     },
+    "ProjectInitializedEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "project.initialized",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ProjectInitializedPayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "ProjectInitializedEvent",
+      "type": "object"
+    },
+    "ProjectInitializedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "intake": {
+          "$ref": "#/$defs/InitializationReport"
+        },
+        "policy": {
+          "$ref": "#/$defs/Policy"
+        },
+        "project": {
+          "$ref": "#/$defs/Project"
+        }
+      },
+      "required": [
+        "project",
+        "policy",
+        "intake"
+      ],
+      "title": "ProjectInitializedPayload",
+      "type": "object"
+    },
+    "ProjectSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "minimum": 0,
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "history_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "History Digest",
+          "type": "string"
+        },
+        "policy": {
+          "$ref": "#/$defs/Policy"
+        },
+        "project": {
+          "$ref": "#/$defs/Project"
+        },
+        "tasks": {
+          "items": {
+            "$ref": "#/$defs/TaskContract"
+          },
+          "title": "Tasks",
+          "type": "array"
+        },
+        "workers": {
+          "items": {
+            "$ref": "#/$defs/WorkerRecord"
+          },
+          "title": "Workers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "project",
+        "policy",
+        "tasks",
+        "cursor",
+        "history_digest"
+      ],
+      "title": "ProjectSnapshot",
+      "type": "object"
+    },
     "Provider": {
       "additionalProperties": false,
       "properties": {
@@ -1945,6 +2443,11 @@
           "title": "Schema Version",
           "type": "integer"
         },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
         "task_id": {
           "anyOf": [
             {
@@ -1972,6 +2475,7 @@
         "actor_id",
         "correlation_id",
         "task_id",
+        "sequence",
         "event_type",
         "payload"
       ],
@@ -2169,6 +2673,11 @@
           "title": "Schema Version",
           "type": "integer"
         },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
         "task_id": {
           "anyOf": [
             {
@@ -2196,6 +2705,7 @@
         "actor_id",
         "correlation_id",
         "task_id",
+        "sequence",
         "event_type",
         "payload"
       ],
@@ -2228,6 +2738,80 @@
         "reservation_id"
       ],
       "title": "SpendPayload",
+      "type": "object"
+    },
+    "StreamMessage": {
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "minimum": 0,
+          "title": "Cursor",
+          "type": "integer"
+        },
+        "events": {
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TaskEvent"
+              },
+              {
+                "$ref": "#/$defs/AgentEvent"
+              },
+              {
+                "$ref": "#/$defs/EvaluationEvent"
+              },
+              {
+                "$ref": "#/$defs/DecisionEvent"
+              },
+              {
+                "$ref": "#/$defs/ArtifactEvent"
+              },
+              {
+                "$ref": "#/$defs/ChangeEvent"
+              },
+              {
+                "$ref": "#/$defs/SpendEvent"
+              },
+              {
+                "$ref": "#/$defs/ProviderEvent"
+              },
+              {
+                "$ref": "#/$defs/CommitEvent"
+              },
+              {
+                "$ref": "#/$defs/ProjectInitializedEvent"
+              },
+              {
+                "$ref": "#/$defs/TaskProposedEvent"
+              },
+              {
+                "$ref": "#/$defs/PolicyUpdatedEvent"
+              },
+              {
+                "$ref": "#/$defs/WorkerEvent"
+              }
+            ]
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "has_more": {
+          "title": "Has More",
+          "type": "boolean"
+        },
+        "type": {
+          "const": "events",
+          "default": "events",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "events",
+        "cursor",
+        "has_more"
+      ],
+      "title": "StreamMessage",
       "type": "object"
     },
     "TaskContract": {
@@ -2453,6 +3037,11 @@
           "title": "Schema Version",
           "type": "integer"
         },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
         "task_id": {
           "anyOf": [
             {
@@ -2480,6 +3069,7 @@
         "actor_id",
         "correlation_id",
         "task_id",
+        "sequence",
         "event_type",
         "payload"
       ],
@@ -2506,6 +3096,151 @@
         "detail"
       ],
       "title": "TaskEventPayload",
+      "type": "object"
+    },
+    "TaskProposal": {
+      "additionalProperties": false,
+      "properties": {
+        "deliverables": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Deliverables",
+          "type": "array"
+        },
+        "dependency_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Dependency Ids",
+          "type": "array"
+        },
+        "objective": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Objective",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "required_capabilities": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Capabilities",
+          "type": "array"
+        },
+        "title": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "title",
+        "objective",
+        "required_capabilities",
+        "deliverables"
+      ],
+      "title": "TaskProposal",
+      "type": "object"
+    },
+    "TaskProposedEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "task.proposed",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/TaskContract"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "TaskProposedEvent",
       "type": "object"
     },
     "ToolDefinition": {
@@ -2673,6 +3408,248 @@
       ],
       "title": "VerifiedCap",
       "type": "object"
+    },
+    "WorkerCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "worker_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Worker Id"
+        }
+      },
+      "required": [
+        "task_id"
+      ],
+      "title": "WorkerCommand",
+      "type": "object"
+    },
+    "WorkerEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "worker.updated",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/WorkerRecord"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "WorkerEvent",
+      "type": "object"
+    },
+    "WorkerRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "cwd": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Cwd",
+          "type": "string"
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkerResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "ready",
+            "running",
+            "completed",
+            "failed",
+            "interrupted"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "thread_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Thread Id",
+          "type": "string"
+        },
+        "turn_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Turn Id"
+        },
+        "worker_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Worker Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "worker_id",
+        "project_id",
+        "task_id",
+        "thread_id",
+        "cwd",
+        "state",
+        "detail"
+      ],
+      "title": "WorkerRecord",
+      "type": "object"
+    },
+    "WorkerResult": {
+      "additionalProperties": false,
+      "properties": {
+        "findings": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "next_steps": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Next Steps",
+          "type": "array"
+        },
+        "summary": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "summary",
+        "findings",
+        "next_steps"
+      ],
+      "title": "WorkerResult",
+      "type": "object"
     }
   },
   "$id": "https://gameagent.local/protocol/v1",
@@ -2776,6 +3753,18 @@
             },
             {
               "$ref": "#/$defs/CommitEvent"
+            },
+            {
+              "$ref": "#/$defs/ProjectInitializedEvent"
+            },
+            {
+              "$ref": "#/$defs/TaskProposedEvent"
+            },
+            {
+              "$ref": "#/$defs/PolicyUpdatedEvent"
+            },
+            {
+              "$ref": "#/$defs/WorkerEvent"
             }
           ]
         },

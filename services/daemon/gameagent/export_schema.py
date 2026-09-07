@@ -3,11 +3,14 @@
 import json
 import sys
 
+from gameagent.models.api import ApiCatalog
 from gameagent.models.contracts import ProtocolDocument
 
 
 def main() -> None:
     schema = ProtocolDocument.model_json_schema()
+    api_schema = ApiCatalog.model_json_schema()
+    schema["$defs"].update(api_schema["$defs"])
     schema["$schema"] = "https://json-schema.org/draft/2020-12/schema"
     schema["$id"] = "https://gameagent.local/protocol/v1"
 

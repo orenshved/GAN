@@ -9,11 +9,13 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@gameagent/protocol": "workspace:*",
+    "@gameagent/ui": "workspace:*",
+    "@tanstack/react-query": "^5.102.8",
+    "@xyflow/react": "^12.11.6",
     "next": "16.3.4",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "@gameagent/ui": "workspace:*",
-    "@gameagent/protocol": "workspace:*"
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.0",

@@ -118,6 +118,10 @@ export type Event =
       | SpendEvent
       | ProviderEvent
       | CommitEvent
+      | ProjectInitializedEvent
+      | TaskProposedEvent
+      | PolicyUpdatedEvent
+      | WorkerEvent
     )
   | null;
 export type ActorId = string;
@@ -129,6 +133,7 @@ export type Detail = string;
 export type TaskId3 = string;
 export type ProjectId3 = string;
 export type SchemaVersion6 = 1;
+export type Sequence = number;
 export type TaskId4 = string | null;
 export type Timestamp = string;
 export type ActorId1 = string;
@@ -140,6 +145,7 @@ export type AgentId2 = string;
 export type AssignmentId1 = string;
 export type ProjectId4 = string;
 export type SchemaVersion7 = 1;
+export type Sequence1 = number;
 export type TaskId5 = string | null;
 export type Timestamp1 = string;
 export type ActorId2 = string;
@@ -154,6 +160,7 @@ export type EvaluationId1 = string;
 export type EvidenceIds2 = [string, ...string[]];
 export type ProjectId5 = string;
 export type SchemaVersion8 = 1;
+export type Sequence2 = number;
 export type TaskId6 = string | null;
 export type Timestamp2 = string;
 export type ActorId3 = string;
@@ -165,6 +172,7 @@ export type DecisionId1 = string;
 export type Reason1 = string;
 export type ProjectId6 = string;
 export type SchemaVersion9 = 1;
+export type Sequence3 = number;
 export type TaskId7 = string | null;
 export type Timestamp3 = string;
 export type ActorId4 = string;
@@ -178,6 +186,7 @@ export type Sha256 = string;
 export type Uri = string;
 export type ProjectId7 = string;
 export type SchemaVersion10 = 1;
+export type Sequence4 = number;
 export type TaskId8 = string | null;
 export type Timestamp4 = string;
 export type ActorId5 = string;
@@ -192,6 +201,7 @@ export type ChangeId = string;
 export type Paths = [string, ...string[]];
 export type ProjectId8 = string;
 export type SchemaVersion11 = 1;
+export type Sequence5 = number;
 export type TaskId9 = string | null;
 export type Timestamp5 = string;
 export type ActorId6 = string;
@@ -204,6 +214,7 @@ export type ProviderId = string;
 export type ReservationId = string;
 export type ProjectId9 = string;
 export type SchemaVersion12 = 1;
+export type Sequence6 = number;
 export type TaskId10 = string | null;
 export type Timestamp6 = string;
 export type ActorId7 = string;
@@ -215,6 +226,7 @@ export type ProviderId1 = string;
 export type Reason2 = string;
 export type ProjectId10 = string;
 export type SchemaVersion13 = 1;
+export type Sequence7 = number;
 export type TaskId11 = string | null;
 export type Timestamp7 = string;
 export type ActorId8 = string;
@@ -226,50 +238,39 @@ export type CommitId = string;
 export type Workspace = string;
 export type ProjectId11 = string;
 export type SchemaVersion14 = 1;
+export type Sequence8 = number;
 export type TaskId12 = string | null;
 export type Timestamp8 = string;
-export type CaptureOrigin = "runtime" | "source" | "simulation" | "human_observation" | "model_output";
-export type CapturedAt = string;
-export type EvidenceClass = "deterministic" | "measured" | "comparative" | "heuristic" | "human";
-export type EvidenceId = string;
-export type ProducerId = string;
-export type ProducerType = "tool" | "model" | "human";
-export type ProjectId12 = string;
+export type ActorId9 = string;
+export type ActorType9 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId9 = string;
+export type EventId9 = string;
+export type EventType9 = "project.initialized";
+export type Field = string;
+export type Kind = "known" | "inferred" | "missing";
+export type Source = string;
+export type Value = string | null;
+export type Findings = InitializationFinding[];
+export type GitHead = string | null;
+export type GitRecentCommits = string[];
+export type InspectedAssets = string[];
+export type InspectedDocuments = string[];
+export type RepositoryRoot = string;
+/**
+ * @minItems 1
+ */
+export type RequiredCapabilities = [string, ...string[]];
 export type SchemaVersion15 = 1;
-export type Summary = string;
-export type TaskId13 = string;
-export type Confidence = number;
-export type CreatedAt = string;
-export type EntityId = string;
-export type Kind = string;
-export type ProjectId13 = string;
-export type Entities = EntityRef[];
-export type EvidenceIds3 = string[];
-export type Kind1 =
-  | "source_fact"
-  | "deterministic_consequence"
-  | "inferred_fact"
-  | "production_decision"
-  | "user_decision"
-  | "technical_constraint"
-  | "hypothesis"
-  | "agent_recommendation"
-  | "evaluation";
-export type KnowledgeId = string;
-export type ProjectId14 = string;
-export type SchemaVersion16 = 1;
-export type Statement = string;
-export type SupersedesId = string | null;
 export type ApprovalThresholdCents = number;
 export type Authority = "ask_first" | "recommend_and_proceed" | "autonomous_within_policy";
 export type Currency = "USD";
 export type MonthlyExternalBudgetCents = number;
 export type PostSpecialistNonprogressLimit = 3;
 export type Proactivity = "reactive" | "balanced" | "active";
-export type ProjectId15 = string;
+export type ProjectId12 = string;
 export type RequireProviderHardCap = true;
 export type RequireRegistrationOrReconciliation = true;
-export type SchemaVersion17 = 1;
+export type SchemaVersion16 = 1;
 export type Direction1 = string;
 export type References = SourceRef[];
 export type Constraints1 = string[];
@@ -288,37 +289,37 @@ export type Description2 = string;
 export type Id = string;
 export type Name1 = string;
 export type Rendering = "2d" | "2.5d" | "3d" | "non_applicable";
+export type SchemaVersion17 = 1;
+export type ProjectId13 = string;
 export type SchemaVersion18 = 1;
-export type Billing = "local" | "codex_subscription" | "paid";
-export type Cap = UnverifiedCap | VerifiedCap;
-export type Verified = false;
-export type AmountCents1 = number;
-export type ExpiresAt = string;
-export type ProviderSide = true;
-export type VerificationMethod = "provider_api" | "manual_provider_console" | "prepaid_wallet";
-export type Verified1 = true;
-export type VerifiedAt = string;
-export type Currency1 = "USD";
-export type ProviderId2 = string;
-export type SchemaVersion19 = 1;
-export type State = "ACTIVE" | "DISABLED" | "DISABLED_UNCAPPED";
+export type Sequence9 = number;
+export type TaskId13 = string | null;
+export type Timestamp9 = string;
+export type ActorId10 = string;
+export type ActorType10 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId10 = string;
+export type EventId10 = string;
+export type EventType10 = "task.proposed";
 export type Constraints2 = string[];
 /**
  * @minItems 1
  */
 export type Deliverables = [string, ...string[]];
 export type DependencyIds = string[];
-export type Entities1 = EntityRef[];
+export type EntityId = string;
+export type Kind1 = string;
+export type ProjectId14 = string;
+export type Entities = EntityRef[];
 export type EscalationCriteria = string[];
 export type Objective = string;
 export type ParentTaskId = string | null;
 export type Priority = "low" | "normal" | "high" | "urgent";
-export type ProjectId16 = string;
+export type ProjectId15 = string;
 export type References1 = SourceRef[];
 /**
  * @minItems 1
  */
-export type RequiredCapabilities = [string, ...string[]];
+export type RequiredCapabilities1 = [string, ...string[]];
 /**
  * @minItems 1
  */
@@ -328,8 +329,8 @@ export type Functional = string[];
 export type Production1 = string[];
 export type Technical = string[];
 export type Visual = string[];
-export type SchemaVersion20 = 1;
-export type State1 =
+export type SchemaVersion19 = 1;
+export type State =
   | "PROPOSED"
   | "QUEUED"
   | "READY"
@@ -346,6 +347,85 @@ export type State1 =
   | "NEEDS_HUMAN";
 export type TaskId14 = string;
 export type Title1 = string;
+export type ProjectId16 = string;
+export type SchemaVersion20 = 1;
+export type Sequence10 = number;
+export type TaskId15 = string | null;
+export type Timestamp10 = string;
+export type ActorId11 = string;
+export type ActorType11 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId11 = string;
+export type EventId11 = string;
+export type EventType11 = "policy.updated";
+export type ProjectId17 = string;
+export type SchemaVersion21 = 1;
+export type Sequence11 = number;
+export type TaskId16 = string | null;
+export type Timestamp11 = string;
+export type ActorId12 = string;
+export type ActorType12 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId12 = string;
+export type EventId12 = string;
+export type EventType12 = "worker.updated";
+export type Cwd = string;
+export type Detail1 = string;
+export type ProjectId18 = string;
+export type Findings1 = string[];
+export type NextSteps = string[];
+export type Summary = string;
+export type SchemaVersion22 = 1;
+export type State1 = "ready" | "running" | "completed" | "failed" | "interrupted";
+export type TaskId17 = string;
+export type ThreadId1 = string;
+export type TurnId = string | null;
+export type WorkerId = string;
+export type ProjectId19 = string;
+export type SchemaVersion23 = 1;
+export type Sequence12 = number;
+export type TaskId18 = string | null;
+export type Timestamp12 = string;
+export type CaptureOrigin = "runtime" | "source" | "simulation" | "human_observation" | "model_output";
+export type CapturedAt = string;
+export type EvidenceClass = "deterministic" | "measured" | "comparative" | "heuristic" | "human";
+export type EvidenceId = string;
+export type ProducerId = string;
+export type ProducerType = "tool" | "model" | "human";
+export type ProjectId20 = string;
+export type SchemaVersion24 = 1;
+export type Summary1 = string;
+export type TaskId19 = string;
+export type Confidence = number;
+export type CreatedAt = string;
+export type Entities1 = EntityRef[];
+export type EvidenceIds3 = string[];
+export type Kind2 =
+  | "source_fact"
+  | "deterministic_consequence"
+  | "inferred_fact"
+  | "production_decision"
+  | "user_decision"
+  | "technical_constraint"
+  | "hypothesis"
+  | "agent_recommendation"
+  | "evaluation";
+export type KnowledgeId = string;
+export type ProjectId21 = string;
+export type SchemaVersion25 = 1;
+export type Statement = string;
+export type SupersedesId = string | null;
+export type Billing = "local" | "codex_subscription" | "paid";
+export type Cap = UnverifiedCap | VerifiedCap;
+export type Verified = false;
+export type AmountCents1 = number;
+export type ExpiresAt = string;
+export type ProviderSide = true;
+export type VerificationMethod = "provider_api" | "manual_provider_console" | "prepaid_wallet";
+export type Verified1 = true;
+export type VerifiedAt = string;
+export type Currency1 = "USD";
+export type ProviderId2 = string;
+export type SchemaVersion26 = 1;
+export type State2 = "ACTIVE" | "DISABLED" | "DISABLED_UNCAPPED";
 /**
  * @minItems 1
  */
@@ -356,9 +436,64 @@ export type InstallState = "missing" | "installed" | "unhealthy";
 export type Invocation = "cli" | "http" | "sdk" | "mcp";
 export type Location = "local" | "cloud";
 export type OutputContract1 = string;
-export type SchemaVersion21 = 1;
+export type SchemaVersion27 = 1;
 export type ToolId = string;
 export type Version4 = string;
+export type Cursor = number;
+export type Events = (
+  | TaskEvent
+  | AgentEvent
+  | EvaluationEvent
+  | DecisionEvent
+  | ArtifactEvent
+  | ChangeEvent
+  | SpendEvent
+  | ProviderEvent
+  | CommitEvent
+  | ProjectInitializedEvent
+  | TaskProposedEvent
+  | PolicyUpdatedEvent
+  | WorkerEvent
+)[];
+export type HasMore = boolean;
+export type ExpectedCursor = number;
+export type RequestId = string;
+export type Cursor1 = number;
+export type HistoryDigest = string;
+export type Tasks = TaskContract[];
+export type Workers = WorkerRecord[];
+export type Cursor2 = number;
+export type Events1 = (
+  | TaskEvent
+  | AgentEvent
+  | EvaluationEvent
+  | DecisionEvent
+  | ArtifactEvent
+  | ChangeEvent
+  | SpendEvent
+  | ProviderEvent
+  | CommitEvent
+  | ProjectInitializedEvent
+  | TaskProposedEvent
+  | PolicyUpdatedEvent
+  | WorkerEvent
+)[];
+export type HasMore1 = boolean;
+export type Type2 = "events";
+/**
+ * @minItems 1
+ */
+export type Deliverables1 = [string, ...string[]];
+export type DependencyIds1 = string[];
+export type Objective1 = string;
+export type RequestId1 = string;
+/**
+ * @minItems 1
+ */
+export type RequiredCapabilities2 = [string, ...string[]];
+export type Title2 = string;
+export type TaskId20 = string;
+export type WorkerId1 = string | null;
 
 /**
  * Discriminated export root; each document remains independently addressable.
@@ -537,6 +672,7 @@ export interface TaskEvent {
   payload: TaskEventPayload;
   project_id: ProjectId3;
   schema_version?: SchemaVersion6;
+  sequence: Sequence;
   task_id: TaskId4;
   timestamp: Timestamp;
 }
@@ -561,6 +697,7 @@ export interface AgentEvent {
   payload: AssignmentPayload;
   project_id: ProjectId4;
   schema_version?: SchemaVersion7;
+  sequence: Sequence1;
   task_id: TaskId5;
   timestamp: Timestamp1;
 }
@@ -585,6 +722,7 @@ export interface EvaluationEvent {
   payload: EvaluationPayload;
   project_id: ProjectId5;
   schema_version?: SchemaVersion8;
+  sequence: Sequence2;
   task_id: TaskId6;
   timestamp: Timestamp2;
 }
@@ -609,6 +747,7 @@ export interface DecisionEvent {
   payload: DecisionPayload;
   project_id: ProjectId6;
   schema_version?: SchemaVersion9;
+  sequence: Sequence3;
   task_id: TaskId7;
   timestamp: Timestamp3;
 }
@@ -633,6 +772,7 @@ export interface ArtifactEvent {
   payload: ArtifactPayload;
   project_id: ProjectId7;
   schema_version?: SchemaVersion10;
+  sequence: Sequence4;
   task_id: TaskId8;
   timestamp: Timestamp4;
 }
@@ -666,6 +806,7 @@ export interface ChangeEvent {
   payload: ChangePayload;
   project_id: ProjectId8;
   schema_version?: SchemaVersion11;
+  sequence: Sequence5;
   task_id: TaskId9;
   timestamp: Timestamp5;
 }
@@ -690,6 +831,7 @@ export interface SpendEvent {
   payload: SpendPayload;
   project_id: ProjectId9;
   schema_version?: SchemaVersion12;
+  sequence: Sequence6;
   task_id: TaskId10;
   timestamp: Timestamp6;
 }
@@ -715,6 +857,7 @@ export interface ProviderEvent {
   payload: ProviderPayload;
   project_id: ProjectId10;
   schema_version?: SchemaVersion13;
+  sequence: Sequence7;
   task_id: TaskId11;
   timestamp: Timestamp7;
 }
@@ -739,6 +882,7 @@ export interface CommitEvent {
   payload: CommitPayload;
   project_id: ProjectId11;
   schema_version?: SchemaVersion14;
+  sequence: Sequence8;
   task_id: TaskId12;
   timestamp: Timestamp8;
 }
@@ -752,46 +896,53 @@ export interface CommitPayload {
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
- * via the `definition` "Evidence".
+ * via the `definition` "ProjectInitializedEvent".
  */
-export interface Evidence {
-  capture_origin: CaptureOrigin;
-  captured_at: CapturedAt;
-  evidence_class: EvidenceClass;
-  evidence_id: EvidenceId;
-  producer_id: ProducerId;
-  producer_type: ProducerType;
-  project_id: ProjectId12;
-  schema_version?: SchemaVersion15;
-  source: SourceRef;
-  summary: Summary;
-  task_id: TaskId13;
-}
-/**
- * This interface was referenced by `ProtocolDocument`'s JSON-Schema
- * via the `definition` "KnowledgeEntry".
- */
-export interface KnowledgeEntry {
-  confidence: Confidence;
-  created_at: CreatedAt;
-  entities: Entities;
-  evidence_ids: EvidenceIds3;
-  kind: Kind1;
-  knowledge_id: KnowledgeId;
-  project_id: ProjectId14;
-  schema_version?: SchemaVersion16;
-  source: SourceRef;
-  statement: Statement;
-  supersedes_id?: SupersedesId;
-}
-/**
- * This interface was referenced by `ProtocolDocument`'s JSON-Schema
- * via the `definition` "EntityRef".
- */
-export interface EntityRef {
-  entity_id: EntityId;
-  kind: Kind;
+export interface ProjectInitializedEvent {
+  actor_id: ActorId9;
+  actor_type: ActorType9;
+  correlation_id: CorrelationId9;
+  event_id: EventId9;
+  event_type: EventType9;
+  payload: ProjectInitializedPayload;
   project_id: ProjectId13;
+  schema_version?: SchemaVersion18;
+  sequence: Sequence9;
+  task_id: TaskId13;
+  timestamp: Timestamp9;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ProjectInitializedPayload".
+ */
+export interface ProjectInitializedPayload {
+  intake: InitializationReport;
+  policy: Policy;
+  project: Project;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "InitializationReport".
+ */
+export interface InitializationReport {
+  findings: Findings;
+  git_head: GitHead;
+  git_recent_commits: GitRecentCommits;
+  inspected_assets: InspectedAssets;
+  inspected_documents: InspectedDocuments;
+  repository_root: RepositoryRoot;
+  required_capabilities: RequiredCapabilities;
+  schema_version?: SchemaVersion15;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "InitializationFinding".
+ */
+export interface InitializationFinding {
+  field: Field;
+  kind: Kind;
+  source: Source;
+  value: Value;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -804,10 +955,10 @@ export interface Policy {
   monthly_external_budget_cents?: MonthlyExternalBudgetCents;
   post_specialist_nonprogress_limit?: PostSpecialistNonprogressLimit;
   proactivity?: Proactivity;
-  project_id: ProjectId15;
+  project_id: ProjectId12;
   require_provider_hard_cap?: RequireProviderHardCap;
   require_registration_or_reconciliation?: RequireRegistrationOrReconciliation;
-  schema_version?: SchemaVersion17;
+  schema_version?: SchemaVersion16;
   worker_permissions?: Permissions;
 }
 /**
@@ -826,7 +977,7 @@ export interface Project {
   production: Production;
   project: ProjectIdentity;
   rendering: Rendering;
-  schema_version?: SchemaVersion18;
+  schema_version?: SchemaVersion17;
   visual: Direction;
 }
 /**
@@ -873,6 +1024,160 @@ export interface ProjectIdentity {
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "TaskProposedEvent".
+ */
+export interface TaskProposedEvent {
+  actor_id: ActorId10;
+  actor_type: ActorType10;
+  correlation_id: CorrelationId10;
+  event_id: EventId10;
+  event_type: EventType10;
+  payload: TaskContract;
+  project_id: ProjectId16;
+  schema_version?: SchemaVersion20;
+  sequence: Sequence10;
+  task_id: TaskId15;
+  timestamp: Timestamp10;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "TaskContract".
+ */
+export interface TaskContract {
+  constraints: Constraints2;
+  deliverables: Deliverables;
+  dependency_ids: DependencyIds;
+  entities: Entities;
+  escalation_criteria: EscalationCriteria;
+  objective: Objective;
+  parent_task_id?: ParentTaskId;
+  permissions: Permissions;
+  priority?: Priority;
+  project_id: ProjectId15;
+  references: References1;
+  required_capabilities: RequiredCapabilities1;
+  required_evaluations: RequiredEvaluations;
+  requirements: Requirements;
+  schema_version?: SchemaVersion19;
+  state?: State;
+  task_id: TaskId14;
+  title: Title1;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "EntityRef".
+ */
+export interface EntityRef {
+  entity_id: EntityId;
+  kind: Kind1;
+  project_id: ProjectId14;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "Requirements".
+ */
+export interface Requirements {
+  accessibility: Accessibility;
+  functional: Functional;
+  production: Production1;
+  technical: Technical;
+  visual: Visual;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "PolicyUpdatedEvent".
+ */
+export interface PolicyUpdatedEvent {
+  actor_id: ActorId11;
+  actor_type: ActorType11;
+  correlation_id: CorrelationId11;
+  event_id: EventId11;
+  event_type: EventType11;
+  payload: Policy;
+  project_id: ProjectId17;
+  schema_version?: SchemaVersion21;
+  sequence: Sequence11;
+  task_id: TaskId16;
+  timestamp: Timestamp11;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "WorkerEvent".
+ */
+export interface WorkerEvent {
+  actor_id: ActorId12;
+  actor_type: ActorType12;
+  correlation_id: CorrelationId12;
+  event_id: EventId12;
+  event_type: EventType12;
+  payload: WorkerRecord;
+  project_id: ProjectId19;
+  schema_version?: SchemaVersion23;
+  sequence: Sequence12;
+  task_id: TaskId18;
+  timestamp: Timestamp12;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "WorkerRecord".
+ */
+export interface WorkerRecord {
+  cwd: Cwd;
+  detail: Detail1;
+  project_id: ProjectId18;
+  result?: WorkerResult | null;
+  schema_version?: SchemaVersion22;
+  state: State1;
+  task_id: TaskId17;
+  thread_id: ThreadId1;
+  turn_id?: TurnId;
+  worker_id: WorkerId;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "WorkerResult".
+ */
+export interface WorkerResult {
+  findings: Findings1;
+  next_steps: NextSteps;
+  summary: Summary;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "Evidence".
+ */
+export interface Evidence {
+  capture_origin: CaptureOrigin;
+  captured_at: CapturedAt;
+  evidence_class: EvidenceClass;
+  evidence_id: EvidenceId;
+  producer_id: ProducerId;
+  producer_type: ProducerType;
+  project_id: ProjectId20;
+  schema_version?: SchemaVersion24;
+  source: SourceRef;
+  summary: Summary1;
+  task_id: TaskId19;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "KnowledgeEntry".
+ */
+export interface KnowledgeEntry {
+  confidence: Confidence;
+  created_at: CreatedAt;
+  entities: Entities1;
+  evidence_ids: EvidenceIds3;
+  kind: Kind2;
+  knowledge_id: KnowledgeId;
+  project_id: ProjectId21;
+  schema_version?: SchemaVersion25;
+  source: SourceRef;
+  statement: Statement;
+  supersedes_id?: SupersedesId;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "Provider".
  */
 export interface Provider {
@@ -880,8 +1185,8 @@ export interface Provider {
   cap: Cap;
   currency?: Currency1;
   provider_id: ProviderId2;
-  schema_version?: SchemaVersion19;
-  state: State;
+  schema_version?: SchemaVersion26;
+  state: State2;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -905,41 +1210,6 @@ export interface VerifiedCap {
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
- * via the `definition` "TaskContract".
- */
-export interface TaskContract {
-  constraints: Constraints2;
-  deliverables: Deliverables;
-  dependency_ids: DependencyIds;
-  entities: Entities1;
-  escalation_criteria: EscalationCriteria;
-  objective: Objective;
-  parent_task_id?: ParentTaskId;
-  permissions: Permissions;
-  priority?: Priority;
-  project_id: ProjectId16;
-  references: References1;
-  required_capabilities: RequiredCapabilities;
-  required_evaluations: RequiredEvaluations;
-  requirements: Requirements;
-  schema_version?: SchemaVersion20;
-  state?: State1;
-  task_id: TaskId14;
-  title: Title1;
-}
-/**
- * This interface was referenced by `ProtocolDocument`'s JSON-Schema
- * via the `definition` "Requirements".
- */
-export interface Requirements {
-  accessibility: Accessibility;
-  functional: Functional;
-  production: Production1;
-  technical: Technical;
-  visual: Visual;
-}
-/**
- * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "ToolDefinition".
  */
 export interface ToolDefinition {
@@ -952,7 +1222,67 @@ export interface ToolDefinition {
   location: Location;
   output_contract: OutputContract1;
   permissions: Permissions;
-  schema_version?: SchemaVersion21;
+  schema_version?: SchemaVersion27;
   tool_id: ToolId;
   version: Version4;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "EventPage".
+ */
+export interface EventPage {
+  cursor: Cursor;
+  events: Events;
+  has_more: HasMore;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "PolicyCommand".
+ */
+export interface PolicyCommand {
+  expected_cursor: ExpectedCursor;
+  policy: Policy;
+  request_id: RequestId;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ProjectSnapshot".
+ */
+export interface ProjectSnapshot {
+  cursor: Cursor1;
+  history_digest: HistoryDigest;
+  policy: Policy;
+  project: Project;
+  tasks: Tasks;
+  workers?: Workers;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "StreamMessage".
+ */
+export interface StreamMessage {
+  cursor: Cursor2;
+  events: Events1;
+  has_more: HasMore1;
+  type?: Type2;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "TaskProposal".
+ */
+export interface TaskProposal {
+  deliverables: Deliverables1;
+  dependency_ids?: DependencyIds1;
+  objective: Objective1;
+  request_id: RequestId1;
+  required_capabilities: RequiredCapabilities2;
+  title: Title2;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "WorkerCommand".
+ */
+export interface WorkerCommand {
+  task_id: TaskId20;
+  worker_id?: WorkerId1;
 }

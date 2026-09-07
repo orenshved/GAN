@@ -1,10 +1,18 @@
-# Proposed monorepo structure (Phase 0 baseline)
+# Monorepo structure (Phase 2)
 
 ```text
-apps/studio/                    Next 16 / React 19 foundation validation page
+apps/studio/                    Next 16 / React 19 local production Studio
+  app/api/daemon/              Server-only authenticated loopback proxy
+  app/network.tsx              Project task dependency graph
 services/daemon/
   gameagent/models/            Canonical Pydantic contracts
   gameagent/constitution.py    Pure state/authority admission rules
+  gameagent/intake.py          Repository and engine inspection
+  gameagent/projects.py        Locked commands and deterministic replay
+  gameagent/api.py             Authenticated REST/WebSocket service
+  gameagent/codex_bridge.py    ChatGPT-authenticated Codex thread lifecycle
+  gameagent/persistence/       JSONL history, Alembic, SQLite projections
+  gameagent/cli.py             init/status/rebuild/propose/serve
   gameagent/export_schema.py   Deterministic wire-schema export
   tests/                       Contract, invariant and boundary checks
   pyproject.toml, uv.lock       Python package and locked environment
@@ -30,8 +38,8 @@ docs/
   decisions/                  Eight architectural decisions
   development/                Setup, checks, phase handoff
 examples/                     Links to executable protocol fixtures
-scripts/                      Windows-compatible Node entry points
-.github/workflows/ci.yml       Windows + Linux foundation checks
+scripts/                      Windows-compatible dev, schema and E2E entry points
+.github/workflows/ci.yml       Windows + Linux checks
 ```
 
 ## Ownership and dependency direction
@@ -48,15 +56,16 @@ adapters. Python domain models contain no service, persistence or engine imports
 The facade packages deliberately contain contracts only. They are explicit
 ownership boundaries, not duplicate implementations or empty agent subsystems.
 
-## Planned additions, not implemented in Phase 0
+## Planned additions after Phase 2
 
-Phase 1 adds `gameagent/api`, `events`, `persistence`, a CLI package,
-FastAPI, SQLAlchemy and Alembic; event replay, SQLite WAL and query/stream APIs.
-Phase 2 adds `gameagent/codex` and the official `openai-codex` dependency.
+The daemon owns the official `openai-codex` SDK adapter. It selects the current
+Codex executable when available, falls back to the SDK runtime, clears API-key
+environment variables, and requires a ChatGPT account before dispatch.
+
 Later phases add `gm`, `orchestration`, `providers`, `qa`, `recruiter`,
 `reconciliation`, and engine adapters when their workflows can be tested.
-TanStack Query, React Flow, Tailwind and inspectable interactive primitives are
-introduced with the real Studio shell; no unused frontend dependencies now.
+No filesystem watcher, engine execution or paid-provider call path exists in
+Phase 2.
 
 ## Wire conventions
 
