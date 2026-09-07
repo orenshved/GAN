@@ -222,6 +222,36 @@ class InitializationReport(Contract):
     required_capabilities: Annotated[list[Identifier], Field(min_length=1)]
 
 
+class WorkspaceEntry(Value):
+    path: Text
+    size: Count
+    modified_ns: Count
+
+
+class WorkspaceFingerprint(Contract):
+    captured_at: Timestamp
+    git_head: Text | None
+    git_status: list[Text] = Field(default_factory=list)
+    entries: list[WorkspaceEntry]
+    digest: Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
+
+
+class ReconciliationRecord(Contract):
+    change_id: Identifier
+    project_id: Identifier
+    detected_at: Timestamp
+    paths: Annotated[list[Text], Field(min_length=1)]
+    baseline_digest: Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
+    observed: WorkspaceFingerprint
+    git_commits: list[Text] = Field(default_factory=list)
+    git_diff_summary: Text | None = None
+    artifacts: list[SourceRef] = Field(default_factory=list)
+    state: Literal["unresolved", "reconciled"] = "unresolved"
+    task_id: Identifier | None = None
+    detail: Text | None = None
+    reconciled_at: Timestamp | None = None
+
+
 class Requirements(Value):
     functional: list[Text]
     visual: list[Text]
@@ -377,9 +407,22 @@ class ArtifactPayload(Value):
     artifact: SourceRef
 
 
-class ChangePayload(Value):
+class ExternalChangePayload(Value):
     change_id: Identifier
     paths: Annotated[list[Text], Field(min_length=1)]
+    baseline_digest: Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
+    observed: WorkspaceFingerprint
+    git_commits: list[Text] = Field(default_factory=list)
+    git_diff_summary: Text | None = None
+
+
+class ReconciliationPayload(Value):
+    change_id: Identifier
+    paths: Annotated[list[Text], Field(min_length=1)]
+    task_id: Identifier
+    detail: Text
+    fingerprint: WorkspaceFingerprint
+    artifacts: list[SourceRef] = Field(default_factory=list)
 
 
 class SpendPayload(Value):
@@ -436,9 +479,19 @@ class ArtifactEvent(EventBase):
     payload: ArtifactPayload
 
 
-class ChangeEvent(EventBase):
-    event_type: Literal["project.external_change_detected", "project.reconciled"]
-    payload: ChangePayload
+class WorkspaceBaselineEvent(EventBase):
+    event_type: Literal["project.baseline_recorded"]
+    payload: WorkspaceFingerprint
+
+
+class ExternalChangeEvent(EventBase):
+    event_type: Literal["project.external_change_detected"]
+    payload: ExternalChangePayload
+
+
+class ProjectReconciledEvent(EventBase):
+    event_type: Literal["project.reconciled"]
+    payload: ReconciliationPayload
 
 
 class SpendEvent(EventBase):
@@ -460,6 +513,7 @@ class ProjectInitializedPayload(Value):
     project: Project
     policy: Policy
     intake: InitializationReport
+    workspace: WorkspaceFingerprint | None = None
 
 
 class ProjectInitializedEvent(EventBase):
@@ -506,7 +560,9 @@ Event = Annotated[
     | EvaluationEvent
     | DecisionEvent
     | ArtifactEvent
-    | ChangeEvent
+    | WorkspaceBaselineEvent
+    | ExternalChangeEvent
+    | ProjectReconciledEvent
     | SpendEvent
     | ProviderEvent
     | CommitEvent

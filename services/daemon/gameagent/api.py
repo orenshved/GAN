@@ -1,6 +1,7 @@
 """Loopback-only service for project state and authenticated Codex workers."""
 
 import asyncio
+import logging
 import secrets
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable
@@ -24,12 +25,17 @@ from gameagent.models.api import (
     ProjectImport,
     ProjectSelection,
     ProjectSnapshot,
+    ReconcileCommand,
     StreamMessage,
+    TaskProgressCommand,
     TaskProposal,
+    TaskStartCommand,
     WorkerCommand,
 )
-from gameagent.models.contracts import Policy, TaskContract, WorkerRecord
+from gameagent.models.contracts import Policy, ReconciliationRecord, TaskContract, WorkerRecord
 from gameagent.projects import ProjectRegistry, ProjectStore
+
+logger = logging.getLogger(__name__)
 
 
 def create_app(
@@ -45,6 +51,7 @@ def create_app(
         project_id: CodexBridge(project_store)
         for project_id, project_store in registry.stores.items()
     }
+    watcher_failures: dict[str, str] = {}
 
     def bridge() -> CodexBridge:
         project_id = registry.active_project_id
@@ -52,14 +59,33 @@ def create_app(
             bridges[project_id] = CodexBridge(registry.current)
         return bridges[project_id]
 
+    async def watch_projects() -> None:
+        while True:
+            for project_store in list(registry.stores.values()):
+                key = str(project_store.root)
+                try:
+                    await asyncio.to_thread(project_store.detect_external_changes)
+                    watcher_failures.pop(key, None)
+                except Exception as error:
+                    detail = str(error)
+                    if watcher_failures.get(key) != detail:
+                        logger.exception("Workspace watcher failed for %s", project_store.root)
+                    watcher_failures[key] = detail
+            await asyncio.sleep(0.5)
+
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         for worker_bridge in bridges.values():
             await worker_bridge.recover()
-        yield
-        await asyncio.gather(*(worker_bridge.close() for worker_bridge in bridges.values()))
+        watcher = asyncio.create_task(watch_projects())
+        try:
+            yield
+        finally:
+            watcher.cancel()
+            await asyncio.gather(watcher, return_exceptions=True)
+            await asyncio.gather(*(worker_bridge.close() for worker_bridge in bridges.values()))
 
-    app = FastAPI(title="Game Agent Network", version="0.2.0", lifespan=lifespan)
+    app = FastAPI(title="Game Agent Network", version="0.3.0", lifespan=lifespan)
     app.state.registry = registry
 
     @app.exception_handler(Exception)
@@ -131,8 +157,17 @@ def create_app(
         )
 
     @app.get("/health")
-    def health() -> dict[str, str]:
-        return {"status": "ready", "phase": "2"}
+    def health() -> dict[str, object]:
+        if watcher_failures:
+            return {
+                "status": "degraded",
+                "phase": "3",
+                "error": "workspace_watcher_failed",
+                "detail": "; ".join(
+                    f"{root}: {detail}" for root, detail in watcher_failures.items()
+                ),
+            }
+        return {"status": "ready", "phase": "3"}
 
     @app.get("/projects", response_model=ProjectCatalog)
     def projects() -> ProjectCatalog:
@@ -159,6 +194,26 @@ def create_app(
     @app.post("/tasks", response_model=TaskContract, status_code=201)
     def propose(command: TaskProposal) -> TaskContract:
         return registry.current.propose(command)
+
+    @app.post("/task-start", response_model=TaskContract)
+    def task_start(command: TaskStartCommand) -> TaskContract:
+        return registry.current.start_task(command)
+
+    @app.post("/task-block", response_model=TaskContract)
+    def task_block(command: TaskProgressCommand) -> TaskContract:
+        return registry.current.block_task(command)
+
+    @app.post("/task-complete", response_model=TaskContract)
+    def task_complete(command: TaskProgressCommand) -> TaskContract:
+        return registry.current.complete_task(command)
+
+    @app.post("/workspace-scan", response_model=ProjectSnapshot)
+    def workspace_scan() -> ProjectSnapshot:
+        return registry.current.detect_external_changes()
+
+    @app.post("/reconcile", response_model=ReconciliationRecord)
+    def reconcile(command: ReconcileCommand) -> ReconciliationRecord:
+        return registry.current.reconcile(command)
 
     @app.put("/policy", response_model=Policy)
     def policy(command: PolicyCommand) -> Policy:

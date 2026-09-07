@@ -13,6 +13,7 @@ import type {
   Policy,
   ProjectCatalog,
   ProjectSnapshot,
+  ReconciliationRecord,
   TaskContract,
   TaskProposal,
 } from "@gameagent/protocol";
@@ -280,6 +281,20 @@ function Desk(connection: Connection) {
               </p>
               <button onClick={() => void project.refetch()}>Reconnect</button>
             </div>
+          )}
+          {snapshot?.requires_reconciliation && (
+            <ReconciliationPanel
+              records={
+                snapshot.reconciliations?.filter(
+                  (record) => record.state === "unresolved",
+                ) ?? []
+              }
+              connection={connection}
+              reconciled={() => {
+                void client.invalidateQueries({ queryKey: ["project"] });
+                void client.invalidateQueries({ queryKey: ["events"] });
+              }}
+            />
           )}
           {snapshot && (
             <>
@@ -630,6 +645,81 @@ function EventList({
         </li>
       ))}
     </ol>
+  );
+}
+function ReconciliationPanel({
+  records,
+  connection,
+  reconciled,
+}: {
+  records: ReconciliationRecord[];
+  connection: Connection;
+  reconciled: () => void;
+}) {
+  const record = records[0];
+  const [detail, setDetail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  if (!record) return null;
+  const changeId = record.change_id;
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      await request<ReconciliationRecord>(
+        connection,
+        "/reconcile",
+        {
+          request_id: `studio-${crypto.randomUUID()}`,
+          change_id: changeId,
+          detail: detail.trim(),
+        },
+        "POST",
+      );
+      reconciled();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to reconcile");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <section className="reconciliation-alert" role="alert">
+      <div>
+        <p className="eyebrow">WORKSPACE INTEGRITY</p>
+        <h2>Unregistered changes require reconciliation</h2>
+        <p>
+          GAN detected project files changing outside a registered task. Review
+          the paths and explain the work before the project can report a clean
+          state.
+        </p>
+        <ul>
+          {record.paths.map((path) => (
+            <li key={path}>
+              <code>{path}</code>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <form onSubmit={(event) => void submit(event)}>
+        <label>
+          Reconciliation detail
+          <textarea
+            required
+            minLength={3}
+            rows={3}
+            value={detail}
+            onChange={(event) => setDetail(event.target.value)}
+            placeholder="Describe why these files changed and the outcome they serve."
+          />
+        </label>
+        {error && <p className="error">{error}</p>}
+        <button className="primary" disabled={busy || detail.trim().length < 3}>
+          {busy ? "Reconciling…" : "Reconcile changes"}
+        </button>
+      </form>
+    </section>
   );
 }
 function ProjectDialog({

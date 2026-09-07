@@ -3,11 +3,14 @@ import { spawnSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { compile } from "json-schema-to-typescript";
+import { pythonCommand } from "./python-command.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
+const python = pythonCommand();
 const exported = spawnSync(
-  process.env.GAMEAGENT_PYTHON || "python",
+  python.executable,
   [
+    ...python.prefix,
     "-m",
     "uv",
     "run",

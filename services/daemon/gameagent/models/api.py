@@ -9,10 +9,12 @@ from gameagent.models.contracts import (
     Identifier,
     Policy,
     Project,
+    ReconciliationRecord,
     TaskContract,
     Text,
     Value,
     WorkerRecord,
+    WorkspaceFingerprint,
 )
 
 
@@ -31,6 +33,28 @@ class PolicyCommand(Value):
     policy: Policy
 
 
+class TaskStartCommand(Value):
+    request_id: Identifier
+    task_id: Identifier | None = None
+    title: Text | None = None
+    objective: Text | None = None
+    required_capabilities: list[Identifier] = Field(default_factory=list)
+    deliverables: list[Text] = Field(default_factory=list)
+
+
+class TaskProgressCommand(Value):
+    request_id: Identifier
+    task_id: Identifier
+    detail: Text
+
+
+class ReconcileCommand(Value):
+    request_id: Identifier
+    change_id: Identifier
+    task_id: Identifier | None = None
+    detail: Text
+
+
 class ProjectSnapshot(Value):
     project: Project
     policy: Policy
@@ -38,6 +62,9 @@ class ProjectSnapshot(Value):
     cursor: Annotated[int, Field(ge=0)]
     history_digest: Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
     workers: list[WorkerRecord] = Field(default_factory=list)
+    workspace: WorkspaceFingerprint | None = None
+    reconciliations: list[ReconciliationRecord] = Field(default_factory=list)
+    requires_reconciliation: bool = False
 
 
 class ProjectSummary(Value):
@@ -84,5 +111,8 @@ class ApiCatalog(Value):
     snapshot: ProjectSnapshot
     proposal: TaskProposal
     policy_command: PolicyCommand
+    task_start: TaskStartCommand
+    task_progress: TaskProgressCommand
+    reconcile: ReconcileCommand
     event_page: EventPage
     stream_message: StreamMessage

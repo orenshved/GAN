@@ -479,122 +479,6 @@
       "title": "Capability",
       "type": "object"
     },
-    "ChangeEvent": {
-      "additionalProperties": false,
-      "properties": {
-        "actor_id": {
-          "pattern": "^[a-z][a-z0-9_.-]*$",
-          "title": "Actor Id",
-          "type": "string"
-        },
-        "actor_type": {
-          "enum": [
-            "human",
-            "gm",
-            "agent",
-            "system",
-            "external"
-          ],
-          "title": "Actor Type",
-          "type": "string"
-        },
-        "correlation_id": {
-          "pattern": "^[a-z][a-z0-9_.-]*$",
-          "title": "Correlation Id",
-          "type": "string"
-        },
-        "event_id": {
-          "pattern": "^[a-z][a-z0-9_.-]*$",
-          "title": "Event Id",
-          "type": "string"
-        },
-        "event_type": {
-          "enum": [
-            "project.external_change_detected",
-            "project.reconciled"
-          ],
-          "title": "Event Type",
-          "type": "string"
-        },
-        "payload": {
-          "$ref": "#/$defs/ChangePayload"
-        },
-        "project_id": {
-          "pattern": "^[a-z][a-z0-9_.-]*$",
-          "title": "Project Id",
-          "type": "string"
-        },
-        "schema_version": {
-          "const": 1,
-          "default": 1,
-          "title": "Schema Version",
-          "type": "integer"
-        },
-        "sequence": {
-          "minimum": 1,
-          "title": "Sequence",
-          "type": "integer"
-        },
-        "task_id": {
-          "anyOf": [
-            {
-              "pattern": "^[a-z][a-z0-9_.-]*$",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Task Id"
-        },
-        "timestamp": {
-          "format": "date-time",
-          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
-          "title": "Timestamp",
-          "type": "string"
-        }
-      },
-      "required": [
-        "event_id",
-        "project_id",
-        "timestamp",
-        "actor_type",
-        "actor_id",
-        "correlation_id",
-        "task_id",
-        "sequence",
-        "event_type",
-        "payload"
-      ],
-      "title": "ChangeEvent",
-      "type": "object"
-    },
-    "ChangePayload": {
-      "additionalProperties": false,
-      "properties": {
-        "change_id": {
-          "pattern": "^[a-z][a-z0-9_.-]*$",
-          "title": "Change Id",
-          "type": "string"
-        },
-        "paths": {
-          "items": {
-            "minLength": 1,
-            "pattern": "\\S",
-            "type": "string"
-          },
-          "minItems": 1,
-          "title": "Paths",
-          "type": "array"
-        }
-      },
-      "required": [
-        "change_id",
-        "paths"
-      ],
-      "title": "ChangePayload",
-      "type": "object"
-    },
     "CommitEvent": {
       "additionalProperties": false,
       "properties": {
@@ -1306,7 +1190,13 @@
                 "$ref": "#/$defs/ArtifactEvent"
               },
               {
-                "$ref": "#/$defs/ChangeEvent"
+                "$ref": "#/$defs/WorkspaceBaselineEvent"
+              },
+              {
+                "$ref": "#/$defs/ExternalChangeEvent"
+              },
+              {
+                "$ref": "#/$defs/ProjectReconciledEvent"
               },
               {
                 "$ref": "#/$defs/SpendEvent"
@@ -1436,6 +1326,152 @@
         "summary"
       ],
       "title": "Evidence",
+      "type": "object"
+    },
+    "ExternalChangeEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "project.external_change_detected",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ExternalChangePayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "ExternalChangeEvent",
+      "type": "object"
+    },
+    "ExternalChangePayload": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Baseline Digest",
+          "type": "string"
+        },
+        "change_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Change Id",
+          "type": "string"
+        },
+        "git_commits": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Git Commits",
+          "type": "array"
+        },
+        "git_diff_summary": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Git Diff Summary"
+        },
+        "observed": {
+          "$ref": "#/$defs/WorkspaceFingerprint"
+        },
+        "paths": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Paths",
+          "type": "array"
+        }
+      },
+      "required": [
+        "change_id",
+        "paths",
+        "baseline_digest",
+        "observed"
+      ],
+      "title": "ExternalChangePayload",
       "type": "object"
     },
     "InitializationFinding": {
@@ -2321,6 +2357,17 @@
         },
         "project": {
           "$ref": "#/$defs/Project"
+        },
+        "workspace": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkspaceFingerprint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -2329,6 +2376,93 @@
         "intake"
       ],
       "title": "ProjectInitializedPayload",
+      "type": "object"
+    },
+    "ProjectReconciledEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "project.reconciled",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ReconciliationPayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "ProjectReconciledEvent",
       "type": "object"
     },
     "ProjectSelection": {
@@ -2365,6 +2499,18 @@
         "project": {
           "$ref": "#/$defs/Project"
         },
+        "reconciliations": {
+          "items": {
+            "$ref": "#/$defs/ReconciliationRecord"
+          },
+          "title": "Reconciliations",
+          "type": "array"
+        },
+        "requires_reconciliation": {
+          "default": false,
+          "title": "Requires Reconciliation",
+          "type": "boolean"
+        },
         "tasks": {
           "items": {
             "$ref": "#/$defs/TaskContract"
@@ -2378,6 +2524,17 @@
           },
           "title": "Workers",
           "type": "array"
+        },
+        "workspace": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkspaceFingerprint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -2606,6 +2763,232 @@
         "reason"
       ],
       "title": "ProviderPayload",
+      "type": "object"
+    },
+    "ReconcileCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "change_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Change Id",
+          "type": "string"
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        }
+      },
+      "required": [
+        "request_id",
+        "change_id",
+        "detail"
+      ],
+      "title": "ReconcileCommand",
+      "type": "object"
+    },
+    "ReconciliationPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "artifacts": {
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Artifacts",
+          "type": "array"
+        },
+        "change_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Change Id",
+          "type": "string"
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "fingerprint": {
+          "$ref": "#/$defs/WorkspaceFingerprint"
+        },
+        "paths": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Paths",
+          "type": "array"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "change_id",
+        "paths",
+        "task_id",
+        "detail",
+        "fingerprint"
+      ],
+      "title": "ReconciliationPayload",
+      "type": "object"
+    },
+    "ReconciliationRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "artifacts": {
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Artifacts",
+          "type": "array"
+        },
+        "baseline_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Baseline Digest",
+          "type": "string"
+        },
+        "change_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Change Id",
+          "type": "string"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        },
+        "detected_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Detected At",
+          "type": "string"
+        },
+        "git_commits": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Git Commits",
+          "type": "array"
+        },
+        "git_diff_summary": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Git Diff Summary"
+        },
+        "observed": {
+          "$ref": "#/$defs/WorkspaceFingerprint"
+        },
+        "paths": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Paths",
+          "type": "array"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "reconciled_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reconciled At"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "state": {
+          "default": "unresolved",
+          "enum": [
+            "unresolved",
+            "reconciled"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        }
+      },
+      "required": [
+        "change_id",
+        "project_id",
+        "detected_at",
+        "paths",
+        "baseline_digest",
+        "observed"
+      ],
+      "title": "ReconciliationRecord",
       "type": "object"
     },
     "Requirements": {
@@ -2871,7 +3254,13 @@
                 "$ref": "#/$defs/ArtifactEvent"
               },
               {
-                "$ref": "#/$defs/ChangeEvent"
+                "$ref": "#/$defs/WorkspaceBaselineEvent"
+              },
+              {
+                "$ref": "#/$defs/ExternalChangeEvent"
+              },
+              {
+                "$ref": "#/$defs/ProjectReconciledEvent"
               },
               {
                 "$ref": "#/$defs/SpendEvent"
@@ -3202,6 +3591,34 @@
       "title": "TaskEventPayload",
       "type": "object"
     },
+    "TaskProgressCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "task_id",
+        "detail"
+      ],
+      "title": "TaskProgressCommand",
+      "type": "object"
+    },
     "TaskProposal": {
       "additionalProperties": false,
       "properties": {
@@ -3345,6 +3762,79 @@
         "payload"
       ],
       "title": "TaskProposedEvent",
+      "type": "object"
+    },
+    "TaskStartCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "deliverables": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Deliverables",
+          "type": "array"
+        },
+        "objective": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Objective"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "required_capabilities": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Required Capabilities",
+          "type": "array"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "required": [
+        "request_id"
+      ],
+      "title": "TaskStartCommand",
       "type": "object"
     },
     "ToolDefinition": {
@@ -3754,6 +4244,180 @@
       ],
       "title": "WorkerResult",
       "type": "object"
+    },
+    "WorkspaceBaselineEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "project.baseline_recorded",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/WorkspaceFingerprint"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "WorkspaceBaselineEvent",
+      "type": "object"
+    },
+    "WorkspaceEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "modified_ns": {
+          "minimum": 0,
+          "title": "Modified Ns",
+          "type": "integer"
+        },
+        "path": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Path",
+          "type": "string"
+        },
+        "size": {
+          "minimum": 0,
+          "title": "Size",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "size",
+        "modified_ns"
+      ],
+      "title": "WorkspaceEntry",
+      "type": "object"
+    },
+    "WorkspaceFingerprint": {
+      "additionalProperties": false,
+      "properties": {
+        "captured_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Captured At",
+          "type": "string"
+        },
+        "digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "entries": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceEntry"
+          },
+          "title": "Entries",
+          "type": "array"
+        },
+        "git_head": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Git Head"
+        },
+        "git_status": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Git Status",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "captured_at",
+        "git_head",
+        "entries",
+        "digest"
+      ],
+      "title": "WorkspaceFingerprint",
+      "type": "object"
     }
   },
   "$id": "https://gameagent.local/protocol/v1",
@@ -3847,7 +4511,13 @@
               "$ref": "#/$defs/ArtifactEvent"
             },
             {
-              "$ref": "#/$defs/ChangeEvent"
+              "$ref": "#/$defs/WorkspaceBaselineEvent"
+            },
+            {
+              "$ref": "#/$defs/ExternalChangeEvent"
+            },
+            {
+              "$ref": "#/$defs/ProjectReconciledEvent"
             },
             {
               "$ref": "#/$defs/SpendEvent"

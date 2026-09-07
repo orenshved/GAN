@@ -11,6 +11,7 @@ import { join } from "node:path";
 import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
+import { pythonCommand } from "./python-command.mjs";
 
 async function freePort() {
   const socket = createServer();
@@ -94,7 +95,7 @@ const daemonDirectory = fileURLToPath(
 const studioDirectory = fileURLToPath(
   new URL("../apps/studio", import.meta.url),
 );
-const python = process.env.GAMEAGENT_PYTHON || "python";
+const python = pythonCommand();
 const temporary = await mkdtemp(join(tmpdir(), "gameagent-smoke-"));
 const secondTemporary = await mkdtemp(
   join(tmpdir(), "gameagent-smoke-second-"),
@@ -110,7 +111,7 @@ const environment = {
   GAMEAGENT_STUDIO_ORIGIN: studioUrl,
   GAMEAGENT_DAEMON_URL: daemonUrl,
   GAMEAGENT_DAEMON_TOKEN: token,
-  GAMEAGENT_REGISTRY_PATH: join(temporary, "projects.json"),
+  GAMEAGENT_REGISTRY_PATH: join(temporary, ".gameagent", "projects.json"),
 };
 const children = [];
 let browser;
@@ -129,8 +130,17 @@ try {
     '[application]\nconfig/name="Second Smoke Game"\nconfig/features=PackedStringArray("4.6")\n',
   );
   await run(
-    python,
-    ["-m", "uv", "run", "--frozen", "gameagent", "init", temporary],
+    python.executable,
+    [
+      ...python.prefix,
+      "-m",
+      "uv",
+      "run",
+      "--frozen",
+      "gameagent",
+      "init",
+      temporary,
+    ],
     {
       cwd: daemonDirectory,
       env: environment,
@@ -139,8 +149,17 @@ try {
   );
 
   const daemon = spawn(
-    python,
-    ["-m", "uv", "run", "--frozen", "gameagent", "serve", temporary],
+    python.executable,
+    [
+      ...python.prefix,
+      "-m",
+      "uv",
+      "run",
+      "--frozen",
+      "gameagent",
+      "serve",
+      temporary,
+    ],
     {
       cwd: daemonDirectory,
       env: environment,
@@ -203,6 +222,34 @@ try {
   const graph = page.locator('[aria-label="Task dependency graph"]');
   await graph.waitFor();
   assert.equal(await graph.locator(".react-flow__node").count(), 1);
+  await writeFile(
+    join(temporary, "README.md"),
+    "# Smoke Game\n\nExternally edited without registration.\n",
+  );
+  await page
+    .getByRole("heading", {
+      name: "Unregistered changes require reconciliation",
+    })
+    .waitFor({ timeout: 10000 });
+  await page.getByText("README.md", { exact: true }).waitFor();
+  await page
+    .getByLabel("Reconciliation detail")
+    .fill("Documented the external README edit and associated it with a task.");
+  const reconciliationResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/daemon/reconcile"),
+  );
+  await page.getByRole("button", { name: "Reconcile changes" }).click();
+  const reconciliation = await reconciliationResponse;
+  assert.equal(
+    reconciliation.status(),
+    200,
+    `reconciliation_failed: ${await reconciliation.text()}`,
+  );
+  await page
+    .getByRole("heading", {
+      name: "Unregistered changes require reconciliation",
+    })
+    .waitFor({ state: "hidden" });
   if (process.env.GAMEAGENT_SMOKE_SCREENSHOT) {
     await page.screenshot({
       path: process.env.GAMEAGENT_SMOKE_SCREENSHOT,
@@ -213,6 +260,12 @@ try {
 } finally {
   await browser?.close();
   await Promise.all(children.map((child) => terminate(child.process)));
-  await rm(temporary, { recursive: true, force: true });
-  await rm(secondTemporary, { recursive: true, force: true });
+  const cleanup = {
+    recursive: true,
+    force: true,
+    maxRetries: 20,
+    retryDelay: 100,
+  };
+  await rm(temporary, cleanup);
+  await rm(secondTemporary, cleanup);
 }

@@ -1,4 +1,4 @@
-# Monorepo structure (Phase 2)
+# Monorepo structure (Phase 3)
 
 ```text
 apps/studio/                    Next 16 / React 19 local production Studio
@@ -8,11 +8,11 @@ services/daemon/
   gameagent/models/            Canonical Pydantic contracts
   gameagent/constitution.py    Pure state/authority admission rules
   gameagent/intake.py          Repository and engine inspection
-  gameagent/projects.py        Project catalog, locked commands and replay
+  gameagent/projects.py        Registration, watcher, reconciliation and replay
   gameagent/api.py             Authenticated REST/WebSocket service
   gameagent/codex_bridge.py    ChatGPT-authenticated Codex thread lifecycle
   gameagent/persistence/       JSONL history, Alembic, SQLite projections
-  gameagent/cli.py             init/status/rebuild/propose/serve
+  gameagent/cli.py             Project, task registration and reconciliation CLI
   gameagent/export_schema.py   Deterministic wire-schema export
   tests/                       Contract, invariant and boundary checks
   pyproject.toml, uv.lock       Python package and locked environment
@@ -61,16 +61,28 @@ selection only. It does not contain project history, conversation context or
 creative identity. Each listed repository remains authoritative through its own
 `.gameagent` history and projection.
 
-## Planned additions after Phase 2
+## Phase 3 runtime
 
 The daemon owns the official `openai-codex` SDK adapter. It selects the current
 Codex executable when available, falls back to the SDK runtime, clears API-key
 environment variables, and requires a ChatGPT account before dispatch.
 
-Later phases add `gm`, `orchestration`, `providers`, `qa`, `recruiter`,
-`reconciliation`, and engine adapters when their workflows can be tested.
-No filesystem watcher, engine execution or paid-provider call path exists in
-Phase 2.
+Each initialized repository receives a managed registration section in its root
+`AGENTS.md`, preserving any existing instructions. The CLI records task start,
+block and completion events. Completion advances the accepted workspace baseline;
+active registered work is not mislabeled as external work.
+
+The daemon polls Git HEAD/status and meaningful file metadata while excluding its
+own `.gameagent` history and generated/tool output directories. A change with no
+active task creates one durable unresolved record. Reconciliation records Git
+commits, a bounded diff summary, changed paths, content-addressed surviving files,
+the human explanation and an associated task. Replay keeps the project unclean
+until the matching reconciliation event exists. Studio presents this state and
+the production browser smoke exercises the complete workflow.
+
+Later phases add `gm`, `orchestration`, `providers`, `qa`, `recruiter`, project
+intelligence and engine adapters when their workflows can be tested. No engine
+execution or paid-provider call path exists in Phase 3.
 
 ## Wire conventions
 

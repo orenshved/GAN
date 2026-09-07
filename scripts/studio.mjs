@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
+import { pythonCommand } from "./python-command.mjs";
 
 config({
   path: fileURLToPath(new URL("../.env", import.meta.url)),
@@ -39,9 +40,11 @@ if (withDaemon) {
       "Studio and daemon URLs must match their configured loopback ports",
     );
   }
+  const python = pythonCommand();
   const daemon = spawn(
-    process.env.GAMEAGENT_PYTHON || "python",
+    python.executable,
     [
+      ...python.prefix,
       "-m",
       "uv",
       "run",

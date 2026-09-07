@@ -114,7 +114,9 @@ export type Event =
       | EvaluationEvent
       | DecisionEvent
       | ArtifactEvent
-      | ChangeEvent
+      | WorkspaceBaselineEvent
+      | ExternalChangeEvent
+      | ProjectReconciledEvent
       | SpendEvent
       | ProviderEvent
       | CommitEvent
@@ -193,14 +195,18 @@ export type ActorId5 = string;
 export type ActorType5 = "human" | "gm" | "agent" | "system" | "external";
 export type CorrelationId5 = string;
 export type EventId5 = string;
-export type EventType5 = "project.external_change_detected" | "project.reconciled";
-export type ChangeId = string;
-/**
- * @minItems 1
- */
-export type Paths = [string, ...string[]];
-export type ProjectId8 = string;
+export type EventType5 = "project.baseline_recorded";
+export type CapturedAt = string;
+export type Digest = string;
+export type ModifiedNs = number;
+export type Path = string;
+export type Size = number;
+export type Entries = WorkspaceEntry[];
+export type GitHead = string | null;
+export type GitStatus = string[];
 export type SchemaVersion11 = 1;
+export type ProjectId8 = string;
+export type SchemaVersion12 = 1;
 export type Sequence5 = number;
 export type TaskId9 = string | null;
 export type Timestamp5 = string;
@@ -208,12 +214,17 @@ export type ActorId6 = string;
 export type ActorType6 = "human" | "gm" | "agent" | "system" | "external";
 export type CorrelationId6 = string;
 export type EventId6 = string;
-export type EventType6 = "provider.spend_recorded";
-export type AmountCents = number;
-export type ProviderId = string;
-export type ReservationId = string;
+export type EventType6 = "project.external_change_detected";
+export type BaselineDigest = string;
+export type ChangeId = string;
+export type GitCommits = string[];
+export type GitDiffSummary = string | null;
+/**
+ * @minItems 1
+ */
+export type Paths = [string, ...string[]];
 export type ProjectId9 = string;
-export type SchemaVersion12 = 1;
+export type SchemaVersion13 = 1;
 export type Sequence6 = number;
 export type TaskId10 = string | null;
 export type Timestamp6 = string;
@@ -221,37 +232,68 @@ export type ActorId7 = string;
 export type ActorType7 = "human" | "gm" | "agent" | "system" | "external";
 export type CorrelationId7 = string;
 export type EventId7 = string;
-export type EventType7 = "provider.disabled";
-export type ProviderId1 = string;
-export type Reason2 = string;
+export type EventType7 = "project.reconciled";
+export type Artifacts = SourceRef[];
+export type ChangeId1 = string;
+export type Detail1 = string;
+/**
+ * @minItems 1
+ */
+export type Paths1 = [string, ...string[]];
+export type TaskId11 = string;
 export type ProjectId10 = string;
-export type SchemaVersion13 = 1;
+export type SchemaVersion14 = 1;
 export type Sequence7 = number;
-export type TaskId11 = string | null;
+export type TaskId12 = string | null;
 export type Timestamp7 = string;
 export type ActorId8 = string;
 export type ActorType8 = "human" | "gm" | "agent" | "system" | "external";
 export type CorrelationId8 = string;
 export type EventId8 = string;
-export type EventType8 = "git.commit.created";
-export type CommitId = string;
-export type Workspace = string;
+export type EventType8 = "provider.spend_recorded";
+export type AmountCents = number;
+export type ProviderId = string;
+export type ReservationId = string;
 export type ProjectId11 = string;
-export type SchemaVersion14 = 1;
+export type SchemaVersion15 = 1;
 export type Sequence8 = number;
-export type TaskId12 = string | null;
+export type TaskId13 = string | null;
 export type Timestamp8 = string;
 export type ActorId9 = string;
 export type ActorType9 = "human" | "gm" | "agent" | "system" | "external";
 export type CorrelationId9 = string;
 export type EventId9 = string;
-export type EventType9 = "project.initialized";
+export type EventType9 = "provider.disabled";
+export type ProviderId1 = string;
+export type Reason2 = string;
+export type ProjectId12 = string;
+export type SchemaVersion16 = 1;
+export type Sequence9 = number;
+export type TaskId14 = string | null;
+export type Timestamp9 = string;
+export type ActorId10 = string;
+export type ActorType10 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId10 = string;
+export type EventId10 = string;
+export type EventType10 = "git.commit.created";
+export type CommitId = string;
+export type Workspace = string;
+export type ProjectId13 = string;
+export type SchemaVersion17 = 1;
+export type Sequence10 = number;
+export type TaskId15 = string | null;
+export type Timestamp10 = string;
+export type ActorId11 = string;
+export type ActorType11 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId11 = string;
+export type EventId11 = string;
+export type EventType11 = "project.initialized";
 export type Field = string;
 export type Kind = "known" | "inferred" | "missing";
 export type Source = string;
 export type Value = string | null;
 export type Findings = InitializationFinding[];
-export type GitHead = string | null;
+export type GitHead1 = string | null;
 export type GitRecentCommits = string[];
 export type InspectedAssets = string[];
 export type InspectedDocuments = string[];
@@ -260,17 +302,17 @@ export type RepositoryRoot = string;
  * @minItems 1
  */
 export type RequiredCapabilities = [string, ...string[]];
-export type SchemaVersion15 = 1;
+export type SchemaVersion18 = 1;
 export type ApprovalThresholdCents = number;
 export type Authority = "ask_first" | "recommend_and_proceed" | "autonomous_within_policy";
 export type Currency = "USD";
 export type MonthlyExternalBudgetCents = number;
 export type PostSpecialistNonprogressLimit = 3;
 export type Proactivity = "reactive" | "balanced" | "active";
-export type ProjectId12 = string;
+export type ProjectId14 = string;
 export type RequireProviderHardCap = true;
 export type RequireRegistrationOrReconciliation = true;
-export type SchemaVersion16 = 1;
+export type SchemaVersion19 = 1;
 export type Direction1 = string;
 export type References = SourceRef[];
 export type Constraints1 = string[];
@@ -289,17 +331,17 @@ export type Description2 = string;
 export type Id = string;
 export type Name1 = string;
 export type Rendering = "2d" | "2.5d" | "3d" | "non_applicable";
-export type SchemaVersion17 = 1;
-export type ProjectId13 = string;
-export type SchemaVersion18 = 1;
-export type Sequence9 = number;
-export type TaskId13 = string | null;
-export type Timestamp9 = string;
-export type ActorId10 = string;
-export type ActorType10 = "human" | "gm" | "agent" | "system" | "external";
-export type CorrelationId10 = string;
-export type EventId10 = string;
-export type EventType10 = "task.proposed";
+export type SchemaVersion20 = 1;
+export type ProjectId15 = string;
+export type SchemaVersion21 = 1;
+export type Sequence11 = number;
+export type TaskId16 = string | null;
+export type Timestamp11 = string;
+export type ActorId12 = string;
+export type ActorType12 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId12 = string;
+export type EventId12 = string;
+export type EventType12 = "task.proposed";
 export type Constraints2 = string[];
 /**
  * @minItems 1
@@ -308,13 +350,13 @@ export type Deliverables = [string, ...string[]];
 export type DependencyIds = string[];
 export type EntityId = string;
 export type Kind1 = string;
-export type ProjectId14 = string;
+export type ProjectId16 = string;
 export type Entities = EntityRef[];
 export type EscalationCriteria = string[];
 export type Objective = string;
 export type ParentTaskId = string | null;
 export type Priority = "low" | "normal" | "high" | "urgent";
-export type ProjectId15 = string;
+export type ProjectId17 = string;
 export type References1 = SourceRef[];
 /**
  * @minItems 1
@@ -329,7 +371,7 @@ export type Functional = string[];
 export type Production1 = string[];
 export type Technical = string[];
 export type Visual = string[];
-export type SchemaVersion19 = 1;
+export type SchemaVersion22 = 1;
 export type State =
   | "PROPOSED"
   | "QUEUED"
@@ -345,55 +387,55 @@ export type State =
   | "CANCELLED"
   | "SUPERSEDED"
   | "NEEDS_HUMAN";
-export type TaskId14 = string;
-export type Title1 = string;
-export type ProjectId16 = string;
-export type SchemaVersion20 = 1;
-export type Sequence10 = number;
-export type TaskId15 = string | null;
-export type Timestamp10 = string;
-export type ActorId11 = string;
-export type ActorType11 = "human" | "gm" | "agent" | "system" | "external";
-export type CorrelationId11 = string;
-export type EventId11 = string;
-export type EventType11 = "policy.updated";
-export type ProjectId17 = string;
-export type SchemaVersion21 = 1;
-export type Sequence11 = number;
-export type TaskId16 = string | null;
-export type Timestamp11 = string;
-export type ActorId12 = string;
-export type ActorType12 = "human" | "gm" | "agent" | "system" | "external";
-export type CorrelationId12 = string;
-export type EventId12 = string;
-export type EventType12 = "worker.updated";
-export type Cwd = string;
-export type Detail1 = string;
-export type ProjectId18 = string;
-export type Findings1 = string[];
-export type NextSteps = string[];
-export type Summary = string;
-export type SchemaVersion22 = 1;
-export type State1 = "ready" | "running" | "completed" | "failed" | "interrupted";
 export type TaskId17 = string;
-export type ThreadId1 = string;
-export type TurnId = string | null;
-export type WorkerId = string;
-export type ProjectId19 = string;
+export type Title1 = string;
+export type ProjectId18 = string;
 export type SchemaVersion23 = 1;
 export type Sequence12 = number;
 export type TaskId18 = string | null;
 export type Timestamp12 = string;
+export type ActorId13 = string;
+export type ActorType13 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId13 = string;
+export type EventId13 = string;
+export type EventType13 = "policy.updated";
+export type ProjectId19 = string;
+export type SchemaVersion24 = 1;
+export type Sequence13 = number;
+export type TaskId19 = string | null;
+export type Timestamp13 = string;
+export type ActorId14 = string;
+export type ActorType14 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId14 = string;
+export type EventId14 = string;
+export type EventType14 = "worker.updated";
+export type Cwd = string;
+export type Detail2 = string;
+export type ProjectId20 = string;
+export type Findings1 = string[];
+export type NextSteps = string[];
+export type Summary = string;
+export type SchemaVersion25 = 1;
+export type State1 = "ready" | "running" | "completed" | "failed" | "interrupted";
+export type TaskId20 = string;
+export type ThreadId1 = string;
+export type TurnId = string | null;
+export type WorkerId = string;
+export type ProjectId21 = string;
+export type SchemaVersion26 = 1;
+export type Sequence14 = number;
+export type TaskId21 = string | null;
+export type Timestamp14 = string;
 export type CaptureOrigin = "runtime" | "source" | "simulation" | "human_observation" | "model_output";
-export type CapturedAt = string;
+export type CapturedAt1 = string;
 export type EvidenceClass = "deterministic" | "measured" | "comparative" | "heuristic" | "human";
 export type EvidenceId = string;
 export type ProducerId = string;
 export type ProducerType = "tool" | "model" | "human";
-export type ProjectId20 = string;
-export type SchemaVersion24 = 1;
+export type ProjectId22 = string;
+export type SchemaVersion27 = 1;
 export type Summary1 = string;
-export type TaskId19 = string;
+export type TaskId22 = string;
 export type Confidence = number;
 export type CreatedAt = string;
 export type Entities1 = EntityRef[];
@@ -409,8 +451,8 @@ export type Kind2 =
   | "agent_recommendation"
   | "evaluation";
 export type KnowledgeId = string;
-export type ProjectId21 = string;
-export type SchemaVersion25 = 1;
+export type ProjectId23 = string;
+export type SchemaVersion28 = 1;
 export type Statement = string;
 export type SupersedesId = string | null;
 export type Billing = "local" | "codex_subscription" | "paid";
@@ -424,7 +466,7 @@ export type Verified1 = true;
 export type VerifiedAt = string;
 export type Currency1 = "USD";
 export type ProviderId2 = string;
-export type SchemaVersion26 = 1;
+export type SchemaVersion29 = 1;
 export type State2 = "ACTIVE" | "DISABLED" | "DISABLED_UNCAPPED";
 /**
  * @minItems 1
@@ -436,7 +478,7 @@ export type InstallState = "missing" | "installed" | "unhealthy";
 export type Invocation = "cli" | "http" | "sdk" | "mcp";
 export type Location = "local" | "cloud";
 export type OutputContract1 = string;
-export type SchemaVersion27 = 1;
+export type SchemaVersion30 = 1;
 export type ToolId = string;
 export type Version4 = string;
 export type Cursor = number;
@@ -446,7 +488,9 @@ export type Events = (
   | EvaluationEvent
   | DecisionEvent
   | ArtifactEvent
-  | ChangeEvent
+  | WorkspaceBaselineEvent
+  | ExternalChangeEvent
+  | ProjectReconciledEvent
   | SpendEvent
   | ProviderEvent
   | CommitEvent
@@ -461,16 +505,38 @@ export type RequestId = string;
 export type ActiveProjectId = string;
 export type Engine1 = string | null;
 export type Name2 = string;
-export type ProjectId22 = string;
+export type ProjectId24 = string;
 export type Root = string;
 export type Stage1 = string;
 export type Projects = ProjectSummary[];
-export type Path = string;
-export type ProjectId23 = string;
+export type Path1 = string;
+export type ProjectId25 = string;
 export type Cursor1 = number;
 export type HistoryDigest = string;
+export type Artifacts1 = SourceRef[];
+export type BaselineDigest1 = string;
+export type ChangeId2 = string;
+export type Detail3 = string | null;
+export type DetectedAt = string;
+export type GitCommits1 = string[];
+export type GitDiffSummary1 = string | null;
+/**
+ * @minItems 1
+ */
+export type Paths2 = [string, ...string[]];
+export type ProjectId26 = string;
+export type ReconciledAt = string | null;
+export type SchemaVersion31 = 1;
+export type State3 = "unresolved" | "reconciled";
+export type TaskId23 = string | null;
+export type Reconciliations = ReconciliationRecord[];
+export type RequiresReconciliation = boolean;
 export type Tasks = TaskContract[];
 export type Workers = WorkerRecord[];
+export type ChangeId3 = string;
+export type Detail4 = string;
+export type RequestId1 = string;
+export type TaskId24 = string | null;
 export type Cursor2 = number;
 export type Events1 = (
   | TaskEvent
@@ -478,7 +544,9 @@ export type Events1 = (
   | EvaluationEvent
   | DecisionEvent
   | ArtifactEvent
-  | ChangeEvent
+  | WorkspaceBaselineEvent
+  | ExternalChangeEvent
+  | ProjectReconciledEvent
   | SpendEvent
   | ProviderEvent
   | CommitEvent
@@ -489,19 +557,28 @@ export type Events1 = (
 )[];
 export type HasMore1 = boolean;
 export type Type2 = "events";
+export type Detail5 = string;
+export type RequestId2 = string;
+export type TaskId25 = string;
 /**
  * @minItems 1
  */
 export type Deliverables1 = [string, ...string[]];
 export type DependencyIds1 = string[];
 export type Objective1 = string;
-export type RequestId1 = string;
+export type RequestId3 = string;
 /**
  * @minItems 1
  */
 export type RequiredCapabilities2 = [string, ...string[]];
 export type Title2 = string;
-export type TaskId20 = string;
+export type Deliverables2 = string[];
+export type Objective2 = string | null;
+export type RequestId4 = string;
+export type RequiredCapabilities3 = string[];
+export type TaskId26 = string | null;
+export type Title3 = string | null;
+export type TaskId27 = string;
 export type WorkerId1 = string | null;
 
 /**
@@ -804,45 +881,116 @@ export interface SourceRef {
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
- * via the `definition` "ChangeEvent".
+ * via the `definition` "WorkspaceBaselineEvent".
  */
-export interface ChangeEvent {
+export interface WorkspaceBaselineEvent {
   actor_id: ActorId5;
   actor_type: ActorType5;
   correlation_id: CorrelationId5;
   event_id: EventId5;
   event_type: EventType5;
-  payload: ChangePayload;
+  payload: WorkspaceFingerprint;
   project_id: ProjectId8;
-  schema_version?: SchemaVersion11;
+  schema_version?: SchemaVersion12;
   sequence: Sequence5;
   task_id: TaskId9;
   timestamp: Timestamp5;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
- * via the `definition` "ChangePayload".
+ * via the `definition` "WorkspaceFingerprint".
  */
-export interface ChangePayload {
+export interface WorkspaceFingerprint {
+  captured_at: CapturedAt;
+  digest: Digest;
+  entries: Entries;
+  git_head: GitHead;
+  git_status?: GitStatus;
+  schema_version?: SchemaVersion11;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "WorkspaceEntry".
+ */
+export interface WorkspaceEntry {
+  modified_ns: ModifiedNs;
+  path: Path;
+  size: Size;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ExternalChangeEvent".
+ */
+export interface ExternalChangeEvent {
+  actor_id: ActorId6;
+  actor_type: ActorType6;
+  correlation_id: CorrelationId6;
+  event_id: EventId6;
+  event_type: EventType6;
+  payload: ExternalChangePayload;
+  project_id: ProjectId9;
+  schema_version?: SchemaVersion13;
+  sequence: Sequence6;
+  task_id: TaskId10;
+  timestamp: Timestamp6;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ExternalChangePayload".
+ */
+export interface ExternalChangePayload {
+  baseline_digest: BaselineDigest;
   change_id: ChangeId;
+  git_commits?: GitCommits;
+  git_diff_summary?: GitDiffSummary;
+  observed: WorkspaceFingerprint;
   paths: Paths;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ProjectReconciledEvent".
+ */
+export interface ProjectReconciledEvent {
+  actor_id: ActorId7;
+  actor_type: ActorType7;
+  correlation_id: CorrelationId7;
+  event_id: EventId7;
+  event_type: EventType7;
+  payload: ReconciliationPayload;
+  project_id: ProjectId10;
+  schema_version?: SchemaVersion14;
+  sequence: Sequence7;
+  task_id: TaskId12;
+  timestamp: Timestamp7;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ReconciliationPayload".
+ */
+export interface ReconciliationPayload {
+  artifacts?: Artifacts;
+  change_id: ChangeId1;
+  detail: Detail1;
+  fingerprint: WorkspaceFingerprint;
+  paths: Paths1;
+  task_id: TaskId11;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "SpendEvent".
  */
 export interface SpendEvent {
-  actor_id: ActorId6;
-  actor_type: ActorType6;
-  correlation_id: CorrelationId6;
-  event_id: EventId6;
-  event_type: EventType6;
+  actor_id: ActorId8;
+  actor_type: ActorType8;
+  correlation_id: CorrelationId8;
+  event_id: EventId8;
+  event_type: EventType8;
   payload: SpendPayload;
-  project_id: ProjectId9;
-  schema_version?: SchemaVersion12;
-  sequence: Sequence6;
-  task_id: TaskId10;
-  timestamp: Timestamp6;
+  project_id: ProjectId11;
+  schema_version?: SchemaVersion15;
+  sequence: Sequence8;
+  task_id: TaskId13;
+  timestamp: Timestamp8;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -858,17 +1006,17 @@ export interface SpendPayload {
  * via the `definition` "ProviderEvent".
  */
 export interface ProviderEvent {
-  actor_id: ActorId7;
-  actor_type: ActorType7;
-  correlation_id: CorrelationId7;
-  event_id: EventId7;
-  event_type: EventType7;
+  actor_id: ActorId9;
+  actor_type: ActorType9;
+  correlation_id: CorrelationId9;
+  event_id: EventId9;
+  event_type: EventType9;
   payload: ProviderPayload;
-  project_id: ProjectId10;
-  schema_version?: SchemaVersion13;
-  sequence: Sequence7;
-  task_id: TaskId11;
-  timestamp: Timestamp7;
+  project_id: ProjectId12;
+  schema_version?: SchemaVersion16;
+  sequence: Sequence9;
+  task_id: TaskId14;
+  timestamp: Timestamp9;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -883,17 +1031,17 @@ export interface ProviderPayload {
  * via the `definition` "CommitEvent".
  */
 export interface CommitEvent {
-  actor_id: ActorId8;
-  actor_type: ActorType8;
-  correlation_id: CorrelationId8;
-  event_id: EventId8;
-  event_type: EventType8;
+  actor_id: ActorId10;
+  actor_type: ActorType10;
+  correlation_id: CorrelationId10;
+  event_id: EventId10;
+  event_type: EventType10;
   payload: CommitPayload;
-  project_id: ProjectId11;
-  schema_version?: SchemaVersion14;
-  sequence: Sequence8;
-  task_id: TaskId12;
-  timestamp: Timestamp8;
+  project_id: ProjectId13;
+  schema_version?: SchemaVersion17;
+  sequence: Sequence10;
+  task_id: TaskId15;
+  timestamp: Timestamp10;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -908,17 +1056,17 @@ export interface CommitPayload {
  * via the `definition` "ProjectInitializedEvent".
  */
 export interface ProjectInitializedEvent {
-  actor_id: ActorId9;
-  actor_type: ActorType9;
-  correlation_id: CorrelationId9;
-  event_id: EventId9;
-  event_type: EventType9;
+  actor_id: ActorId11;
+  actor_type: ActorType11;
+  correlation_id: CorrelationId11;
+  event_id: EventId11;
+  event_type: EventType11;
   payload: ProjectInitializedPayload;
-  project_id: ProjectId13;
-  schema_version?: SchemaVersion18;
-  sequence: Sequence9;
-  task_id: TaskId13;
-  timestamp: Timestamp9;
+  project_id: ProjectId15;
+  schema_version?: SchemaVersion21;
+  sequence: Sequence11;
+  task_id: TaskId16;
+  timestamp: Timestamp11;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -928,6 +1076,7 @@ export interface ProjectInitializedPayload {
   intake: InitializationReport;
   policy: Policy;
   project: Project;
+  workspace?: WorkspaceFingerprint | null;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -935,13 +1084,13 @@ export interface ProjectInitializedPayload {
  */
 export interface InitializationReport {
   findings: Findings;
-  git_head: GitHead;
+  git_head: GitHead1;
   git_recent_commits: GitRecentCommits;
   inspected_assets: InspectedAssets;
   inspected_documents: InspectedDocuments;
   repository_root: RepositoryRoot;
   required_capabilities: RequiredCapabilities;
-  schema_version?: SchemaVersion15;
+  schema_version?: SchemaVersion18;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -964,10 +1113,10 @@ export interface Policy {
   monthly_external_budget_cents?: MonthlyExternalBudgetCents;
   post_specialist_nonprogress_limit?: PostSpecialistNonprogressLimit;
   proactivity?: Proactivity;
-  project_id: ProjectId12;
+  project_id: ProjectId14;
   require_provider_hard_cap?: RequireProviderHardCap;
   require_registration_or_reconciliation?: RequireRegistrationOrReconciliation;
-  schema_version?: SchemaVersion16;
+  schema_version?: SchemaVersion19;
   worker_permissions?: Permissions;
 }
 /**
@@ -986,7 +1135,7 @@ export interface Project {
   production: Production;
   project: ProjectIdentity;
   rendering: Rendering;
-  schema_version?: SchemaVersion17;
+  schema_version?: SchemaVersion20;
   visual: Direction;
 }
 /**
@@ -1036,17 +1185,17 @@ export interface ProjectIdentity {
  * via the `definition` "TaskProposedEvent".
  */
 export interface TaskProposedEvent {
-  actor_id: ActorId10;
-  actor_type: ActorType10;
-  correlation_id: CorrelationId10;
-  event_id: EventId10;
-  event_type: EventType10;
+  actor_id: ActorId12;
+  actor_type: ActorType12;
+  correlation_id: CorrelationId12;
+  event_id: EventId12;
+  event_type: EventType12;
   payload: TaskContract;
-  project_id: ProjectId16;
-  schema_version?: SchemaVersion20;
-  sequence: Sequence10;
-  task_id: TaskId15;
-  timestamp: Timestamp10;
+  project_id: ProjectId18;
+  schema_version?: SchemaVersion23;
+  sequence: Sequence12;
+  task_id: TaskId18;
+  timestamp: Timestamp12;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1062,14 +1211,14 @@ export interface TaskContract {
   parent_task_id?: ParentTaskId;
   permissions: Permissions;
   priority?: Priority;
-  project_id: ProjectId15;
+  project_id: ProjectId17;
   references: References1;
   required_capabilities: RequiredCapabilities1;
   required_evaluations: RequiredEvaluations;
   requirements: Requirements;
-  schema_version?: SchemaVersion19;
+  schema_version?: SchemaVersion22;
   state?: State;
-  task_id: TaskId14;
+  task_id: TaskId17;
   title: Title1;
 }
 /**
@@ -1079,7 +1228,7 @@ export interface TaskContract {
 export interface EntityRef {
   entity_id: EntityId;
   kind: Kind1;
-  project_id: ProjectId14;
+  project_id: ProjectId16;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1097,34 +1246,34 @@ export interface Requirements {
  * via the `definition` "PolicyUpdatedEvent".
  */
 export interface PolicyUpdatedEvent {
-  actor_id: ActorId11;
-  actor_type: ActorType11;
-  correlation_id: CorrelationId11;
-  event_id: EventId11;
-  event_type: EventType11;
+  actor_id: ActorId13;
+  actor_type: ActorType13;
+  correlation_id: CorrelationId13;
+  event_id: EventId13;
+  event_type: EventType13;
   payload: Policy;
-  project_id: ProjectId17;
-  schema_version?: SchemaVersion21;
-  sequence: Sequence11;
-  task_id: TaskId16;
-  timestamp: Timestamp11;
+  project_id: ProjectId19;
+  schema_version?: SchemaVersion24;
+  sequence: Sequence13;
+  task_id: TaskId19;
+  timestamp: Timestamp13;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "WorkerEvent".
  */
 export interface WorkerEvent {
-  actor_id: ActorId12;
-  actor_type: ActorType12;
-  correlation_id: CorrelationId12;
-  event_id: EventId12;
-  event_type: EventType12;
+  actor_id: ActorId14;
+  actor_type: ActorType14;
+  correlation_id: CorrelationId14;
+  event_id: EventId14;
+  event_type: EventType14;
   payload: WorkerRecord;
-  project_id: ProjectId19;
-  schema_version?: SchemaVersion23;
-  sequence: Sequence12;
-  task_id: TaskId18;
-  timestamp: Timestamp12;
+  project_id: ProjectId21;
+  schema_version?: SchemaVersion26;
+  sequence: Sequence14;
+  task_id: TaskId21;
+  timestamp: Timestamp14;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1132,12 +1281,12 @@ export interface WorkerEvent {
  */
 export interface WorkerRecord {
   cwd: Cwd;
-  detail: Detail1;
-  project_id: ProjectId18;
+  detail: Detail2;
+  project_id: ProjectId20;
   result?: WorkerResult | null;
-  schema_version?: SchemaVersion22;
+  schema_version?: SchemaVersion25;
   state: State1;
-  task_id: TaskId17;
+  task_id: TaskId20;
   thread_id: ThreadId1;
   turn_id?: TurnId;
   worker_id: WorkerId;
@@ -1157,16 +1306,16 @@ export interface WorkerResult {
  */
 export interface Evidence {
   capture_origin: CaptureOrigin;
-  captured_at: CapturedAt;
+  captured_at: CapturedAt1;
   evidence_class: EvidenceClass;
   evidence_id: EvidenceId;
   producer_id: ProducerId;
   producer_type: ProducerType;
-  project_id: ProjectId20;
-  schema_version?: SchemaVersion24;
+  project_id: ProjectId22;
+  schema_version?: SchemaVersion27;
   source: SourceRef;
   summary: Summary1;
-  task_id: TaskId19;
+  task_id: TaskId22;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1179,8 +1328,8 @@ export interface KnowledgeEntry {
   evidence_ids: EvidenceIds3;
   kind: Kind2;
   knowledge_id: KnowledgeId;
-  project_id: ProjectId21;
-  schema_version?: SchemaVersion25;
+  project_id: ProjectId23;
+  schema_version?: SchemaVersion28;
   source: SourceRef;
   statement: Statement;
   supersedes_id?: SupersedesId;
@@ -1194,7 +1343,7 @@ export interface Provider {
   cap: Cap;
   currency?: Currency1;
   provider_id: ProviderId2;
-  schema_version?: SchemaVersion26;
+  schema_version?: SchemaVersion29;
   state: State2;
 }
 /**
@@ -1231,7 +1380,7 @@ export interface ToolDefinition {
   location: Location;
   output_contract: OutputContract1;
   permissions: Permissions;
-  schema_version?: SchemaVersion27;
+  schema_version?: SchemaVersion30;
   tool_id: ToolId;
   version: Version4;
 }
@@ -1268,7 +1417,7 @@ export interface ProjectCatalog {
 export interface ProjectSummary {
   engine?: Engine1;
   name: Name2;
-  project_id: ProjectId22;
+  project_id: ProjectId24;
   root: Root;
   stage: Stage1;
 }
@@ -1277,14 +1426,14 @@ export interface ProjectSummary {
  * via the `definition` "ProjectImport".
  */
 export interface ProjectImport {
-  path: Path;
+  path: Path1;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "ProjectSelection".
  */
 export interface ProjectSelection {
-  project_id: ProjectId23;
+  project_id: ProjectId25;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1295,8 +1444,41 @@ export interface ProjectSnapshot {
   history_digest: HistoryDigest;
   policy: Policy;
   project: Project;
+  reconciliations?: Reconciliations;
+  requires_reconciliation?: RequiresReconciliation;
   tasks: Tasks;
   workers?: Workers;
+  workspace?: WorkspaceFingerprint | null;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ReconciliationRecord".
+ */
+export interface ReconciliationRecord {
+  artifacts?: Artifacts1;
+  baseline_digest: BaselineDigest1;
+  change_id: ChangeId2;
+  detail?: Detail3;
+  detected_at: DetectedAt;
+  git_commits?: GitCommits1;
+  git_diff_summary?: GitDiffSummary1;
+  observed: WorkspaceFingerprint;
+  paths: Paths2;
+  project_id: ProjectId26;
+  reconciled_at?: ReconciledAt;
+  schema_version?: SchemaVersion31;
+  state?: State3;
+  task_id?: TaskId23;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ReconcileCommand".
+ */
+export interface ReconcileCommand {
+  change_id: ChangeId3;
+  detail: Detail4;
+  request_id: RequestId1;
+  task_id?: TaskId24;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1310,21 +1492,42 @@ export interface StreamMessage {
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "TaskProgressCommand".
+ */
+export interface TaskProgressCommand {
+  detail: Detail5;
+  request_id: RequestId2;
+  task_id: TaskId25;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "TaskProposal".
  */
 export interface TaskProposal {
   deliverables: Deliverables1;
   dependency_ids?: DependencyIds1;
   objective: Objective1;
-  request_id: RequestId1;
+  request_id: RequestId3;
   required_capabilities: RequiredCapabilities2;
   title: Title2;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "TaskStartCommand".
+ */
+export interface TaskStartCommand {
+  deliverables?: Deliverables2;
+  objective?: Objective2;
+  request_id: RequestId4;
+  required_capabilities?: RequiredCapabilities3;
+  task_id?: TaskId26;
+  title?: Title3;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "WorkerCommand".
  */
 export interface WorkerCommand {
-  task_id: TaskId20;
+  task_id: TaskId27;
   worker_id?: WorkerId1;
 }

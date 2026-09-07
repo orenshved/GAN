@@ -5,6 +5,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from uuid import uuid4
 
 import uvicorn
 import yaml
@@ -12,7 +13,12 @@ from dotenv import load_dotenv
 
 from gameagent.constitution import ConstitutionError
 from gameagent.intake import inspect
-from gameagent.models.api import TaskProposal
+from gameagent.models.api import (
+    ReconcileCommand,
+    TaskProgressCommand,
+    TaskProposal,
+    TaskStartCommand,
+)
 from gameagent.models.contracts import Project
 from gameagent.projects import ProjectStore, initialize
 
@@ -31,6 +37,28 @@ def main() -> None:
         sub.add_argument("path", type=Path)
         if name == "propose":
             sub.add_argument("--file", required=True, type=Path)
+    task = commands.add_parser("task", help="Register and report meaningful project work")
+    task_commands = task.add_subparsers(dest="task_command", required=True)
+    task_start = task_commands.add_parser("start")
+    task_start.add_argument("path", type=Path)
+    task_start.add_argument("--task-id")
+    task_start.add_argument("--title")
+    task_start.add_argument("--objective")
+    task_start.add_argument("--capability", action="append", default=[])
+    task_start.add_argument("--deliverable", action="append", default=[])
+    task_status = task_commands.add_parser("status")
+    task_status.add_argument("path", type=Path)
+    task_status.add_argument("--task-id")
+    for name in ("block", "complete"):
+        sub = task_commands.add_parser(name)
+        sub.add_argument("path", type=Path)
+        sub.add_argument("--task-id", required=True)
+        sub.add_argument("--detail", required=True)
+    reconcile = commands.add_parser("reconcile", help="Attribute unregistered project changes")
+    reconcile.add_argument("path", type=Path)
+    reconcile.add_argument("--change-id")
+    reconcile.add_argument("--task-id")
+    reconcile.add_argument("--detail", required=True)
     args = parser.parse_args()
     try:
         if args.command == "init":
@@ -55,7 +83,75 @@ def main() -> None:
             )
             return
         store = ProjectStore(args.path)
-        if args.command == "serve":
+        if args.command == "task":
+            if args.task_command == "start":
+                started = store.start_task(
+                    TaskStartCommand(
+                        request_id=f"request-{uuid4()}",
+                        task_id=args.task_id,
+                        title=args.title,
+                        objective=args.objective,
+                        required_capabilities=args.capability or ["project_analysis"],
+                        deliverables=args.deliverable or ["Reported project changes"],
+                    )
+                )
+                print(started.model_dump_json(indent=2))
+            elif args.task_command == "status":
+                snapshot = store.snapshot()
+                if args.task_id:
+                    selected_task = next(
+                        (item for item in snapshot.tasks if item.task_id == args.task_id), None
+                    )
+                    if selected_task is None:
+                        raise ConstitutionError("task_not_found", args.task_id)
+                    print(selected_task.model_dump_json(indent=2))
+                else:
+                    print(
+                        json.dumps(
+                            {
+                                "tasks": [item.model_dump(mode="json") for item in snapshot.tasks],
+                                "requires_reconciliation": snapshot.requires_reconciliation,
+                                "reconciliations": [
+                                    item.model_dump(mode="json")
+                                    for item in snapshot.reconciliations
+                                ],
+                            },
+                            indent=2,
+                        )
+                    )
+            else:
+                command = TaskProgressCommand(
+                    request_id=f"request-{uuid4()}",
+                    task_id=args.task_id,
+                    detail=args.detail,
+                )
+                progressed = (
+                    store.block_task(command)
+                    if args.task_command == "block"
+                    else store.complete_task(command)
+                )
+                print(progressed.model_dump_json(indent=2))
+        elif args.command == "reconcile":
+            snapshot = store.detect_external_changes()
+            unresolved = [item for item in snapshot.reconciliations if item.state == "unresolved"]
+            change_id = args.change_id
+            if change_id is None:
+                if len(unresolved) != 1:
+                    raise ConstitutionError(
+                        "change_id_required",
+                        "Specify --change-id unless exactly one change is unresolved",
+                    )
+                change_id = unresolved[0].change_id
+            reconciled = store.reconcile(
+                ReconcileCommand(
+                    request_id=f"request-{uuid4()}",
+                    change_id=change_id,
+                    task_id=args.task_id,
+                    detail=args.detail,
+                )
+            )
+            print(reconciled.model_dump_json(indent=2))
+        elif args.command == "serve":
             from gameagent.api import create_app
 
             token = os.environ["GAMEAGENT_DAEMON_TOKEN"]

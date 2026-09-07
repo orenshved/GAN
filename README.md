@@ -3,10 +3,11 @@
 A local-first production orchestration foundation for turning human game direction
 into accountable tasks, specialist work and inspectable evidence.
 
-**Status: Phase 2 complete.** The local Studio now detects the signed-in ChatGPT
-account, starts and resumes persistent read-only Codex threads, records structured
-worker results in project history, and switches between a persistent catalog of
-local game repositories. Production orchestration and engine changes begin in
+**Status: Phase 3 complete.** Direct agents can register meaningful work through
+the CLI; each GAN-enabled repository receives managed `AGENTS.md` instructions.
+The daemon watches project files, Git status, and commits, records unregistered
+changes, and keeps Studio visibly unresolved until those changes are attributed
+through reconciliation. Production orchestration and engine changes begin in
 later phases.
 
 ## Architecture
@@ -21,6 +22,9 @@ flowchart TD
   Workers --> Evidence[Artifacts and QA evidence]
   Evidence --> GM
   Daemon --> History[Canonical project files and JSONL events]
+  Daemon --> Watcher[Git and meaningful-file watcher]
+  Watcher --> Reconcile[Visible reconciliation requirement]
+  Reconcile --> History
   History --> SQLite[Rebuildable SQLite projections]
   SQLite --> Studio
 ```
@@ -58,6 +62,8 @@ in `.env` with a random string of at least 32 characters. The URLs and ports als
 come from `.env`. Open the localhost address printed by Studio. The worker bridge
 reuses the Codex ChatGPT login and clears API-key environment variables. Set
 `GAMEAGENT_CODEX_BIN` only when the current Codex executable is not on `PATH`.
+Python 3.12+ is discovered automatically; set `GAMEAGENT_PYTHON` only when an
+explicit interpreter path is required.
 
 `gameagent init` detects the repository and likely engine/rendering mode, records
 documents, assets and Git HEAD, and lists important unknowns without an intake
@@ -67,6 +73,21 @@ contract should replace the detected baseline.
 Select the project name in Studio to switch projects or add another local
 repository. Import initializes `.gameagent` when needed. GAN does not automatically
 clone or execute remote repositories.
+
+Register direct project work before editing. A new task uses default capability
+and deliverable labels unless they are supplied explicitly:
+
+```powershell
+gameagent task start C:/path/to/game --title "Tune movement" --objective "Movement feels responsive"
+gameagent task status C:/path/to/game
+gameagent task complete C:/path/to/game --task-id TASK_ID --detail "Adjusted acceleration and documented the result"
+```
+
+Use `gameagent task block` when progress stops. If files or commits changed with
+no active task, Studio and `gameagent task status` report an unresolved change;
+run `gameagent reconcile C:/path/to/game --detail "What changed and why"` to
+attribute it. Reconciliation does not erase history: it creates a reconstructed
+task in `REVIEW` and records Git context plus content-addressed surviving files.
 
 ## Development
 
@@ -80,6 +101,8 @@ clone or execute remote repositories.
 | `pnpm dev`               | Run the configured daemon and Studio together                                  |
 | `gameagent status PATH`  | Replay canonical history and print the current project snapshot                |
 | `gameagent rebuild PATH` | Recreate the SQLite projection from canonical events                           |
+| `gameagent task …`       | Start, inspect, block, or report completion of meaningful direct work          |
+| `gameagent reconcile`    | Attribute detected work that happened without prior registration               |
 
 ## Design records
 
@@ -91,6 +114,7 @@ clone or execute remote repositories.
 - [Phase 0 handoff](docs/development/PHASE_0_HANDOFF.md)
 - [Phase 1 handoff](docs/development/PHASE_1_HANDOFF.md)
 - [Phase 2 handoff](docs/development/PHASE_2_HANDOFF.md)
+- [Phase 3 handoff](docs/development/PHASE_3_HANDOFF.md)
 
 ## Roadmap
 
@@ -99,7 +123,8 @@ clone or execute remote repositories.
 | -1 / 0 | Harvest, contracts, constitution, monorepo and CI                |
 | 1      | Complete: project protocol, persistence, daemon and Studio shell |
 | 2      | Complete: authenticated Codex worker bridge                      |
-| 3–5    | Reconciliation, GM matching and project intelligence             |
+| 3      | Complete: registration, change detection and reconciliation      |
+| 4–5    | GM matching and project intelligence                             |
 | 6–7    | Cosmic Meltdown UI workflow and evidence-backed QA               |
 | 8–10   | Local model routing, real budget gateway, specialist recruitment |
 | 11–12  | Additional disciplines and desktop packaging                     |

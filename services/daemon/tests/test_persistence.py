@@ -1,5 +1,7 @@
 import asyncio
 import json
+import subprocess
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import SimpleNamespace
@@ -8,10 +10,18 @@ import pytest
 from fastapi.testclient import TestClient
 
 from gameagent.api import create_app
+from gameagent.cli import main as cli_main
 from gameagent.codex_bridge import CodexBridge
 from gameagent.constitution import ConstitutionError
 from gameagent.intake import inspect
-from gameagent.models.api import PolicyCommand, TaskProposal, WorkerCommand
+from gameagent.models.api import (
+    PolicyCommand,
+    ReconcileCommand,
+    TaskProgressCommand,
+    TaskProposal,
+    TaskStartCommand,
+    WorkerCommand,
+)
 from gameagent.models.contracts import Project, WorkerRecord
 from gameagent.persistence.projection import Projection
 from gameagent.projects import ProjectRegistry, ProjectStore, initialize
@@ -58,6 +68,19 @@ def test_intake_detects_repository_without_questionnaire(tmp_path):
     }
 
 
+def test_init_preserves_existing_agents_instructions_and_records_workspace(tmp_path):
+    instructions = tmp_path / "AGENTS.md"
+    instructions.write_text("# Existing project rules\n", encoding="utf-8")
+    initialize(tmp_path, Project.model_validate(PROFILE))
+    text = instructions.read_text(encoding="utf-8")
+    assert text.startswith("# Existing project rules")
+    assert text.count("BEGIN GAME AGENT NETWORK") == 1
+    assert "gameagent task start" in text
+    snapshot = ProjectStore(tmp_path).snapshot()
+    assert snapshot.workspace is not None
+    assert any(entry.path == "AGENTS.md" for entry in snapshot.workspace.entries)
+
+
 def test_init_restart_rotate_delete_database_rebuild(store):
     initial = store.snapshot()
     assert initial.cursor == 1 and initial.tasks == []
@@ -84,6 +107,189 @@ def test_retry_is_idempotent_and_conflicting_request_rejected(store):
     assert store.snapshot().cursor == 2
     with pytest.raises(ConstitutionError):
         store.propose(proposal().model_copy(update={"title": "Different intent"}))
+
+
+def test_registered_work_is_not_external_and_completion_advances_baseline(store):
+    started = store.start_task(
+        TaskStartCommand(
+            request_id="registered-a",
+            title="Adjust the game",
+            objective="Make a registered project change",
+            required_capabilities=["project_analysis"],
+            deliverables=["Changed game file"],
+        )
+    )
+    assert started.state == "RUNNING"
+    (store.root / "game.txt").write_text("registered work\n", encoding="utf-8")
+    during = store.detect_external_changes()
+    assert not during.requires_reconciliation
+    completed = store.complete_task(
+        TaskProgressCommand(
+            request_id="registered-complete-a",
+            task_id=started.task_id,
+            detail="Added the registered game file",
+        )
+    )
+    assert completed.state == "REVIEW"
+    after = store.detect_external_changes()
+    assert not after.requires_reconciliation
+    assert after.workspace is not None
+    assert any(entry.path == "game.txt" for entry in after.workspace.entries)
+
+
+def test_external_change_requires_reconciliation_and_replays(store):
+    (store.root / "unregistered.txt").write_text("outside GAN\n", encoding="utf-8")
+    detected = store.detect_external_changes()
+    assert detected.requires_reconciliation
+    assert len(detected.reconciliations) == 1
+    change = detected.reconciliations[0]
+    assert change.state == "unresolved"
+    assert change.paths == ["unregistered.txt"]
+    cursor = detected.cursor
+    assert store.detect_external_changes().cursor == cursor
+    with pytest.raises(ConstitutionError) as blocked:
+        store.start_task(
+            TaskStartCommand(
+                request_id="blocked-by-reconciliation",
+                title="Work that must wait",
+                objective="Do not conceal unresolved external changes",
+                required_capabilities=["project_analysis"],
+                deliverables=["Registered result"],
+            )
+        )
+    assert blocked.value.error == "reconciliation_required"
+
+    reconciled = store.reconcile(
+        ReconcileCommand(
+            request_id="reconcile-a",
+            change_id=change.change_id,
+            detail="Attributed a direct external edit",
+        )
+    )
+    assert (
+        store.reconcile(
+            ReconcileCommand(
+                request_id="reconcile-a",
+                change_id=change.change_id,
+                detail="Attributed a direct external edit",
+            )
+        )
+        == reconciled
+    )
+    assert reconciled.state == "reconciled"
+    assert reconciled.task_id is not None
+    assert [artifact.locator for artifact in reconciled.artifacts] == ["unregistered.txt"]
+    snapshot = store.snapshot()
+    assert not snapshot.requires_reconciliation
+    reconstructed = next(task for task in snapshot.tasks if task.task_id == reconciled.task_id)
+    assert reconstructed.state == "REVIEW"
+    assert reconstructed.references == reconciled.artifacts
+    assert store.rebuild() == snapshot
+
+    (store.root / "unregistered.txt").write_text("another outside edit\n", encoding="utf-8")
+    assert store.detect_external_changes().requires_reconciliation
+
+
+def test_git_commit_is_detected_and_associated(store):
+    def git(*arguments):
+        return subprocess.run(
+            ["git", *arguments],
+            cwd=store.root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+
+    git("init")
+    git("config", "user.email", "gan-test@example.invalid")
+    git("config", "user.name", "GAN Test")
+    task = store.start_task(
+        TaskStartCommand(
+            request_id="git-baseline-a",
+            title="Establish Git baseline",
+            objective="Track the repository before external work",
+            required_capabilities=["version_control_analysis"],
+            deliverables=["Committed baseline"],
+        )
+    )
+    (store.root / "tracked.txt").write_text("baseline\n", encoding="utf-8")
+    git("add", "AGENTS.md", "tracked.txt")
+    git("commit", "-m", "test: establish baseline")
+    store.complete_task(
+        TaskProgressCommand(
+            request_id="git-baseline-complete-a",
+            task_id=task.task_id,
+            detail="Committed the registered baseline",
+        )
+    )
+
+    (store.root / "tracked.txt").write_text("external change\n", encoding="utf-8")
+    git("add", "tracked.txt")
+    git("commit", "-m", "test: external change")
+    head = git("rev-parse", "HEAD")
+    detected = store.detect_external_changes()
+    record = next(item for item in detected.reconciliations if item.state == "unresolved")
+    assert record.paths == [".git/HEAD", "tracked.txt"]
+    assert record.git_commits == [head]
+    assert record.git_diff_summary and "tracked.txt" in record.git_diff_summary
+
+
+def test_cli_registers_reports_and_reconciles(store, monkeypatch, capsys):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "gameagent",
+            "task",
+            "start",
+            str(store.root),
+            "--title",
+            "CLI registered work",
+            "--objective",
+            "Exercise the external agent contract",
+        ],
+    )
+    cli_main()
+    started = json.loads(capsys.readouterr().out)
+    assert started["state"] == "RUNNING"
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "gameagent",
+            "task",
+            "complete",
+            str(store.root),
+            "--task-id",
+            started["task_id"],
+            "--detail",
+            "Registered CLI work complete",
+        ],
+    )
+    cli_main()
+    assert json.loads(capsys.readouterr().out)["state"] == "REVIEW"
+
+    (store.root / "cli-external.txt").write_text("unregistered\n", encoding="utf-8")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "gameagent",
+            "reconcile",
+            str(store.root),
+            "--detail",
+            "Reconstructed a CLI-visible external edit",
+        ],
+    )
+    cli_main()
+    assert json.loads(capsys.readouterr().out)["state"] == "reconciled"
+
+    monkeypatch.setattr(sys, "argv", ["gameagent", "task", "status", str(store.root)])
+    cli_main()
+    status = json.loads(capsys.readouterr().out)
+    assert status["requires_reconciliation"] is False
+    assert len(status["tasks"]) == 2
 
 
 def test_concurrent_writers_get_distinct_contiguous_sequences(store):
@@ -245,6 +451,69 @@ def test_rest_imports_and_switches_local_projects(store):
             ).status_code
             == 409
         )
+
+
+def test_rest_registration_detection_and_reconciliation(store):
+    app = create_app(store, TOKEN, ORIGIN)
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+    with TestClient(app) as client:
+        started = client.post(
+            "/task-start",
+            headers=headers,
+            json={
+                "request_id": "api-register-a",
+                "title": "Registered API work",
+                "objective": "Track a direct edit",
+                "required_capabilities": ["project_analysis"],
+                "deliverables": ["A tracked change"],
+            },
+        )
+        assert started.status_code == 200
+        task_id = started.json()["task_id"]
+        blocked = client.post(
+            "/task-block",
+            headers=headers,
+            json={
+                "request_id": "api-block-a",
+                "task_id": task_id,
+                "detail": "Waiting for direction",
+            },
+        )
+        assert blocked.json()["state"] == "BLOCKED"
+        assert (
+            client.post(
+                "/task-start",
+                headers=headers,
+                json={"request_id": "api-resume-a", "task_id": task_id},
+            ).json()["state"]
+            == "RUNNING"
+        )
+        client.post(
+            "/task-complete",
+            headers=headers,
+            json={
+                "request_id": "api-complete-a",
+                "task_id": task_id,
+                "detail": "Registered work reported",
+            },
+        )
+
+        (store.root / "outside.txt").write_text("unregistered\n", encoding="utf-8")
+        scanned = client.post("/workspace-scan", headers=headers).json()
+        assert scanned["requires_reconciliation"] is True
+        change_id = scanned["reconciliations"][0]["change_id"]
+        response = client.post(
+            "/reconcile",
+            headers=headers,
+            json={
+                "request_id": "api-reconcile-a",
+                "change_id": change_id,
+                "detail": "External edit reconstructed",
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["state"] == "reconciled"
+        assert client.get("/project", headers=headers).json()["requires_reconciliation"] is False
 
 
 def test_websocket_rejects_foreign_origin_and_invalid_token(store):

@@ -203,6 +203,38 @@ p {
   margin-bottom: 22px;
   min-width: 0;
 }
+.reconciliation-alert {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 1fr);
+  gap: 28px;
+  padding: 21px;
+  margin-bottom: 22px;
+  border: 1px solid #a66d43;
+  border-radius: 8px;
+  background: #38291f;
+}
+.reconciliation-alert h2 {
+  color: #ffd6ad;
+  font-size: 16px;
+}
+.reconciliation-alert p {
+  max-width: 55rem;
+}
+.reconciliation-alert ul {
+  margin: 14px 0 0;
+  padding-left: 20px;
+}
+.reconciliation-alert code {
+  overflow-wrap: anywhere;
+  color: #ffd6ad;
+}
+.reconciliation-alert form,
+.reconciliation-alert label {
+  margin: 0;
+}
+.reconciliation-alert form > button {
+  float: right;
+}
 .section-heading {
   display: flex;
   align-items: center;
@@ -496,6 +528,9 @@ dialog::backdrop {
     align-items: flex-start;
   }
   .two-column {
+    grid-template-columns: 1fr;
+  }
+  .reconciliation-alert {
     grid-template-columns: 1fr;
   }
   .metrics {

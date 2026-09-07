@@ -1,6 +1,6 @@
 # Game Agent Network contributor instructions
 
-- Current delivery is Phase 2, authorized after the Studio review. Stop before Phase 3.
+- Phase 3 is complete and explicitly authorized after Phase 2 verification. Stop before Phase 4.
 - Read the PRD, `docs/GREENLIGHT_HARVEST.md`, architecture and decision records.
 - Do not edit the PRD without an explicit documented change request.
 - Pydantic models own contracts. Run `pnpm protocol:generate` after changes;
@@ -13,5 +13,7 @@
 - Ask before creating a new file if a relevant file may already exist.
 - Never commit unless explicitly asked. If asked, include
   `Co-Authored-By: Codex Sonnet 4.6 <noreply@anthropic.com>`.
-- When GAN registration is implemented, register meaningful project work before
-  editing; otherwise changes must be reconciled. Registration does not exist yet.
+- Register meaningful project work before editing with `gameagent task start`;
+  otherwise detect and reconcile it with `gameagent reconcile`.
+- Every completed phase handoff must include a verified, clickable Chrome preview
+  URL and leave the local preview running for the user.
