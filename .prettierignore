@@ -3,6 +3,7 @@ node_modules
 .turbo
 dist
 .venv
+.gameagent
 uv.lock
 pnpm-lock.yaml
 **/schema/protocol.schema.json

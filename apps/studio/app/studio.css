@@ -543,3 +543,25 @@ dialog::backdrop {
     padding: 0 16px;
   }
 }
+/* The GM and inbox share the existing production surface. */
+.gm-panel {
+  margin-bottom: 24px;
+}
+.gm-panel form,
+.plan-card form {
+  display: grid;
+  gap: 12px;
+}
+.gm-panel textarea,
+.plan-card textarea,
+.plan-card select {
+  width: 100%;
+}
+.plan-card {
+  border-top: 1px solid var(--border, #334155);
+  padding-top: 16px;
+  margin-top: 20px;
+}
+.plan-card li {
+  margin-block: 12px;
+}

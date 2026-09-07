@@ -13,8 +13,11 @@ from gameagent.api import create_app
 from gameagent.cli import main as cli_main
 from gameagent.codex_bridge import CodexBridge
 from gameagent.constitution import ConstitutionError
+from gameagent.gm import make_plan
 from gameagent.intake import inspect
 from gameagent.models.api import (
+    DecisionCommand,
+    ObjectiveCommand,
     PolicyCommand,
     ReconcileCommand,
     TaskProgressCommand,
@@ -22,7 +25,7 @@ from gameagent.models.api import (
     TaskStartCommand,
     WorkerCommand,
 )
-from gameagent.models.contracts import Project, WorkerRecord
+from gameagent.models.contracts import GMRecord, PlanDraft, Project, WorkerRecord
 from gameagent.persistence.projection import Projection
 from gameagent.projects import ProjectRegistry, ProjectStore, initialize
 
@@ -47,6 +50,245 @@ def proposal(request_id="request-a", **patch):
         deliverables=["Findings with evidence"],
         **patch,
     )
+
+
+def production_draft():
+    return PlanDraft.model_validate(
+        {
+            "summary": "Investigate usability, then specify the UI implementation",
+            "steps": [
+                {
+                    "key": "ux",
+                    "title": "Understand player confusion",
+                    "objective": "Identify why players cannot find the next action",
+                    "required_capabilities": ["usability_analysis"],
+                    "deliverables": ["Evidence-backed interaction specification"],
+                    "dependency_keys": [],
+                    "constraints": [],
+                    "required_evaluations": ["contract_compliance"],
+                },
+                {
+                    "key": "implementation",
+                    "title": "Implement clearer guidance",
+                    "objective": "The next action is discoverable",
+                    "required_capabilities": ["ui_engineering"],
+                    "deliverables": ["Implemented guidance"],
+                    "dependency_keys": ["ux"],
+                    "constraints": [],
+                    "required_evaluations": ["functional_testing"],
+                },
+            ],
+            "questions": [
+                {
+                    "key": "guidance",
+                    "title": "Guidance style",
+                    "reason": "Player-facing direction is not established",
+                    "affected_step_keys": ["ux"],
+                    "category": "player_behavior",
+                    "options": ["Contextual hints", "Explicit tutorial"],
+                    "recommendation": "Contextual hints",
+                    "consequences": ["Hints preserve exploration"],
+                }
+            ],
+        }
+    )
+
+
+def save_plan(store, draft=None):
+    snapshot = store.snapshot()
+    store.record_gm(
+        GMRecord(
+            project_id=snapshot.project.project.id,
+            thread_id="gm-thread",
+            request_id="objective-one",
+            objective="Players understand their next action",
+            state="planning",
+            detail="Planning",
+        )
+    )
+    bridge = CodexBridge(store)
+    plan = make_plan(
+        "objective-one",
+        "Players understand their next action",
+        draft or production_draft(),
+        snapshot.policy,
+        bridge.roster(),
+    )
+    return store.record_plan(plan)
+
+
+def test_gm_plan_decisions_dependency_replay_and_idempotency(store):
+    plan = save_plan(store)
+    snapshot = store.snapshot()
+    assert [t.state for t in snapshot.tasks] == ["NEEDS_HUMAN", "QUEUED"]
+    assert [a.agent.agent_id for a in plan.assignments] == ["ux-specialist", "implementation"]
+    assert store.record_plan(plan) == plan
+    assert store.snapshot() == snapshot
+    command = DecisionCommand(
+        request_id="choice-one",
+        decision_id=snapshot.decisions[0].decision_id,
+        selected_option="Contextual hints",
+        rationale="Preserve exploration",
+    )
+    chosen = store.resolve_decision(command)
+    assert store.resolve_decision(command) == chosen
+    after = store.snapshot()
+    assert [t.state for t in after.tasks] == ["READY", "QUEUED"]
+    assert ProjectStore(store.root).snapshot() == after
+    assert store.rebuild() == after
+    with pytest.raises(ConstitutionError):
+        store.resolve_decision(command.model_copy(update={"selected_option": "Explicit tutorial"}))
+    with pytest.raises(ConstitutionError, match="GM"):
+        store.start_task(TaskStartCommand(request_id="bypass", task_id=plan.tasks[0].task_id))
+
+
+def test_plan_rejects_cycles_bad_questions_and_missing_capability_is_visible(store):
+    draft = production_draft()
+    cyclic = draft.model_copy(
+        update={
+            "steps": [
+                draft.steps[0].model_copy(update={"dependency_keys": ["implementation"]}),
+                draft.steps[1],
+            ]
+        }
+    )
+    with pytest.raises(ConstitutionError) as caught:
+        save_plan(store, cyclic)
+    assert caught.value.error == "dependency_cycle"
+    assert store.snapshot().plans == []
+    bad = draft.model_copy(
+        update={
+            "questions": [draft.questions[0].model_copy(update={"affected_step_keys": ["foreign"]})]
+        }
+    )
+    with pytest.raises(ConstitutionError):
+        save_plan(store, bad)
+    missing = draft.model_copy(
+        update={
+            "steps": [
+                draft.steps[0].model_copy(update={"required_capabilities": ["future_discipline"]})
+            ],
+            "questions": [],
+        }
+    )
+    plan = save_plan(store, missing)
+    assert plan.assignments[0].agent is None
+    assert plan.assignments[0].missing_capabilities == ["future_discipline"]
+    assert store.snapshot().tasks[0].state == "BLOCKED"
+
+
+def test_ask_first_and_mandatory_decision_survive_authority_levels(store):
+    snapshot = store.snapshot()
+    store.update_policy(
+        PolicyCommand(
+            request_id="ask-first",
+            expected_cursor=snapshot.cursor,
+            policy=snapshot.policy.model_copy(update={"authority": "ask_first"}),
+        )
+    )
+    plan = save_plan(store)
+    assert len(store.snapshot().decisions) == 2
+    assert all(t.state == "NEEDS_HUMAN" for t in store.snapshot().tasks)
+    decision = next(d for d in store.snapshot().decisions if d.title == "Approve production plan")
+    store.resolve_decision(
+        DecisionCommand(
+            request_id="reject-plan",
+            decision_id=decision.decision_id,
+            selected_option="Revise plan",
+            rationale="Reduce scope",
+        )
+    )
+    assert all(t.state == "NEEDS_HUMAN" for t in store.snapshot().tasks)
+    with pytest.raises(ConstitutionError):
+        store.record_plan(plan.model_copy(update={"summary": "changed"}))
+
+
+def test_gm_codex_plan_is_async_persistent_and_deduplicated(store):
+    class FakeTurn:
+        async def run(self):
+            await asyncio.sleep(0)
+            return SimpleNamespace(
+                status=SimpleNamespace(value="completed"),
+                final_response=production_draft().model_dump_json(),
+                error=None,
+            )
+
+        async def interrupt(self):
+            pass
+
+    class FakeThread:
+        id = "gm-thread"
+
+        async def turn(self, prompt, **kwargs):
+            assert "PlanDraft" in prompt and "roster" in prompt
+            assert kwargs["sandbox"].value == "read-only"
+            return FakeTurn()
+
+    class FakeClient:
+        starts = 0
+        resumes = 0
+
+        async def account(self):
+            return SimpleNamespace(account=SimpleNamespace(root=SimpleNamespace(type="chatgpt")))
+
+        async def thread_start(self, **kwargs):
+            self.starts += 1
+            return FakeThread()
+
+        async def thread_resume(self, thread_id, **kwargs):
+            assert thread_id == "gm-thread"
+            self.resumes += 1
+            return FakeThread()
+
+        async def close(self):
+            pass
+
+    async def scenario():
+        bridge = CodexBridge(store)
+        bridge.client = FakeClient()
+        command = ObjectiveCommand(
+            request_id="objective-one", objective="Players understand their next action"
+        )
+        record = await bridge.plan(command)
+        assert record.state == "planning"
+        await bridge.gm_job
+        assert store.snapshot().gm.state == "completed"
+        count = store.snapshot().cursor
+        assert (await bridge.plan(command)).state == "completed"
+        assert store.snapshot().cursor == count
+        await bridge.plan(command.model_copy(update={"request_id": "objective-two"}))
+        await bridge.gm_job
+        assert bridge.client.starts == 1
+        assert len(store.rebuild().plans) == 2
+        assert bridge.client.resumes >= 2
+        await bridge.close()
+
+    asyncio.run(scenario())
+
+
+def test_gm_restart_recovers_committed_plan_and_worker_cannot_use_gm_thread(store):
+    plan = save_plan(store)
+
+    async def scenario():
+        bridge = CodexBridge(store)
+        await bridge.recover()
+        assert store.snapshot().gm.state == "completed"
+        await bridge.close()
+
+    asyncio.run(scenario())
+    with pytest.raises(ConstitutionError):
+        store.record_worker(
+            WorkerRecord(
+                worker_id="worker-bad",
+                project_id=plan.project_id,
+                task_id=plan.tasks[0].task_id,
+                thread_id="gm-thread",
+                cwd=str(store.root),
+                state="ready",
+                detail="Bad binding",
+            )
+        )
+    assert store.rebuild().workers == []
 
 
 def test_intake_detects_repository_without_questionnaire(tmp_path):

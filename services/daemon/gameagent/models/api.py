@@ -6,8 +6,12 @@ from pydantic import Field
 
 from gameagent.models.contracts import (
     Event,
+    GMRecord,
     Identifier,
+    InboxDecision,
+    PlanDraft,
     Policy,
+    ProductionPlan,
     Project,
     ReconciliationRecord,
     TaskContract,
@@ -65,6 +69,21 @@ class ProjectSnapshot(Value):
     workspace: WorkspaceFingerprint | None = None
     reconciliations: list[ReconciliationRecord] = Field(default_factory=list)
     requires_reconciliation: bool = False
+    gm: GMRecord | None = None
+    plans: list[ProductionPlan] = Field(default_factory=list)
+    decisions: list[InboxDecision] = Field(default_factory=list)
+
+
+class ObjectiveCommand(Value):
+    request_id: Identifier
+    objective: Text
+
+
+class DecisionCommand(Value):
+    request_id: Identifier
+    decision_id: Identifier
+    selected_option: Text
+    rationale: Text
 
 
 class ProjectSummary(Value):
@@ -104,6 +123,9 @@ class StreamMessage(EventPage):
 
 
 class ApiCatalog(Value):
+    plan_draft: PlanDraft
+    objective_command: ObjectiveCommand
+    decision_command: DecisionCommand
     project_catalog: ProjectCatalog
     project_import: ProjectImport
     project_selection: ProjectSelection

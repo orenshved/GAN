@@ -3,7 +3,9 @@
 A local-first production orchestration foundation for turning human game direction
 into accountable tasks, specialist work and inspectable evidence.
 
-**Status: Phase 3 complete.** Direct agents can register meaningful work through
+**Status: Phase 4 complete.** The persistent project GM turns objectives into
+typed multidisciplinary plans, matches built-in capabilities, and surfaces
+human decisions. Direct agents can register meaningful work through
 the CLI; each GAN-enabled repository receives managed `AGENTS.md` instructions.
 The daemon watches project files, Git status, and commits, records unregistered
 changes, and keeps Studio visibly unresolved until those changes are attributed
@@ -115,6 +117,7 @@ task in `REVIEW` and records Git context plus content-addressed surviving files.
 - [Phase 1 handoff](docs/development/PHASE_1_HANDOFF.md)
 - [Phase 2 handoff](docs/development/PHASE_2_HANDOFF.md)
 - [Phase 3 handoff](docs/development/PHASE_3_HANDOFF.md)
+- [Phase 4 handoff](docs/development/PHASE_4_HANDOFF.md)
 
 ## Roadmap
 

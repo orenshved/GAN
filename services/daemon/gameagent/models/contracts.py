@@ -554,6 +554,97 @@ class WorkerEvent(EventBase):
     payload: WorkerRecord
 
 
+class PlanStep(Value):
+    key: Identifier
+    title: Text
+    objective: Text
+    required_capabilities: Annotated[list[Identifier], Field(min_length=1)]
+    deliverables: Annotated[list[Text], Field(min_length=1)]
+    dependency_keys: list[Identifier]
+    constraints: list[Text]
+    required_evaluations: Annotated[list[Identifier], Field(min_length=1)]
+
+
+class PlanQuestion(Value):
+    key: Identifier
+    title: Text
+    reason: Text
+    affected_step_keys: Annotated[list[Identifier], Field(min_length=1)]
+    category: Literal[
+        "creative_intent",
+        "scope",
+        "money",
+        "irreversible_structure",
+        "public_exposure",
+        "player_behavior",
+        "ambiguity",
+    ]
+    options: Annotated[list[Text], Field(min_length=2)]
+    recommendation: Text
+    consequences: list[Text]
+
+
+class PlanDraft(Value):
+    summary: Text
+    steps: Annotated[list[PlanStep], Field(min_length=1, max_length=30)]
+    questions: list[PlanQuestion]
+
+
+class GMRecord(Contract):
+    project_id: Identifier
+    thread_id: Text
+    request_id: Identifier
+    objective: Text
+    state: Literal["ready", "planning", "completed", "failed", "interrupted"]
+    detail: Text
+
+
+class PlanAssignment(Value):
+    task_id: Identifier
+    agent: AgentDefinition | None
+    missing_capabilities: list[Identifier]
+
+
+class ProductionPlan(Contract):
+    plan_id: Identifier
+    project_id: Identifier
+    objective: Text
+    summary: Text
+    tasks: Annotated[list[TaskContract], Field(min_length=1)]
+    assignments: list[PlanAssignment]
+    questions: list[PlanQuestion]
+    policy: Policy
+
+
+class InboxDecision(Contract):
+    decision_id: Identifier
+    plan_id: Identifier
+    project_id: Identifier
+    title: Text
+    reason: Text
+    task_ids: list[Identifier]
+    options: Annotated[list[Text], Field(min_length=2)]
+    recommendation: Text
+    consequences: list[Text]
+    selected_option: Text | None = None
+    rationale: Text | None = None
+
+
+class GMEvent(EventBase):
+    event_type: Literal["gm.updated"]
+    payload: GMRecord
+
+
+class PlanEvent(EventBase):
+    event_type: Literal["gm.plan_created"]
+    payload: ProductionPlan
+
+
+class InboxEvent(EventBase):
+    event_type: Literal["gm.decision_resolved"]
+    payload: InboxDecision
+
+
 Event = Annotated[
     TaskEvent
     | AgentEvent
@@ -569,7 +660,10 @@ Event = Annotated[
     | ProjectInitializedEvent
     | TaskProposedEvent
     | PolicyUpdatedEvent
-    | WorkerEvent,
+    | WorkerEvent
+    | GMEvent
+    | PlanEvent
+    | InboxEvent,
     Field(discriminator="event_type"),
 ]
 

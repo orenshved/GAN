@@ -1,5 +1,22 @@
 [
   {
+    "name": "GM cannot accept invented state",
+    "definition": "GMRecord",
+    "value": {
+      "project_id": "project-test",
+      "thread_id": "thread-test",
+      "request_id": "objective-test",
+      "objective": "Improve onboarding",
+      "state": "approved",
+      "detail": "Invalid state"
+    }
+  },
+  {
+    "name": "production plan must contain work",
+    "definition": "PlanDraft",
+    "value": { "summary": "Empty plan", "steps": [], "questions": [] }
+  },
+  {
     "name": "invalid capability id",
     "definition": "Capability",
     "value": {

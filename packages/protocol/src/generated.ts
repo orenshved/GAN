@@ -124,6 +124,9 @@ export type Event =
       | TaskProposedEvent
       | PolicyUpdatedEvent
       | WorkerEvent
+      | GMEvent
+      | PlanEvent
+      | InboxEvent
     )
   | null;
 export type ActorId = string;
@@ -426,16 +429,102 @@ export type SchemaVersion26 = 1;
 export type Sequence14 = number;
 export type TaskId21 = string | null;
 export type Timestamp14 = string;
+export type ActorId15 = string;
+export type ActorType15 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId15 = string;
+export type EventId15 = string;
+export type EventType15 = "gm.updated";
+export type Detail3 = string;
+export type Objective1 = string;
+export type ProjectId22 = string;
+export type RequestId = string;
+export type SchemaVersion27 = 1;
+export type State2 = "ready" | "planning" | "completed" | "failed" | "interrupted";
+export type ThreadId2 = string;
+export type ProjectId23 = string;
+export type SchemaVersion28 = 1;
+export type Sequence15 = number;
+export type TaskId22 = string | null;
+export type Timestamp15 = string;
+export type ActorId16 = string;
+export type ActorType16 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId16 = string;
+export type EventId16 = string;
+export type EventType16 = "gm.plan_created";
+export type MissingCapabilities = string[];
+export type TaskId23 = string;
+export type Assignments = PlanAssignment[];
+export type Objective2 = string;
+export type PlanId = string;
+export type ProjectId24 = string;
+/**
+ * @minItems 1
+ */
+export type AffectedStepKeys = [string, ...string[]];
+export type Category =
+  | "creative_intent"
+  | "scope"
+  | "money"
+  | "irreversible_structure"
+  | "public_exposure"
+  | "player_behavior"
+  | "ambiguity";
+export type Consequences1 = string[];
+export type Key = string;
+/**
+ * @minItems 2
+ */
+export type Options1 = [string, string, ...string[]];
+export type Reason3 = string;
+export type Recommendation1 = string;
+export type Title2 = string;
+export type Questions = PlanQuestion[];
+export type SchemaVersion29 = 1;
+export type Summary1 = string;
+/**
+ * @minItems 1
+ */
+export type Tasks = [TaskContract, ...TaskContract[]];
+export type ProjectId25 = string;
+export type SchemaVersion30 = 1;
+export type Sequence16 = number;
+export type TaskId24 = string | null;
+export type Timestamp16 = string;
+export type ActorId17 = string;
+export type ActorType17 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId17 = string;
+export type EventId17 = string;
+export type EventType17 = "gm.decision_resolved";
+export type Consequences2 = string[];
+export type DecisionId2 = string;
+/**
+ * @minItems 2
+ */
+export type Options2 = [string, string, ...string[]];
+export type PlanId1 = string;
+export type ProjectId26 = string;
+export type Rationale1 = string | null;
+export type Reason4 = string;
+export type Recommendation2 = string;
+export type SchemaVersion31 = 1;
+export type SelectedOption1 = string | null;
+export type TaskIds = string[];
+export type Title3 = string;
+export type ProjectId27 = string;
+export type SchemaVersion32 = 1;
+export type Sequence17 = number;
+export type TaskId25 = string | null;
+export type Timestamp17 = string;
 export type CaptureOrigin = "runtime" | "source" | "simulation" | "human_observation" | "model_output";
 export type CapturedAt1 = string;
 export type EvidenceClass = "deterministic" | "measured" | "comparative" | "heuristic" | "human";
 export type EvidenceId = string;
 export type ProducerId = string;
 export type ProducerType = "tool" | "model" | "human";
-export type ProjectId22 = string;
-export type SchemaVersion27 = 1;
-export type Summary1 = string;
-export type TaskId22 = string;
+export type ProjectId28 = string;
+export type SchemaVersion33 = 1;
+export type Summary2 = string;
+export type TaskId26 = string;
 export type Confidence = number;
 export type CreatedAt = string;
 export type Entities1 = EntityRef[];
@@ -451,8 +540,8 @@ export type Kind2 =
   | "agent_recommendation"
   | "evaluation";
 export type KnowledgeId = string;
-export type ProjectId23 = string;
-export type SchemaVersion28 = 1;
+export type ProjectId29 = string;
+export type SchemaVersion34 = 1;
 export type Statement = string;
 export type SupersedesId = string | null;
 export type Billing = "local" | "codex_subscription" | "paid";
@@ -466,8 +555,8 @@ export type Verified1 = true;
 export type VerifiedAt = string;
 export type Currency1 = "USD";
 export type ProviderId2 = string;
-export type SchemaVersion29 = 1;
-export type State2 = "ACTIVE" | "DISABLED" | "DISABLED_UNCAPPED";
+export type SchemaVersion35 = 1;
+export type State3 = "ACTIVE" | "DISABLED" | "DISABLED_UNCAPPED";
 /**
  * @minItems 1
  */
@@ -478,9 +567,13 @@ export type InstallState = "missing" | "installed" | "unhealthy";
 export type Invocation = "cli" | "http" | "sdk" | "mcp";
 export type Location = "local" | "cloud";
 export type OutputContract1 = string;
-export type SchemaVersion30 = 1;
+export type SchemaVersion36 = 1;
 export type ToolId = string;
 export type Version4 = string;
+export type DecisionId3 = string;
+export type Rationale2 = string;
+export type RequestId1 = string;
+export type SelectedOption2 = string;
 export type Cursor = number;
 export type Events = (
   | TaskEvent
@@ -498,25 +591,56 @@ export type Events = (
   | TaskProposedEvent
   | PolicyUpdatedEvent
   | WorkerEvent
+  | GMEvent
+  | PlanEvent
+  | InboxEvent
 )[];
 export type HasMore = boolean;
+export type Objective3 = string;
+export type RequestId2 = string;
+export type Questions1 = PlanQuestion[];
+/**
+ * @minItems 1
+ * @maxItems 30
+ */
+export type Steps = [PlanStep, ...PlanStep[]];
+export type Constraints3 = string[];
+/**
+ * @minItems 1
+ */
+export type Deliverables1 = [string, ...string[]];
+export type DependencyKeys = string[];
+export type Key1 = string;
+export type Objective4 = string;
+/**
+ * @minItems 1
+ */
+export type RequiredCapabilities2 = [string, ...string[]];
+/**
+ * @minItems 1
+ */
+export type RequiredEvaluations1 = [string, ...string[]];
+export type Title4 = string;
+export type Summary3 = string;
 export type ExpectedCursor = number;
-export type RequestId = string;
+export type RequestId3 = string;
 export type ActiveProjectId = string;
 export type Engine1 = string | null;
 export type Name2 = string;
-export type ProjectId24 = string;
+export type ProjectId30 = string;
 export type Root = string;
 export type Stage1 = string;
 export type Projects = ProjectSummary[];
 export type Path1 = string;
-export type ProjectId25 = string;
+export type ProjectId31 = string;
 export type Cursor1 = number;
+export type Decisions = InboxDecision[];
 export type HistoryDigest = string;
+export type Plans = ProductionPlan[];
 export type Artifacts1 = SourceRef[];
 export type BaselineDigest1 = string;
 export type ChangeId2 = string;
-export type Detail3 = string | null;
+export type Detail4 = string | null;
 export type DetectedAt = string;
 export type GitCommits1 = string[];
 export type GitDiffSummary1 = string | null;
@@ -524,19 +648,19 @@ export type GitDiffSummary1 = string | null;
  * @minItems 1
  */
 export type Paths2 = [string, ...string[]];
-export type ProjectId26 = string;
+export type ProjectId32 = string;
 export type ReconciledAt = string | null;
-export type SchemaVersion31 = 1;
-export type State3 = "unresolved" | "reconciled";
-export type TaskId23 = string | null;
+export type SchemaVersion37 = 1;
+export type State4 = "unresolved" | "reconciled";
+export type TaskId27 = string | null;
 export type Reconciliations = ReconciliationRecord[];
 export type RequiresReconciliation = boolean;
-export type Tasks = TaskContract[];
+export type Tasks1 = TaskContract[];
 export type Workers = WorkerRecord[];
 export type ChangeId3 = string;
-export type Detail4 = string;
-export type RequestId1 = string;
-export type TaskId24 = string | null;
+export type Detail5 = string;
+export type RequestId4 = string;
+export type TaskId28 = string | null;
 export type Cursor2 = number;
 export type Events1 = (
   | TaskEvent
@@ -554,31 +678,34 @@ export type Events1 = (
   | TaskProposedEvent
   | PolicyUpdatedEvent
   | WorkerEvent
+  | GMEvent
+  | PlanEvent
+  | InboxEvent
 )[];
 export type HasMore1 = boolean;
 export type Type2 = "events";
-export type Detail5 = string;
-export type RequestId2 = string;
-export type TaskId25 = string;
+export type Detail6 = string;
+export type RequestId5 = string;
+export type TaskId29 = string;
 /**
  * @minItems 1
  */
-export type Deliverables1 = [string, ...string[]];
+export type Deliverables2 = [string, ...string[]];
 export type DependencyIds1 = string[];
-export type Objective1 = string;
-export type RequestId3 = string;
+export type Objective5 = string;
+export type RequestId6 = string;
 /**
  * @minItems 1
  */
-export type RequiredCapabilities2 = [string, ...string[]];
-export type Title2 = string;
-export type Deliverables2 = string[];
-export type Objective2 = string | null;
-export type RequestId4 = string;
-export type RequiredCapabilities3 = string[];
-export type TaskId26 = string | null;
-export type Title3 = string | null;
-export type TaskId27 = string;
+export type RequiredCapabilities3 = [string, ...string[]];
+export type Title5 = string;
+export type Deliverables3 = string[];
+export type Objective6 = string | null;
+export type RequestId7 = string;
+export type RequiredCapabilities4 = string[];
+export type TaskId30 = string | null;
+export type Title6 = string | null;
+export type TaskId31 = string;
 export type WorkerId1 = string | null;
 
 /**
@@ -1302,6 +1429,126 @@ export interface WorkerResult {
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "GMEvent".
+ */
+export interface GMEvent {
+  actor_id: ActorId15;
+  actor_type: ActorType15;
+  correlation_id: CorrelationId15;
+  event_id: EventId15;
+  event_type: EventType15;
+  payload: GMRecord;
+  project_id: ProjectId23;
+  schema_version?: SchemaVersion28;
+  sequence: Sequence15;
+  task_id: TaskId22;
+  timestamp: Timestamp15;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "GMRecord".
+ */
+export interface GMRecord {
+  detail: Detail3;
+  objective: Objective1;
+  project_id: ProjectId22;
+  request_id: RequestId;
+  schema_version?: SchemaVersion27;
+  state: State2;
+  thread_id: ThreadId2;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "PlanEvent".
+ */
+export interface PlanEvent {
+  actor_id: ActorId16;
+  actor_type: ActorType16;
+  correlation_id: CorrelationId16;
+  event_id: EventId16;
+  event_type: EventType16;
+  payload: ProductionPlan;
+  project_id: ProjectId25;
+  schema_version?: SchemaVersion30;
+  sequence: Sequence16;
+  task_id: TaskId24;
+  timestamp: Timestamp16;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ProductionPlan".
+ */
+export interface ProductionPlan {
+  assignments: Assignments;
+  objective: Objective2;
+  plan_id: PlanId;
+  policy: Policy;
+  project_id: ProjectId24;
+  questions: Questions;
+  schema_version?: SchemaVersion29;
+  summary: Summary1;
+  tasks: Tasks;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "PlanAssignment".
+ */
+export interface PlanAssignment {
+  agent: AgentDefinition | null;
+  missing_capabilities: MissingCapabilities;
+  task_id: TaskId23;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "PlanQuestion".
+ */
+export interface PlanQuestion {
+  affected_step_keys: AffectedStepKeys;
+  category: Category;
+  consequences: Consequences1;
+  key: Key;
+  options: Options1;
+  reason: Reason3;
+  recommendation: Recommendation1;
+  title: Title2;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "InboxEvent".
+ */
+export interface InboxEvent {
+  actor_id: ActorId17;
+  actor_type: ActorType17;
+  correlation_id: CorrelationId17;
+  event_id: EventId17;
+  event_type: EventType17;
+  payload: InboxDecision;
+  project_id: ProjectId27;
+  schema_version?: SchemaVersion32;
+  sequence: Sequence17;
+  task_id: TaskId25;
+  timestamp: Timestamp17;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "InboxDecision".
+ */
+export interface InboxDecision {
+  consequences: Consequences2;
+  decision_id: DecisionId2;
+  options: Options2;
+  plan_id: PlanId1;
+  project_id: ProjectId26;
+  rationale?: Rationale1;
+  reason: Reason4;
+  recommendation: Recommendation2;
+  schema_version?: SchemaVersion31;
+  selected_option?: SelectedOption1;
+  task_ids: TaskIds;
+  title: Title3;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "Evidence".
  */
 export interface Evidence {
@@ -1311,11 +1558,11 @@ export interface Evidence {
   evidence_id: EvidenceId;
   producer_id: ProducerId;
   producer_type: ProducerType;
-  project_id: ProjectId22;
-  schema_version?: SchemaVersion27;
+  project_id: ProjectId28;
+  schema_version?: SchemaVersion33;
   source: SourceRef;
-  summary: Summary1;
-  task_id: TaskId22;
+  summary: Summary2;
+  task_id: TaskId26;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1328,8 +1575,8 @@ export interface KnowledgeEntry {
   evidence_ids: EvidenceIds3;
   kind: Kind2;
   knowledge_id: KnowledgeId;
-  project_id: ProjectId23;
-  schema_version?: SchemaVersion28;
+  project_id: ProjectId29;
+  schema_version?: SchemaVersion34;
   source: SourceRef;
   statement: Statement;
   supersedes_id?: SupersedesId;
@@ -1343,8 +1590,8 @@ export interface Provider {
   cap: Cap;
   currency?: Currency1;
   provider_id: ProviderId2;
-  schema_version?: SchemaVersion29;
-  state: State2;
+  schema_version?: SchemaVersion35;
+  state: State3;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1380,9 +1627,19 @@ export interface ToolDefinition {
   location: Location;
   output_contract: OutputContract1;
   permissions: Permissions;
-  schema_version?: SchemaVersion30;
+  schema_version?: SchemaVersion36;
   tool_id: ToolId;
   version: Version4;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "DecisionCommand".
+ */
+export interface DecisionCommand {
+  decision_id: DecisionId3;
+  rationale: Rationale2;
+  request_id: RequestId1;
+  selected_option: SelectedOption2;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1395,12 +1652,43 @@ export interface EventPage {
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ObjectiveCommand".
+ */
+export interface ObjectiveCommand {
+  objective: Objective3;
+  request_id: RequestId2;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "PlanDraft".
+ */
+export interface PlanDraft {
+  questions: Questions1;
+  steps: Steps;
+  summary: Summary3;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "PlanStep".
+ */
+export interface PlanStep {
+  constraints: Constraints3;
+  deliverables: Deliverables1;
+  dependency_keys: DependencyKeys;
+  key: Key1;
+  objective: Objective4;
+  required_capabilities: RequiredCapabilities2;
+  required_evaluations: RequiredEvaluations1;
+  title: Title4;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "PolicyCommand".
  */
 export interface PolicyCommand {
   expected_cursor: ExpectedCursor;
   policy: Policy;
-  request_id: RequestId;
+  request_id: RequestId3;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1417,7 +1705,7 @@ export interface ProjectCatalog {
 export interface ProjectSummary {
   engine?: Engine1;
   name: Name2;
-  project_id: ProjectId24;
+  project_id: ProjectId30;
   root: Root;
   stage: Stage1;
 }
@@ -1433,7 +1721,7 @@ export interface ProjectImport {
  * via the `definition` "ProjectSelection".
  */
 export interface ProjectSelection {
-  project_id: ProjectId25;
+  project_id: ProjectId31;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1441,12 +1729,15 @@ export interface ProjectSelection {
  */
 export interface ProjectSnapshot {
   cursor: Cursor1;
+  decisions?: Decisions;
+  gm?: GMRecord | null;
   history_digest: HistoryDigest;
+  plans?: Plans;
   policy: Policy;
   project: Project;
   reconciliations?: Reconciliations;
   requires_reconciliation?: RequiresReconciliation;
-  tasks: Tasks;
+  tasks: Tasks1;
   workers?: Workers;
   workspace?: WorkspaceFingerprint | null;
 }
@@ -1458,17 +1749,17 @@ export interface ReconciliationRecord {
   artifacts?: Artifacts1;
   baseline_digest: BaselineDigest1;
   change_id: ChangeId2;
-  detail?: Detail3;
+  detail?: Detail4;
   detected_at: DetectedAt;
   git_commits?: GitCommits1;
   git_diff_summary?: GitDiffSummary1;
   observed: WorkspaceFingerprint;
   paths: Paths2;
-  project_id: ProjectId26;
+  project_id: ProjectId32;
   reconciled_at?: ReconciledAt;
-  schema_version?: SchemaVersion31;
-  state?: State3;
-  task_id?: TaskId23;
+  schema_version?: SchemaVersion37;
+  state?: State4;
+  task_id?: TaskId27;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1476,9 +1767,9 @@ export interface ReconciliationRecord {
  */
 export interface ReconcileCommand {
   change_id: ChangeId3;
-  detail: Detail4;
-  request_id: RequestId1;
-  task_id?: TaskId24;
+  detail: Detail5;
+  request_id: RequestId4;
+  task_id?: TaskId28;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -1495,39 +1786,39 @@ export interface StreamMessage {
  * via the `definition` "TaskProgressCommand".
  */
 export interface TaskProgressCommand {
-  detail: Detail5;
-  request_id: RequestId2;
-  task_id: TaskId25;
+  detail: Detail6;
+  request_id: RequestId5;
+  task_id: TaskId29;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "TaskProposal".
  */
 export interface TaskProposal {
-  deliverables: Deliverables1;
+  deliverables: Deliverables2;
   dependency_ids?: DependencyIds1;
-  objective: Objective1;
-  request_id: RequestId3;
-  required_capabilities: RequiredCapabilities2;
-  title: Title2;
+  objective: Objective5;
+  request_id: RequestId6;
+  required_capabilities: RequiredCapabilities3;
+  title: Title5;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "TaskStartCommand".
  */
 export interface TaskStartCommand {
-  deliverables?: Deliverables2;
-  objective?: Objective2;
-  request_id: RequestId4;
-  required_capabilities?: RequiredCapabilities3;
-  task_id?: TaskId26;
-  title?: Title3;
+  deliverables?: Deliverables3;
+  objective?: Objective6;
+  request_id: RequestId7;
+  required_capabilities?: RequiredCapabilities4;
+  task_id?: TaskId30;
+  title?: Title6;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "WorkerCommand".
  */
 export interface WorkerCommand {
-  task_id: TaskId27;
+  task_id: TaskId31;
   worker_id?: WorkerId1;
 }

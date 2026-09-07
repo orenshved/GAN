@@ -19,6 +19,9 @@ const allowed = new Set([
   "worker-login",
   "workers",
   "worker-interrupt",
+  "gm-objective",
+  "agent-roster",
+  "decision-resolve",
 ]);
 
 async function proxy(

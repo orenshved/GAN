@@ -19,7 +19,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from gameagent.codex_bridge import CodexBridge
 from gameagent.constitution import ConstitutionError
 from gameagent.models.api import (
+    DecisionCommand,
     EventPage,
+    ObjectiveCommand,
     PolicyCommand,
     ProjectCatalog,
     ProjectImport,
@@ -32,7 +34,15 @@ from gameagent.models.api import (
     TaskStartCommand,
     WorkerCommand,
 )
-from gameagent.models.contracts import Policy, ReconciliationRecord, TaskContract, WorkerRecord
+from gameagent.models.contracts import (
+    AgentDefinition,
+    GMRecord,
+    InboxDecision,
+    Policy,
+    ReconciliationRecord,
+    TaskContract,
+    WorkerRecord,
+)
 from gameagent.projects import ProjectRegistry, ProjectStore
 
 logger = logging.getLogger(__name__)
@@ -102,6 +112,18 @@ def create_app(
     @app.post("/worker-login")
     async def worker_login() -> dict[str, str]:
         return await bridge().login()
+
+    @app.post("/gm-objective", response_model=GMRecord, status_code=202)
+    async def gm_objective(command: ObjectiveCommand) -> GMRecord:
+        return await bridge().plan(command)
+
+    @app.get("/agent-roster", response_model=list[AgentDefinition])
+    def agent_roster() -> list[AgentDefinition]:
+        return bridge().roster()
+
+    @app.post("/decision-resolve", response_model=InboxDecision)
+    def decision_resolve(command: DecisionCommand) -> InboxDecision:
+        return registry.current.resolve_decision(command)
 
     @app.post("/workers", response_model=WorkerRecord)
     async def worker_start(command: WorkerCommand) -> WorkerRecord:

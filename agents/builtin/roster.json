@@ -1,0 +1,205 @@
+[
+  {
+    "schema_version": 1,
+    "agent_id": "project-intelligence",
+    "name": "Project Intelligence",
+    "version": "1.0.0",
+    "description": "Inspect source context and report cited findings and unknowns.",
+    "capabilities": ["project_analysis", "dependency_analysis"],
+    "instructions": {
+      "base": "Inspect source context and report cited findings and unknowns.",
+      "constraints": [
+        "Publish findings and blockers to the GM; never change production scope or hire agents.",
+        "Read-only planning and analysis until execution adapters and task permissions allow more."
+      ]
+    },
+    "models": {
+      "preferred": ["codex_authenticated"],
+      "alternatives": []
+    },
+    "allowed_tool_ids": [],
+    "permissions": {
+      "read_project": true
+    },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "ux-specialist",
+    "name": "UX Specialist",
+    "version": "1.0.0",
+    "description": "Analyze interaction and accessibility. Identify unresolved player-facing choices.",
+    "capabilities": [
+      "usability_analysis",
+      "interaction_design",
+      "controller_navigation",
+      "accessibility_ux",
+      "onboarding_ux"
+    ],
+    "instructions": {
+      "base": "Analyze interaction and accessibility. Identify unresolved player-facing choices.",
+      "constraints": [
+        "Publish findings and blockers to the GM; never change production scope or hire agents.",
+        "Read-only planning and analysis until execution adapters and task permissions allow more."
+      ]
+    },
+    "models": {
+      "preferred": ["codex_authenticated"],
+      "alternatives": []
+    },
+    "allowed_tool_ids": [],
+    "permissions": {
+      "read_project": true
+    },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "visual-ui",
+    "name": "Visual/UI Specialist",
+    "version": "1.0.0",
+    "description": "Specify visual assets and evaluate consistency against explicit references.",
+    "capabilities": ["art_direction", "ui_art", "visual_development"],
+    "instructions": {
+      "base": "Specify visual assets and evaluate consistency against explicit references.",
+      "constraints": [
+        "Publish findings and blockers to the GM; never change production scope or hire agents.",
+        "Read-only planning and analysis until execution adapters and task permissions allow more."
+      ]
+    },
+    "models": {
+      "preferred": ["codex_authenticated"],
+      "alternatives": []
+    },
+    "allowed_tool_ids": [],
+    "permissions": {
+      "read_project": true
+    },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "implementation",
+    "name": "Implementation Specialist",
+    "version": "1.0.0",
+    "description": "Plan engine-appropriate implementation from the task contract and project constraints.",
+    "capabilities": [
+      "ui_engineering",
+      "gameplay_engineering",
+      "tooling",
+      "build_engineering"
+    ],
+    "instructions": {
+      "base": "Plan engine-appropriate implementation from the task contract and project constraints.",
+      "constraints": [
+        "Publish findings and blockers to the GM; never change production scope or hire agents.",
+        "Read-only planning and analysis until execution adapters and task permissions allow more."
+      ]
+    },
+    "models": {
+      "preferred": ["codex_authenticated"],
+      "alternatives": []
+    },
+    "allowed_tool_ids": [],
+    "permissions": {
+      "read_project": true
+    },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "qa-specialist",
+    "name": "QA Specialist",
+    "version": "1.0.0",
+    "description": "Define independent evidence and quality gates; never claim model opinion proves visual quality or fun.",
+    "capabilities": [
+      "functional_testing",
+      "automated_testing",
+      "ux_testing",
+      "visual_regression",
+      "accessibility_qa"
+    ],
+    "instructions": {
+      "base": "Define independent evidence and quality gates; never claim model opinion proves visual quality or fun.",
+      "constraints": [
+        "Publish findings and blockers to the GM; never change production scope or hire agents.",
+        "Read-only planning and analysis until execution adapters and task permissions allow more."
+      ]
+    },
+    "models": {
+      "preferred": ["codex_authenticated"],
+      "alternatives": []
+    },
+    "allowed_tool_ids": [],
+    "permissions": {
+      "read_project": true
+    },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "local-model-expert",
+    "name": "Local Model Expert",
+    "version": "1.0.0",
+    "description": "Assess local model and resource suitability without installing software.",
+    "capabilities": ["local_model_selection", "resource_analysis"],
+    "instructions": {
+      "base": "Assess local model and resource suitability without installing software.",
+      "constraints": [
+        "Publish findings and blockers to the GM; never change production scope or hire agents.",
+        "Read-only planning and analysis until execution adapters and task permissions allow more."
+      ]
+    },
+    "models": {
+      "preferred": ["codex_authenticated"],
+      "alternatives": []
+    },
+    "allowed_tool_ids": [],
+    "permissions": {
+      "read_project": true
+    },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "probationary": true
+  }
+]

@@ -10,6 +10,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import dynamic from "next/dynamic";
 import type {
   EventPage,
+  InboxDecision,
   Policy,
   ProjectCatalog,
   ProjectSnapshot,
@@ -25,6 +26,7 @@ const Network = dynamic(() => import("./network"), {
 const views = [
   "Director Desk",
   "Production",
+  "Needs Oren",
   "Workers",
   "Network",
   "Activity",
@@ -298,6 +300,21 @@ function Desk(connection: Connection) {
           )}
           {snapshot && (
             <>
+              {view === "Needs Oren" && (
+                <DecisionInbox
+                  key={activeProjectId}
+                  snapshot={snapshot}
+                  connection={connection}
+                />
+              )}
+              {(view === "Director Desk" || view === "Production") && (
+                <GMPanel
+                  key={activeProjectId}
+                  snapshot={snapshot}
+                  connection={connection}
+                  select={selectTask}
+                />
+              )}
               {view === "Workers" && (
                 <Workers snapshot={snapshot} connection={connection} />
               )}
@@ -546,7 +563,263 @@ function Desk(connection: Connection) {
   );
 }
 
+function GMPanel({
+  snapshot,
+  connection,
+  select,
+}: {
+  snapshot: ProjectSnapshot;
+  connection: Connection;
+  select: (id: string) => void;
+}) {
+  const client = useQueryClient();
+  const [objective, setObjective] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const requestId = useRef<string | null>(null);
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    requestId.current ??= `objective-${crypto.randomUUID()}`;
+    try {
+      await request(
+        connection,
+        "/gm-objective",
+        { request_id: requestId.current, objective },
+        "POST",
+      );
+      setObjective("");
+      requestId.current = null;
+      await client.invalidateQueries({ queryKey: ["project"] });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Planning request failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <section className="panel gm-panel">
+      <div className="section-heading">
+        <h2>Direct the project</h2>
+        <span className="eyebrow">PROJECT GM</span>
+      </div>
+      <p>
+        Describe the outcome. The GM will map the work, find specialists and
+        surface choices that need your judgment.
+      </p>
+      <form onSubmit={(event) => void submit(event)}>
+        <label htmlFor="gm-objective">Production objective</label>
+        <textarea
+          id="gm-objective"
+          required
+          rows={3}
+          value={objective}
+          onChange={(event) => {
+            setObjective(event.target.value);
+            requestId.current = null;
+          }}
+          placeholder="Players should understand what to do next…"
+        />
+        <button
+          disabled={
+            busy ||
+            snapshot.gm?.state === "planning" ||
+            snapshot.requires_reconciliation ||
+            !objective.trim()
+          }
+        >
+          {busy ? "Starting…" : "Create production plan"}
+        </button>
+      </form>
+      {error && (
+        <p role="alert" className="error">
+          {error}
+        </p>
+      )}
+      {snapshot.gm && (
+        <p role="status">
+          <Status state={snapshot.gm.state} /> {snapshot.gm.detail}
+        </p>
+      )}
+      {(snapshot.plans ?? [])
+        .slice()
+        .reverse()
+        .map((plan) => (
+          <article key={plan.plan_id} className="plan-card">
+            <h3>{plan.objective}</h3>
+            <p>{plan.summary}</p>
+            <p className="muted">
+              {plan.tasks.length} tasks ·{" "}
+              {snapshot.decisions?.filter(
+                (d) => d.plan_id === plan.plan_id && !d.selected_option,
+              ).length ?? 0}{" "}
+              decisions pending
+            </p>
+            <ul>
+              {plan.tasks.map((task) => {
+                const assignment = plan.assignments.find(
+                  (a) => a.task_id === task.task_id,
+                );
+                const state =
+                  snapshot.tasks.find((t) => t.task_id === task.task_id)
+                    ?.state ?? task.state;
+                return (
+                  <li key={task.task_id}>
+                    <button
+                      className="text-button"
+                      onClick={() => select(task.task_id)}
+                    >
+                      {task.title}
+                    </button>{" "}
+                    <Status state={state ?? "QUEUED"} />
+                    <p>
+                      {assignment?.agent
+                        ? `${assignment.agent.name} · v${assignment.agent.version}`
+                        : `Capability gap: ${assignment?.missing_capabilities.join(", ")}`}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+            <details>
+              <summary>Plan record</summary>
+              <pre>{JSON.stringify(plan, null, 2)}</pre>
+            </details>
+          </article>
+        ))}
+    </section>
+  );
+}
+
+function DecisionInbox({
+  snapshot,
+  connection,
+}: {
+  snapshot: ProjectSnapshot;
+  connection: Connection;
+}) {
+  return (
+    <section className="panel">
+      <h2>Needs Oren</h2>
+      <p>Your choices become durable project decisions.</p>
+      {!snapshot.decisions?.length && <p>No decisions need your attention.</p>}
+      {(snapshot.decisions ?? []).map((decision) => (
+        <DecisionCard
+          key={decision.decision_id}
+          decision={decision}
+          snapshot={snapshot}
+          connection={connection}
+        />
+      ))}
+    </section>
+  );
+}
+
+function DecisionCard({
+  decision,
+  snapshot,
+  connection,
+}: {
+  decision: InboxDecision;
+  snapshot: ProjectSnapshot;
+  connection: Connection;
+}) {
+  const client = useQueryClient();
+  const [option, setOption] = useState("");
+  const [rationale, setRationale] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const requestId = useRef(`decision-${crypto.randomUUID()}`);
+  async function resolve(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      await request(
+        connection,
+        "/decision-resolve",
+        {
+          request_id: requestId.current,
+          decision_id: decision.decision_id,
+          selected_option: option,
+          rationale,
+        },
+        "POST",
+      );
+      await client.invalidateQueries({ queryKey: ["project"] });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Decision failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <article className="plan-card">
+      <h3>{decision.title}</h3>
+      <p>{decision.reason}</p>
+      <p>
+        <strong>GM recommendation:</strong> {decision.recommendation}
+      </p>
+      <p>{decision.consequences.join(" · ")}</p>
+      <p className="muted">
+        Affects:{" "}
+        {decision.task_ids
+          .map(
+            (id) => snapshot.tasks.find((t) => t.task_id === id)?.title ?? id,
+          )
+          .join(", ")}
+      </p>
+      {decision.selected_option ? (
+        <p>
+          <strong>Decided: {decision.selected_option}</strong> —{" "}
+          {decision.rationale}
+        </p>
+      ) : (
+        <form onSubmit={(event) => void resolve(event)}>
+          <label>
+            Choose an option
+            <select
+              required
+              value={option}
+              onChange={(event) => {
+                setOption(event.target.value);
+                requestId.current = `decision-${crypto.randomUUID()}`;
+              }}
+            >
+              <option value="">Select…</option>
+              {decision.options.map((item) => (
+                <option key={item}>{item}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Rationale or discussion notes
+            <textarea
+              required
+              value={rationale}
+              onChange={(event) => {
+                setRationale(event.target.value);
+                requestId.current = `decision-${crypto.randomUUID()}`;
+              }}
+            />
+          </label>
+          <button disabled={busy || !option || !rationale.trim()}>
+            Record decision
+          </button>
+        </form>
+      )}
+      {error && (
+        <p role="alert" className="error">
+          {error}
+        </p>
+      )}
+    </article>
+  );
+}
+
 const descriptions: Record<Exclude<View, "Director Desk">, string> = {
+  "Needs Oren": "Resolve the human choices holding production work.",
   Workers: "Run and resume read-only Codex analysis for a proposed task.",
   Production: "Outcome-driven contracts, ready for planning.",
   Network: "The actual dependencies between project tasks.",

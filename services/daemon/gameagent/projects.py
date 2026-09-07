@@ -17,7 +17,9 @@ import yaml
 from filelock import FileLock
 
 from gameagent.constitution import require
+from gameagent.gm import plan_decisions, task_readiness, validate_plan
 from gameagent.models.api import (
+    DecisionCommand,
     EventPage,
     PolicyCommand,
     ProjectCatalog,
@@ -32,10 +34,16 @@ from gameagent.models.contracts import (
     Event,
     ExternalChangeEvent,
     ExternalChangePayload,
+    GMEvent,
+    GMRecord,
+    InboxDecision,
+    InboxEvent,
     InitializationReport,
     Permissions,
+    PlanEvent,
     Policy,
     PolicyUpdatedEvent,
+    ProductionPlan,
     Project,
     ProjectInitializedEvent,
     ProjectInitializedPayload,
@@ -386,6 +394,9 @@ class ProjectStore:
         tasks: dict[str, TaskContract] = {}
         workers: dict[str, WorkerRecord] = {}
         reconciliations: dict[str, ReconciliationRecord] = {}
+        gm: GMRecord | None = None
+        plans: dict[str, ProductionPlan] = {}
+        decisions: dict[str, InboxDecision] = {}
         for index, event in enumerate(events):
             require(
                 event.project_id == project.project.id, "project_scope_mismatch", event.event_id
@@ -510,6 +521,80 @@ class ProjectStore:
                     }
                 )
                 workspace = event.payload.fingerprint
+            elif isinstance(event, GMEvent):
+                record = event.payload
+                require(
+                    event.actor_type == "gm"
+                    and event.actor_id == "project-gm"
+                    and event.task_id is None
+                    and record.project_id == project.project.id,
+                    "invalid_gm_event",
+                    event.event_id,
+                )
+                require(
+                    gm is None or gm.thread_id == record.thread_id,
+                    "gm_thread_changed",
+                    event.event_id,
+                )
+                require(
+                    not any(w.thread_id == record.thread_id for w in workers.values()),
+                    "thread_already_bound",
+                    event.event_id,
+                )
+                if gm and gm.request_id == record.request_id:
+                    require(
+                        gm.objective == record.objective, "request_id_conflict", record.request_id
+                    )
+                gm = record
+            elif isinstance(event, PlanEvent):
+                plan = event.payload
+                require(
+                    event.actor_type == "gm"
+                    and event.actor_id == "project-gm"
+                    and event.task_id is None
+                    and plan.project_id == project.project.id
+                    and plan.policy == policy,
+                    "invalid_plan_event",
+                    event.event_id,
+                )
+                require(
+                    gm is not None
+                    and plan.plan_id == f"plan-{gm.request_id}"
+                    and plan.objective == gm.objective,
+                    "plan_request_mismatch",
+                    event.event_id,
+                )
+                require(
+                    plan.plan_id not in plans and not any(t.task_id in tasks for t in plan.tasks),
+                    "duplicate_plan",
+                    plan.plan_id,
+                )
+                validate_plan(plan)
+                plans[plan.plan_id] = plan
+                tasks.update({t.task_id: t for t in plan.tasks})
+                decisions.update({d.decision_id: d for d in plan_decisions(plan)})
+            elif isinstance(event, InboxEvent):
+                decision = event.payload
+                previous_decision = decisions.get(decision.decision_id)
+                require(
+                    event.actor_type == "human"
+                    and event.actor_id == "local-director"
+                    and event.task_id is None
+                    and previous_decision is not None,
+                    "human_authority_required",
+                    event.event_id,
+                )
+                assert previous_decision is not None
+                require(
+                    previous_decision.selected_option is None
+                    and decision.selected_option in previous_decision.options
+                    and decision.rationale is not None
+                    and decision.model_copy(update={"selected_option": None, "rationale": None})
+                    == previous_decision,
+                    "invalid_decision_resolution",
+                    event.event_id,
+                )
+                decisions[decision.decision_id] = decision
             elif isinstance(event, WorkerEvent):
                 worker_record = event.payload
                 require(
@@ -519,6 +604,11 @@ class ProjectStore:
                     worker_record.worker_id,
                 )
                 previous = workers.get(worker_record.worker_id)
+                require(
+                    gm is None or gm.thread_id != worker_record.thread_id,
+                    "thread_already_bound",
+                    worker_record.worker_id,
+                )
                 require(
                     previous is None
                     or (previous.thread_id, previous.task_id, previous.cwd)
@@ -539,6 +629,11 @@ class ProjectStore:
             else:
                 # Do not silently project future event semantics as current Phase 1 state.
                 require(False, "unsupported_projection_event", event.event_type)
+        for plan in plans.values():
+            for task in plan.tasks:
+                tasks[task.task_id] = task_readiness(
+                    tasks[task.task_id], plan, list(decisions.values()), tasks
+                )
         return ProjectSnapshot(
             project=project,
             policy=policy,
@@ -546,6 +641,9 @@ class ProjectStore:
             cursor=len(events),
             history_digest=digest,
             workers=list(workers.values()),
+            gm=gm,
+            plans=list(plans.values()),
+            decisions=list(decisions.values()),
             workspace=workspace,
             reconciliations=list(reconciliations.values()),
             requires_reconciliation=any(
@@ -553,9 +651,162 @@ class ProjectStore:
             ),
         ), events
 
+    def gm_request(self, request_id: str) -> GMRecord | None:
+        with self.lock:
+            _, events = self._replay()
+            return next(
+                (
+                    e.payload
+                    for e in reversed(events)
+                    if isinstance(e, GMEvent) and e.payload.request_id == request_id
+                ),
+                None,
+            )
+
+    def record_gm(self, record: GMRecord) -> GMRecord:
+        with self.lock:
+            snapshot, _ = self._replay()
+            require(
+                record.project_id == snapshot.project.project.id,
+                "project_scope_mismatch",
+                record.request_id,
+            )
+            require(
+                snapshot.gm is None or snapshot.gm.thread_id == record.thread_id,
+                "gm_thread_changed",
+                record.request_id,
+            )
+            require(
+                not any(w.thread_id == record.thread_id for w in snapshot.workers),
+                "thread_already_bound",
+                record.request_id,
+            )
+            if snapshot.gm and snapshot.gm.request_id == record.request_id:
+                require(
+                    snapshot.gm.objective == record.objective,
+                    "request_id_conflict",
+                    record.request_id,
+                )
+            event = GMEvent(
+                event_id=f"evt-{uuid4()}",
+                project_id=record.project_id,
+                timestamp=timestamp(),
+                actor_type="gm",
+                actor_id="project-gm",
+                correlation_id=record.request_id,
+                task_id=None,
+                sequence=snapshot.cursor + 1,
+                event_type="gm.updated",
+                payload=record,
+            )
+            append(self.directory / "events", event, self.max_segment_bytes)
+            replayed, events = self._replay()
+            self._sync(replayed, events)
+            return record
+
+    def record_plan(self, plan: ProductionPlan) -> ProductionPlan:
+        with self.lock:
+            snapshot, events = self._replay()
+            previous = next((p for p in snapshot.plans if p.plan_id == plan.plan_id), None)
+            if previous:
+                require(previous == plan, "request_id_conflict", plan.plan_id)
+                return previous
+            require(not snapshot.requires_reconciliation, "reconciliation_required", plan.plan_id)
+            require(
+                snapshot.gm is not None
+                and plan.plan_id == f"plan-{snapshot.gm.request_id}"
+                and plan.objective == snapshot.gm.objective,
+                "plan_request_mismatch",
+                plan.plan_id,
+            )
+            require(
+                plan.project_id == snapshot.project.project.id and plan.policy == snapshot.policy,
+                "stale_plan_policy",
+                plan.plan_id,
+            )
+            validate_plan(plan)
+            require(
+                not any(t.task_id in {old.task_id for old in snapshot.tasks} for t in plan.tasks),
+                "duplicate_task",
+                plan.plan_id,
+            )
+            event = PlanEvent(
+                event_id=f"evt-{plan.plan_id}",
+                project_id=plan.project_id,
+                timestamp=timestamp(),
+                actor_type="gm",
+                actor_id="project-gm",
+                correlation_id=plan.plan_id,
+                task_id=None,
+                sequence=snapshot.cursor + 1,
+                event_type="gm.plan_created",
+                payload=plan,
+            )
+            for task in plan.tasks:
+                self._write_contract(task)
+            append(self.directory / "events", event, self.max_segment_bytes)
+            replayed, events = self._replay()
+            self._sync(replayed, events)
+            return plan
+
+    def resolve_decision(self, command: DecisionCommand) -> InboxDecision:
+        with self.lock:
+            snapshot, events = self._replay()
+            event_id = f"evt-{command.request_id}"
+            duplicate = next((e for e in events if e.event_id == event_id), None)
+            if duplicate:
+                require(
+                    isinstance(duplicate, InboxEvent)
+                    and duplicate.payload.decision_id == command.decision_id
+                    and duplicate.payload.selected_option == command.selected_option
+                    and duplicate.payload.rationale == command.rationale,
+                    "request_id_conflict",
+                    command.request_id,
+                )
+                assert isinstance(duplicate, InboxEvent)
+                return duplicate.payload
+            previous = next(
+                (d for d in snapshot.decisions if d.decision_id == command.decision_id), None
+            )
+            require(
+                previous is not None and previous.selected_option is None,
+                "decision_unavailable",
+                command.decision_id,
+            )
+            assert previous is not None
+            require(
+                command.selected_option in previous.options,
+                "invalid_decision_option",
+                command.selected_option,
+            )
+            decision = previous.model_copy(
+                update={"selected_option": command.selected_option, "rationale": command.rationale}
+            )
+            event = InboxEvent(
+                event_id=event_id,
+                project_id=decision.project_id,
+                timestamp=timestamp(),
+                actor_type="human",
+                actor_id="local-director",
+                correlation_id=command.request_id,
+                task_id=None,
+                sequence=snapshot.cursor + 1,
+                event_type="gm.decision_resolved",
+                payload=decision,
+            )
+            append(self.directory / "events", event, self.max_segment_bytes)
+            replayed, events = self._replay()
+            self._sync(replayed, events)
+            return decision
+
     def record_worker(self, record: WorkerRecord) -> WorkerRecord:
         with self.lock:
             snapshot, _ = self._replay()
+            require(
+                snapshot.gm is None or snapshot.gm.thread_id != record.thread_id,
+                "thread_already_bound",
+                record.worker_id,
+            )
             require(
                 record.project_id == snapshot.project.project.id
                 and record.task_id in {task.task_id for task in snapshot.tasks},
@@ -645,6 +896,11 @@ class ProjectStore:
                 "Resolve detected external changes before starting project work",
             )
             task_id = command.task_id or f"task-{command.request_id}"
+            require(
+                not any(t.task_id == task_id for p in snapshot.plans for t in p.tasks),
+                "gm_authority_required",
+                "Planned tasks are controlled by the GM",
+            )
             if command.task_id is None:
                 require(
                     command.title is not None
@@ -751,6 +1007,11 @@ class ProjectStore:
         with self.lock:
             snapshot, events = self._replay()
             task = self._task(snapshot, command.task_id)
+            require(
+                not any(t.task_id == task.task_id for p in snapshot.plans for t in p.tasks),
+                "gm_authority_required",
+                "Planned tasks are controlled by the GM",
+            )
             event_id = f"evt-{command.request_id}"
             payload = TaskEventPayload(task_id=task.task_id, detail=command.detail)
             previous = next((item for item in events if item.event_id == event_id), None)

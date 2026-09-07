@@ -710,6 +710,41 @@
       "title": "Decision",
       "type": "object"
     },
+    "DecisionCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "rationale": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Rationale",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "selected_option": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Selected Option",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "decision_id",
+        "selected_option",
+        "rationale"
+      ],
+      "title": "DecisionCommand",
+      "type": "object"
+    },
     "DecisionEvent": {
       "additionalProperties": false,
       "properties": {
@@ -1218,6 +1253,15 @@
               },
               {
                 "$ref": "#/$defs/WorkerEvent"
+              },
+              {
+                "$ref": "#/$defs/GMEvent"
+              },
+              {
+                "$ref": "#/$defs/PlanEvent"
+              },
+              {
+                "$ref": "#/$defs/InboxEvent"
               }
             ]
           },
@@ -1472,6 +1516,352 @@
         "observed"
       ],
       "title": "ExternalChangePayload",
+      "type": "object"
+    },
+    "GMEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "gm.updated",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/GMRecord"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "GMEvent",
+      "type": "object"
+    },
+    "GMRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "objective": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Objective",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "ready",
+            "planning",
+            "completed",
+            "failed",
+            "interrupted"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "thread_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Thread Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "thread_id",
+        "request_id",
+        "objective",
+        "state",
+        "detail"
+      ],
+      "title": "GMRecord",
+      "type": "object"
+    },
+    "InboxDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "consequences": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Consequences",
+          "type": "array"
+        },
+        "decision_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "options": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 2,
+          "title": "Options",
+          "type": "array"
+        },
+        "plan_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Plan Id",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "rationale": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rationale"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "recommendation": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Recommendation",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "selected_option": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selected Option"
+        },
+        "task_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Task Ids",
+          "type": "array"
+        },
+        "title": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision_id",
+        "plan_id",
+        "project_id",
+        "title",
+        "reason",
+        "task_ids",
+        "options",
+        "recommendation",
+        "consequences"
+      ],
+      "title": "InboxDecision",
+      "type": "object"
+    },
+    "InboxEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "gm.decision_resolved",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/InboxDecision"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "InboxEvent",
       "type": "object"
     },
     "InitializationFinding": {
@@ -1779,6 +2169,28 @@
       "title": "Multiplayer",
       "type": "object"
     },
+    "ObjectiveCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "objective": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Objective",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "objective"
+      ],
+      "title": "ObjectiveCommand",
+      "type": "object"
+    },
     "Permissions": {
       "additionalProperties": false,
       "properties": {
@@ -1859,6 +2271,322 @@
         }
       },
       "title": "Permissions",
+      "type": "object"
+    },
+    "PlanAssignment": {
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AgentDefinition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "missing_capabilities": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Missing Capabilities",
+          "type": "array"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "agent",
+        "missing_capabilities"
+      ],
+      "title": "PlanAssignment",
+      "type": "object"
+    },
+    "PlanDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "questions": {
+          "items": {
+            "$ref": "#/$defs/PlanQuestion"
+          },
+          "title": "Questions",
+          "type": "array"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/PlanStep"
+          },
+          "maxItems": 30,
+          "minItems": 1,
+          "title": "Steps",
+          "type": "array"
+        },
+        "summary": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "summary",
+        "steps",
+        "questions"
+      ],
+      "title": "PlanDraft",
+      "type": "object"
+    },
+    "PlanEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "gm.plan_created",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ProductionPlan"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "PlanEvent",
+      "type": "object"
+    },
+    "PlanQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "affected_step_keys": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Affected Step Keys",
+          "type": "array"
+        },
+        "category": {
+          "enum": [
+            "creative_intent",
+            "scope",
+            "money",
+            "irreversible_structure",
+            "public_exposure",
+            "player_behavior",
+            "ambiguity"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "consequences": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Consequences",
+          "type": "array"
+        },
+        "key": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Key",
+          "type": "string"
+        },
+        "options": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 2,
+          "title": "Options",
+          "type": "array"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "recommendation": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Recommendation",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "title",
+        "reason",
+        "affected_step_keys",
+        "category",
+        "options",
+        "recommendation",
+        "consequences"
+      ],
+      "title": "PlanQuestion",
+      "type": "object"
+    },
+    "PlanStep": {
+      "additionalProperties": false,
+      "properties": {
+        "constraints": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "deliverables": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Deliverables",
+          "type": "array"
+        },
+        "dependency_keys": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Dependency Keys",
+          "type": "array"
+        },
+        "key": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Key",
+          "type": "string"
+        },
+        "objective": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Objective",
+          "type": "string"
+        },
+        "required_capabilities": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Capabilities",
+          "type": "array"
+        },
+        "required_evaluations": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Evaluations",
+          "type": "array"
+        },
+        "title": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "title",
+        "objective",
+        "required_capabilities",
+        "deliverables",
+        "dependency_keys",
+        "constraints",
+        "required_evaluations"
+      ],
+      "title": "PlanStep",
       "type": "object"
     },
     "Policy": {
@@ -2087,6 +2815,76 @@
         "current_milestone"
       ],
       "title": "Production",
+      "type": "object"
+    },
+    "ProductionPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "assignments": {
+          "items": {
+            "$ref": "#/$defs/PlanAssignment"
+          },
+          "title": "Assignments",
+          "type": "array"
+        },
+        "objective": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Objective",
+          "type": "string"
+        },
+        "plan_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Plan Id",
+          "type": "string"
+        },
+        "policy": {
+          "$ref": "#/$defs/Policy"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "questions": {
+          "items": {
+            "$ref": "#/$defs/PlanQuestion"
+          },
+          "title": "Questions",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "summary": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Summary",
+          "type": "string"
+        },
+        "tasks": {
+          "items": {
+            "$ref": "#/$defs/TaskContract"
+          },
+          "minItems": 1,
+          "title": "Tasks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "plan_id",
+        "project_id",
+        "objective",
+        "summary",
+        "tasks",
+        "assignments",
+        "questions",
+        "policy"
+      ],
+      "title": "ProductionPlan",
       "type": "object"
     },
     "Project": {
@@ -2488,10 +3286,35 @@
           "title": "Cursor",
           "type": "integer"
         },
+        "decisions": {
+          "items": {
+            "$ref": "#/$defs/InboxDecision"
+          },
+          "title": "Decisions",
+          "type": "array"
+        },
+        "gm": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GMRecord"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "history_digest": {
           "pattern": "^[a-f0-9]{64}$",
           "title": "History Digest",
           "type": "string"
+        },
+        "plans": {
+          "items": {
+            "$ref": "#/$defs/ProductionPlan"
+          },
+          "title": "Plans",
+          "type": "array"
         },
         "policy": {
           "$ref": "#/$defs/Policy"
@@ -3282,6 +4105,15 @@
               },
               {
                 "$ref": "#/$defs/WorkerEvent"
+              },
+              {
+                "$ref": "#/$defs/GMEvent"
+              },
+              {
+                "$ref": "#/$defs/PlanEvent"
+              },
+              {
+                "$ref": "#/$defs/InboxEvent"
               }
             ]
           },
@@ -4539,6 +5371,15 @@
             },
             {
               "$ref": "#/$defs/WorkerEvent"
+            },
+            {
+              "$ref": "#/$defs/GMEvent"
+            },
+            {
+              "$ref": "#/$defs/PlanEvent"
+            },
+            {
+              "$ref": "#/$defs/InboxEvent"
             }
           ]
         },

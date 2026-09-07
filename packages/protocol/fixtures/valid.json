@@ -1,4 +1,28 @@
 {
+  "GMRecord": {
+    "project_id": "project-test",
+    "thread_id": "gm-thread-test",
+    "request_id": "objective-test",
+    "objective": "Players understand their next action",
+    "state": "planning",
+    "detail": "Decomposing the objective"
+  },
+  "PlanDraft": {
+    "summary": "Analyze onboarding and specify improvements",
+    "steps": [
+      {
+        "key": "ux",
+        "title": "Analyze onboarding",
+        "objective": "Identify confusing interactions",
+        "required_capabilities": ["usability_analysis"],
+        "deliverables": ["Cited findings"],
+        "dependency_keys": [],
+        "constraints": [],
+        "required_evaluations": ["contract_compliance"]
+      }
+    ],
+    "questions": []
+  },
   "Capability": {
     "capability_id": "usability_analysis",
     "version": "1.0.0",
