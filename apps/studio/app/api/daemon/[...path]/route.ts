@@ -2,7 +2,10 @@ import type { NextRequest } from "next/server";
 
 const allowed = new Set([
   "health",
+  "projects",
   "project",
+  "project-select",
+  "project-import",
   "events",
   "tasks",
   "policy",

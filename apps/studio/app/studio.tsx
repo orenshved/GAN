@@ -11,6 +11,7 @@ import dynamic from "next/dynamic";
 import type {
   EventPage,
   Policy,
+  ProjectCatalog,
   ProjectSnapshot,
   TaskContract,
   TaskProposal,
@@ -76,21 +77,29 @@ function Desk(connection: Connection) {
     id: string;
   } | null>(null);
   const [proposing, setProposing] = useState(false);
+  const [managingProjects, setManagingProjects] = useState(false);
+  const [switchingProject, setSwitchingProject] = useState(false);
   const [streamState, setStreamState] = useState("Connecting");
   const cursor = useRef(0);
   const [activityAfter, setActivityAfter] = useState(0);
+  const catalog = useQuery({
+    queryKey: ["projects"],
+    queryFn: () => request<ProjectCatalog>(connection, "/projects"),
+  });
+  const activeProjectId = catalog.data?.active_project_id;
   const project = useQuery({
-    queryKey: ["project"],
+    queryKey: ["project", activeProjectId],
     queryFn: () => request<ProjectSnapshot>(connection, "/project"),
+    enabled: !!activeProjectId,
   });
   const history = useQuery({
-    queryKey: ["events", activityAfter],
+    queryKey: ["events", activeProjectId, activityAfter],
     queryFn: () =>
       request<EventPage>(
         connection,
         `/events?after=${activityAfter}&limit=100`,
       ),
-    enabled: !!project.data,
+    enabled: !!project.data && !!activeProjectId,
   });
   const ready = !!project.data;
   useEffect(() => {
@@ -145,7 +154,28 @@ function Desk(connection: Connection) {
       clearTimeout(timer);
       socket?.close();
     };
-  }, [ready, connection.websocketUrl, client]);
+  }, [ready, activeProjectId, connection.websocketUrl, client]);
+
+  async function activateProject(projectId: string) {
+    setSwitchingProject(true);
+    try {
+      const next = await request<ProjectCatalog>(
+        connection,
+        "/project-select",
+        { project_id: projectId },
+        "POST",
+      );
+      cursor.current = 0;
+      setActivityAfter(0);
+      setSelection(null);
+      client.setQueryData(["projects"], next);
+      await client.invalidateQueries({ queryKey: ["project"] });
+      await client.invalidateQueries({ queryKey: ["events"] });
+      setManagingProjects(false);
+    } finally {
+      setSwitchingProject(false);
+    }
+  }
 
   const snapshot = project.data;
   const tasks = snapshot?.tasks ?? [];
@@ -170,11 +200,21 @@ function Desk(connection: Connection) {
             <strong>NETWORK</strong>
           </span>
         </div>
-        <div className="project-label">
+        <button
+          className="project-label"
+          onClick={() => setManagingProjects(true)}
+          aria-label="Switch or import project"
+        >
           <span className="eyebrow">PROJECT</span>
           <strong>{snapshot?.project.project.name ?? "Connecting…"}</strong>
-          <span>{snapshot?.project.medium.replaceAll("_", " ")}</span>
-        </div>
+          <span>
+            {snapshot?.project.engine?.type ??
+              snapshot?.project.production.stage.replaceAll("_", " ")}
+            {catalog.data && catalog.data.projects.length > 1
+              ? ` · ${catalog.data.projects.length} projects`
+              : ""}
+          </span>
+        </button>
         <nav>
           {views.map((item, index) => (
             <button
@@ -469,6 +509,24 @@ function Desk(connection: Connection) {
           }}
         />
       )}
+      {managingProjects && catalog.data && (
+        <ProjectDialog
+          catalog={catalog.data}
+          connection={connection}
+          busy={switchingProject}
+          close={() => setManagingProjects(false)}
+          activate={activateProject}
+          imported={(next) => {
+            cursor.current = 0;
+            setActivityAfter(0);
+            setSelection(null);
+            client.setQueryData(["projects"], next);
+            void client.invalidateQueries({ queryKey: ["project"] });
+            void client.invalidateQueries({ queryKey: ["events"] });
+            setManagingProjects(false);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -572,6 +630,122 @@ function EventList({
         </li>
       ))}
     </ol>
+  );
+}
+function ProjectDialog({
+  catalog,
+  connection,
+  busy,
+  close,
+  activate,
+  imported,
+}: {
+  catalog: ProjectCatalog;
+  connection: Connection;
+  busy: boolean;
+  close: () => void;
+  activate: (projectId: string) => Promise<void>;
+  imported: (catalog: ProjectCatalog) => void;
+}) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const [importing, setImporting] = useState(false);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    dialog.current?.showModal();
+  }, []);
+  async function choose(projectId: string) {
+    setError("");
+    try {
+      await activate(projectId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to switch project");
+    }
+  }
+  async function importProject(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setImporting(true);
+    setError("");
+    const form = new FormData(event.currentTarget);
+    try {
+      imported(
+        await request<ProjectCatalog>(
+          connection,
+          "/project-import",
+          { path: String(form.get("path")).trim() },
+          "POST",
+        ),
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to import project");
+    } finally {
+      setImporting(false);
+    }
+  }
+  return (
+    <dialog ref={dialog} onCancel={close} onClose={close}>
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">PROJECTS</p>
+          <h2>Choose a production workspace</h2>
+        </div>
+        <button
+          type="button"
+          aria-label="Close project chooser"
+          onClick={close}
+        >
+          ×
+        </button>
+      </div>
+      <div className="project-list">
+        {catalog.projects.map((project) => {
+          const active = project.project_id === catalog.active_project_id;
+          return (
+            <button
+              type="button"
+              key={project.project_id}
+              disabled={busy || active}
+              aria-current={active ? "true" : undefined}
+              onClick={() => void choose(project.project_id)}
+            >
+              <strong>{project.name}</strong>
+              <span>
+                {project.engine ?? project.stage.replaceAll("_", " ")} ·{" "}
+                {project.root}
+              </span>
+              <span>{active ? "Current project" : "Open project"}</span>
+            </button>
+          );
+        })}
+      </div>
+      <form onSubmit={(event) => void importProject(event)}>
+        <label>
+          Add local repository
+          <input
+            name="path"
+            required
+            placeholder="C:\\projects\\my-game"
+            autoComplete="off"
+          />
+        </label>
+        <p className="muted">
+          GAN will inspect this folder and initialize .gameagent if needed.
+          Remote repository cloning is not enabled yet.
+        </p>
+        {error && (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="form-actions">
+          <button type="button" onClick={close}>
+            Cancel
+          </button>
+          <button className="primary" disabled={busy || importing}>
+            {importing ? "Importing…" : "Import repository"}
+          </button>
+        </div>
+      </form>
+    </dialog>
   );
 }
 function ProposalDialog({

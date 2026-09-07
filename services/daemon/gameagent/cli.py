@@ -61,11 +61,20 @@ def main() -> None:
             token = os.environ["GAMEAGENT_DAEMON_TOKEN"]
             origin = os.environ["GAMEAGENT_STUDIO_ORIGIN"]
             port = int(os.environ["GAMEAGENT_DAEMON_PORT"])
+            registry_setting = os.environ.get("GAMEAGENT_REGISTRY_PATH")
+            registry_path = (
+                Path(registry_setting)
+                if registry_setting
+                else Path.home() / ".gameagent" / "projects.json"
+            )
             if not 1 <= port <= 65535:
                 raise ValueError("Invalid GAMEAGENT_DAEMON_PORT")
             store.snapshot()  # Validate/recover before exposing a ready service.
             uvicorn.run(
-                create_app(store, token, origin), host="127.0.0.1", port=port, access_log=False
+                create_app(store, token, origin, registry_path),
+                host="127.0.0.1",
+                port=port,
+                access_log=False,
             )
         elif args.command == "propose":
             proposal = TaskProposal.model_validate_json(args.file.read_text(encoding="utf-8"))

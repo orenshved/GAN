@@ -1,8 +1,10 @@
 """Project commands and replay. All mutations pass through the same lock/log."""
 
 import hashlib
+import json
 import os
 import tempfile
+import threading
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -11,7 +13,14 @@ import yaml
 from filelock import FileLock
 
 from gameagent.constitution import require
-from gameagent.models.api import EventPage, PolicyCommand, ProjectSnapshot, TaskProposal
+from gameagent.models.api import (
+    EventPage,
+    PolicyCommand,
+    ProjectCatalog,
+    ProjectSnapshot,
+    ProjectSummary,
+    TaskProposal,
+)
 from gameagent.models.contracts import (
     Event,
     InitializationReport,
@@ -423,3 +432,109 @@ class ProjectStore:
                 projection.close()
             os.replace(replacement, self.directory / "projection.sqlite3")
             return snapshot
+
+
+class ProjectRegistry:
+    """Small global catalog of project roots; project history remains project-local."""
+
+    def __init__(self, initial: ProjectStore, registry_path: Path | None = None) -> None:
+        self.registry_path = registry_path
+        self.lock = threading.RLock()
+        self.stores: dict[str, ProjectStore] = {}
+        self.active_project_id = self._add_store(initial)
+        if registry_path and registry_path.exists():
+            value = json.loads(registry_path.read_text(encoding="utf-8"))
+            require(value.get("schema_version") == 1, "unsupported_registry", str(registry_path))
+            for entry in value.get("projects", []):
+                registered = ProjectStore(Path(entry["root"]))
+                project_id = self._add_store(registered)
+                require(
+                    project_id == entry["project_id"],
+                    "project_registry_mismatch",
+                    entry["root"],
+                )
+            selected = value.get("active_project_id")
+            require(selected in self.stores, "active_project_missing", str(selected))
+            self.active_project_id = selected
+        self._persist()
+
+    def _add_store(self, store: ProjectStore) -> str:
+        project_id = store.snapshot().project.project.id
+        previous = self.stores.get(project_id)
+        require(
+            previous is None or previous.root == store.root,
+            "duplicate_project_id",
+            project_id,
+        )
+        self.stores[project_id] = store
+        return project_id
+
+    def _persist(self) -> None:
+        if self.registry_path is None:
+            return
+        self.registry_path.parent.mkdir(parents=True, exist_ok=True)
+        value = {
+            "schema_version": 1,
+            "active_project_id": self.active_project_id,
+            "projects": [
+                {"project_id": project_id, "root": str(store.root)}
+                for project_id, store in self.stores.items()
+            ],
+        }
+        data = (json.dumps(value, indent=2) + "\n").encode("utf-8")
+        with tempfile.NamedTemporaryFile(
+            dir=self.registry_path.parent, prefix="projects-", suffix=".tmp", delete=False
+        ) as temporary:
+            temporary.write(data)
+            temporary.flush()
+            os.fsync(temporary.fileno())
+            temporary_path = Path(temporary.name)
+        os.replace(temporary_path, self.registry_path)
+
+    @property
+    def current(self) -> ProjectStore:
+        with self.lock:
+            return self.stores[self.active_project_id]
+
+    def catalog(self) -> ProjectCatalog:
+        with self.lock:
+            projects = []
+            for project_id, store in self.stores.items():
+                snapshot = store.snapshot()
+                projects.append(
+                    ProjectSummary(
+                        project_id=project_id,
+                        name=snapshot.project.project.name,
+                        root=str(store.root),
+                        engine=(snapshot.project.engine.type if snapshot.project.engine else None),
+                        stage=snapshot.project.production.stage,
+                    )
+                )
+            return ProjectCatalog(
+                projects=sorted(projects, key=lambda item: item.name.casefold()),
+                active_project_id=self.active_project_id,
+            )
+
+    def select(self, project_id: str) -> ProjectCatalog:
+        with self.lock:
+            require(project_id in self.stores, "project_not_found", project_id)
+            self.active_project_id = project_id
+            self._persist()
+            return self.catalog()
+
+    def import_local(self, path: Path) -> ProjectCatalog:
+        with self.lock:
+            candidate = path.expanduser()
+            require(candidate.exists(), "repository_not_found", str(candidate))
+            root = candidate.resolve(strict=True)
+            require(root.is_dir(), "not_a_directory", str(root))
+            if not (root / ".gameagent").is_dir():
+                from gameagent.intake import inspect
+
+                project, report = inspect(root)
+                root = Path(report.repository_root)
+                initialize(root, project, report)
+            store = ProjectStore(root)
+            self.active_project_id = self._add_store(store)
+            self._persist()
+            return self.catalog()

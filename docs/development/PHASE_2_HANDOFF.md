@@ -2,14 +2,15 @@
 
 ## Delivered
 
-| Area           | Result                                                                                                                                                              |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Authentication | The daemon detects the existing Codex account, accepts only `chatgpt`, exposes browser login, and clears model API-key variables in the worker process.             |
-| Threads        | Studio starts a persistent Codex thread per worker and resumes the same thread only for its original project, task and resolved working directory.                  |
-| Isolation      | Phase 2 workers run in `read-only` sandbox mode with approvals denied. The task remains `PROPOSED`; analysis cannot claim production completion.                    |
-| Results        | Codex output is constrained by the `WorkerResult` Pydantic schema. Ready, running, completed, failed and interrupted records are canonical `worker.updated` events. |
-| Recovery       | A daemon restart converts an orphaned running record to interrupted. The operator can explicitly resume its persistent thread from Studio.                          |
-| Studio         | Workers shows account readiness, task controls, current state, thread identity, structured findings and next steps.                                                 |
+| Area            | Result                                                                                                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Authentication  | The daemon detects the existing Codex account, accepts only `chatgpt`, exposes browser login, and clears model API-key variables in the worker process.             |
+| Threads         | Studio starts a persistent Codex thread per worker and resumes the same thread only for its original project, task and resolved working directory.                  |
+| Isolation       | Phase 2 workers run in `read-only` sandbox mode with approvals denied. The task remains `PROPOSED`; analysis cannot claim production completion.                    |
+| Results         | Codex output is constrained by the `WorkerResult` Pydantic schema. Ready, running, completed, failed and interrupted records are canonical `worker.updated` events. |
+| Recovery        | A daemon restart converts an orphaned running record to interrupted. The operator can explicitly resume its persistent thread from Studio.                          |
+| Studio          | Workers shows account readiness, task controls, current state, thread identity, structured findings and next steps.                                                 |
+| Project catalog | The project header opens a persistent local-repository chooser. Import performs conservative intake and initialization, then selects the new project.               |
 
 ## Live acceptance
 
@@ -30,11 +31,13 @@ and retains the pinned SDK runtime as a fallback.
 
 ## Verification
 
-- 109 Python tests pass.
+- 111 Python tests pass.
 - 43 Node protocol tests pass.
 - Ruff, ESLint, mypy, TypeScript, generated-schema drift and builds pass.
 - Worker tests cover structured completion, resume, restart recovery, interrupt,
   immutable project/task/thread binding and ChatGPT-only admission.
+- Playwright imports a second local repository, switches back to the first project,
+  and continues the project workflow against the selected history.
 
 Run `pnpm check` from the repository root. For manual review, run `pnpm dev`, open
 the printed Studio URL and select **Workers**.

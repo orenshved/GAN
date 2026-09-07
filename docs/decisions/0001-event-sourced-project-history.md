@@ -20,6 +20,12 @@ handling of truncated tails, malformed records and unsupported versions. Never
 silently skip corrupt history. Rebuilds use immutable referenced contract/artifact
 revisions, not whichever mutable file happens to exist later.
 
+A small daemon-level catalog may retain project IDs, resolved repository roots and
+the current selection so Studio can move between projects. This catalog is routing
+metadata, not project truth. Importing an existing local repository initializes its
+own `.gameagent`; switching projects never copies history or worker threads between
+repositories.
+
 ## Alternatives and consequences
 
 A SQLite-only log simplifies transactions but fails portable Git-friendly history.

@@ -2155,6 +2155,29 @@
       "title": "Project",
       "type": "object"
     },
+    "ProjectCatalog": {
+      "additionalProperties": false,
+      "properties": {
+        "active_project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Active Project Id",
+          "type": "string"
+        },
+        "projects": {
+          "items": {
+            "$ref": "#/$defs/ProjectSummary"
+          },
+          "title": "Projects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "projects",
+        "active_project_id"
+      ],
+      "title": "ProjectCatalog",
+      "type": "object"
+    },
     "ProjectIdentity": {
       "additionalProperties": false,
       "properties": {
@@ -2182,6 +2205,22 @@
         "description"
       ],
       "title": "ProjectIdentity",
+      "type": "object"
+    },
+    "ProjectImport": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "ProjectImport",
       "type": "object"
     },
     "ProjectInitializedEvent": {
@@ -2292,6 +2331,21 @@
       "title": "ProjectInitializedPayload",
       "type": "object"
     },
+    "ProjectSelection": {
+      "additionalProperties": false,
+      "properties": {
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id"
+      ],
+      "title": "ProjectSelection",
+      "type": "object"
+    },
     "ProjectSnapshot": {
       "additionalProperties": false,
       "properties": {
@@ -2334,6 +2388,56 @@
         "history_digest"
       ],
       "title": "ProjectSnapshot",
+      "type": "object"
+    },
+    "ProjectSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "engine": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Engine"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Name",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "root": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Root",
+          "type": "string"
+        },
+        "stage": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Stage",
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "name",
+        "root",
+        "stage"
+      ],
+      "title": "ProjectSummary",
       "type": "object"
     },
     "Provider": {

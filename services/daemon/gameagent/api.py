@@ -5,6 +5,7 @@ import secrets
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.exceptions import RequestValidationError
@@ -19,28 +20,47 @@ from gameagent.constitution import ConstitutionError
 from gameagent.models.api import (
     EventPage,
     PolicyCommand,
+    ProjectCatalog,
+    ProjectImport,
+    ProjectSelection,
     ProjectSnapshot,
     StreamMessage,
     TaskProposal,
     WorkerCommand,
 )
 from gameagent.models.contracts import Policy, TaskContract, WorkerRecord
-from gameagent.projects import ProjectStore
+from gameagent.projects import ProjectRegistry, ProjectStore
 
 
-def create_app(store: ProjectStore, token: str, studio_origin: str) -> FastAPI:
+def create_app(
+    store: ProjectStore,
+    token: str,
+    studio_origin: str,
+    registry_path: Path | None = None,
+) -> FastAPI:
     if len(token) < 32:
         raise ValueError("GAMEAGENT_DAEMON_TOKEN must contain at least 32 characters")
-    bridge = CodexBridge(store)
+    registry = ProjectRegistry(store, registry_path)
+    bridges = {
+        project_id: CodexBridge(project_store)
+        for project_id, project_store in registry.stores.items()
+    }
+
+    def bridge() -> CodexBridge:
+        project_id = registry.active_project_id
+        if project_id not in bridges:
+            bridges[project_id] = CodexBridge(registry.current)
+        return bridges[project_id]
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-        await bridge.recover()
+        for worker_bridge in bridges.values():
+            await worker_bridge.recover()
         yield
-        await bridge.close()
+        await asyncio.gather(*(worker_bridge.close() for worker_bridge in bridges.values()))
 
     app = FastAPI(title="Game Agent Network", version="0.2.0", lifespan=lifespan)
-    app.state.bridge = bridge
+    app.state.registry = registry
 
     @app.exception_handler(Exception)
     async def service_error(_: Request, error: Exception) -> JSONResponse:
@@ -49,21 +69,21 @@ def create_app(store: ProjectStore, token: str, studio_origin: str) -> FastAPI:
     @app.get("/worker-account")
     async def worker_account() -> dict[str, str]:
         try:
-            return await bridge.account()
+            return await bridge().account()
         except Exception as error:
             return {"state": "unavailable", "error": "codex_unavailable", "detail": str(error)}
 
     @app.post("/worker-login")
     async def worker_login() -> dict[str, str]:
-        return await bridge.login()
+        return await bridge().login()
 
     @app.post("/workers", response_model=WorkerRecord)
     async def worker_start(command: WorkerCommand) -> WorkerRecord:
-        return await bridge.start(command)
+        return await bridge().start(command)
 
     @app.post("/worker-interrupt")
     async def worker_interrupt(command: WorkerCommand) -> dict[str, str]:
-        return await bridge.interrupt(command.worker_id or "")
+        return await bridge().interrupt(command.worker_id or "")
 
     app.add_middleware(
         TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"]
@@ -114,21 +134,35 @@ def create_app(store: ProjectStore, token: str, studio_origin: str) -> FastAPI:
     def health() -> dict[str, str]:
         return {"status": "ready", "phase": "2"}
 
+    @app.get("/projects", response_model=ProjectCatalog)
+    def projects() -> ProjectCatalog:
+        return registry.catalog()
+
+    @app.post("/project-select", response_model=ProjectCatalog)
+    def select_project(command: ProjectSelection) -> ProjectCatalog:
+        return registry.select(command.project_id)
+
+    @app.post("/project-import", response_model=ProjectCatalog)
+    async def import_project(command: ProjectImport) -> ProjectCatalog:
+        catalog = await asyncio.to_thread(registry.import_local, Path(command.path))
+        await bridge().recover()
+        return catalog
+
     @app.get("/project", response_model=ProjectSnapshot)
     def project() -> ProjectSnapshot:
-        return store.snapshot()
+        return registry.current.snapshot()
 
     @app.get("/events", response_model=EventPage)
     def events(after: int = 0, limit: int = 100) -> EventPage:
-        return store.events(after, limit)
+        return registry.current.events(after, limit)
 
     @app.post("/tasks", response_model=TaskContract, status_code=201)
     def propose(command: TaskProposal) -> TaskContract:
-        return store.propose(command)
+        return registry.current.propose(command)
 
     @app.put("/policy", response_model=Policy)
     def policy(command: PolicyCommand) -> Policy:
-        return store.update_policy(command)
+        return registry.current.update_policy(command)
 
     @app.post("/stream-ticket")
     async def stream_ticket() -> dict[str, str]:
@@ -152,8 +186,13 @@ def create_app(store: ProjectStore, token: str, studio_origin: str) -> FastAPI:
             if deadline is None or deadline <= time.monotonic():
                 await websocket.close(code=1008)
                 return
+            selected_project_id = registry.active_project_id
+            selected_store = registry.current
             while True:
-                page = await asyncio.to_thread(store.events, after, 100)
+                if registry.active_project_id != selected_project_id:
+                    await websocket.close(code=1000)
+                    return
+                page = await asyncio.to_thread(selected_store.events, after, 100)
                 await websocket.send_json(
                     StreamMessage(**page.model_dump()).model_dump(mode="json")
                 )

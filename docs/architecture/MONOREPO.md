@@ -8,7 +8,7 @@ services/daemon/
   gameagent/models/            Canonical Pydantic contracts
   gameagent/constitution.py    Pure state/authority admission rules
   gameagent/intake.py          Repository and engine inspection
-  gameagent/projects.py        Locked commands and deterministic replay
+  gameagent/projects.py        Project catalog, locked commands and replay
   gameagent/api.py             Authenticated REST/WebSocket service
   gameagent/codex_bridge.py    ChatGPT-authenticated Codex thread lifecycle
   gameagent/persistence/       JSONL history, Alembic, SQLite projections
@@ -55,6 +55,11 @@ adapters. Python domain models contain no service, persistence or engine imports
 
 The facade packages deliberately contain contracts only. They are explicit
 ownership boundaries, not duplicate implementations or empty agent subsystems.
+
+The daemon's global project catalog contains resolved local roots and the active
+selection only. It does not contain project history, conversation context or
+creative identity. Each listed repository remains authoritative through its own
+`.gameagent` history and projection.
 
 ## Planned additions after Phase 2
 

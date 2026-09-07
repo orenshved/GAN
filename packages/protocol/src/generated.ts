@@ -458,6 +458,15 @@ export type Events = (
 export type HasMore = boolean;
 export type ExpectedCursor = number;
 export type RequestId = string;
+export type ActiveProjectId = string;
+export type Engine1 = string | null;
+export type Name2 = string;
+export type ProjectId22 = string;
+export type Root = string;
+export type Stage1 = string;
+export type Projects = ProjectSummary[];
+export type Path = string;
+export type ProjectId23 = string;
 export type Cursor1 = number;
 export type HistoryDigest = string;
 export type Tasks = TaskContract[];
@@ -1243,6 +1252,39 @@ export interface PolicyCommand {
   expected_cursor: ExpectedCursor;
   policy: Policy;
   request_id: RequestId;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ProjectCatalog".
+ */
+export interface ProjectCatalog {
+  active_project_id: ActiveProjectId;
+  projects: Projects;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ProjectSummary".
+ */
+export interface ProjectSummary {
+  engine?: Engine1;
+  name: Name2;
+  project_id: ProjectId22;
+  root: Root;
+  stage: Stage1;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ProjectImport".
+ */
+export interface ProjectImport {
+  path: Path;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ProjectSelection".
+ */
+export interface ProjectSelection {
+  project_id: ProjectId23;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema

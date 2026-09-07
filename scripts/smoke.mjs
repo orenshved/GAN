@@ -96,6 +96,9 @@ const studioDirectory = fileURLToPath(
 );
 const python = process.env.GAMEAGENT_PYTHON || "python";
 const temporary = await mkdtemp(join(tmpdir(), "gameagent-smoke-"));
+const secondTemporary = await mkdtemp(
+  join(tmpdir(), "gameagent-smoke-second-"),
+);
 const token = `smoke-${randomUUID()}-${randomUUID()}`;
 const studioPort = await freePort();
 const daemonPort = await freePort();
@@ -107,6 +110,7 @@ const environment = {
   GAMEAGENT_STUDIO_ORIGIN: studioUrl,
   GAMEAGENT_DAEMON_URL: daemonUrl,
   GAMEAGENT_DAEMON_TOKEN: token,
+  GAMEAGENT_REGISTRY_PATH: join(temporary, "projects.json"),
 };
 const children = [];
 let browser;
@@ -119,6 +123,10 @@ try {
   await writeFile(
     join(temporary, "main.tscn"),
     '[node name="Main" type="Node2D"]\n',
+  );
+  await writeFile(
+    join(secondTemporary, "project.godot"),
+    '[application]\nconfig/name="Second Smoke Game"\nconfig/features=PackedStringArray("4.6")\n',
   );
   await run(
     python,
@@ -171,6 +179,13 @@ try {
   const page = await browser.newPage();
   await page.goto(studioUrl);
   await page.getByRole("heading", { name: "Director Desk" }).waitFor();
+  await page.getByRole("button", { name: "Switch or import project" }).click();
+  await page.getByLabel("Add local repository").fill(secondTemporary);
+  await page.getByRole("button", { name: "Import repository" }).click();
+  await page.getByText("Second Smoke Game / Director Desk").waitFor();
+  await page.getByRole("button", { name: "Switch or import project" }).click();
+  await page.getByRole("button", { name: /Smoke Game.*Open project/ }).click();
+  await page.getByText("Smoke Game / Director Desk").waitFor();
   await page.getByRole("button", { name: "+ Propose task" }).click();
   await page.getByLabel("Title").fill("Verify the opening turn");
   await page
@@ -199,4 +214,5 @@ try {
   await browser?.close();
   await Promise.all(children.map((child) => terminate(child.process)));
   await rm(temporary, { recursive: true, force: true });
+  await rm(secondTemporary, { recursive: true, force: true });
 }

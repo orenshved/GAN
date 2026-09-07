@@ -40,6 +40,27 @@ class ProjectSnapshot(Value):
     workers: list[WorkerRecord] = Field(default_factory=list)
 
 
+class ProjectSummary(Value):
+    project_id: Identifier
+    name: Text
+    root: Text
+    engine: Text | None = None
+    stage: Text
+
+
+class ProjectCatalog(Value):
+    projects: list[ProjectSummary]
+    active_project_id: Identifier
+
+
+class ProjectImport(Value):
+    path: Text
+
+
+class ProjectSelection(Value):
+    project_id: Identifier
+
+
 class WorkerCommand(Value):
     task_id: Identifier
     worker_id: Identifier | None = None
@@ -56,6 +77,9 @@ class StreamMessage(EventPage):
 
 
 class ApiCatalog(Value):
+    project_catalog: ProjectCatalog
+    project_import: ProjectImport
+    project_selection: ProjectSelection
     worker_command: WorkerCommand
     snapshot: ProjectSnapshot
     proposal: TaskProposal

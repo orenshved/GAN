@@ -14,7 +14,7 @@ from gameagent.intake import inspect
 from gameagent.models.api import PolicyCommand, TaskProposal, WorkerCommand
 from gameagent.models.contracts import Project, WorkerRecord
 from gameagent.persistence.projection import Projection
-from gameagent.projects import ProjectStore, initialize
+from gameagent.projects import ProjectRegistry, ProjectStore, initialize
 
 ROOT = Path(__file__).resolve().parents[3]
 PROFILE = json.loads((ROOT / "packages/protocol/fixtures/valid.json").read_text())["Project"]
@@ -168,6 +168,30 @@ def test_event_cursor_paging_and_ahead_cursor(store):
         store.events(3)
 
 
+def test_project_registry_import_switch_and_restart(store):
+    registry_path = store.root.parent / "projects.json"
+    registry = ProjectRegistry(store, registry_path)
+    second = store.root.parent / "second-game"
+    second.mkdir()
+    (second / "project.godot").write_text(
+        '[application]\nconfig/name="Second Game"\nconfig/features=PackedStringArray("4.6")\n',
+        encoding="utf-8",
+    )
+    imported = registry.import_local(second)
+    assert len(imported.projects) == 2
+    assert imported.active_project_id != store.snapshot().project.project.id
+    assert (second / ".gameagent" / "project.yaml").is_file()
+    assert registry.current.root == second
+
+    restarted = ProjectRegistry(store, registry_path)
+    assert restarted.active_project_id == imported.active_project_id
+    selected = restarted.select(store.snapshot().project.project.id)
+    assert selected.active_project_id == store.snapshot().project.project.id
+    assert restarted.current.root == store.root
+    with pytest.raises(ConstitutionError, match="missing-game"):
+        restarted.import_local(store.root.parent / "missing-game")
+
+
 def test_rest_auth_task_policy_and_websocket_replay(store):
     app = create_app(store, TOKEN, ORIGIN)
     with TestClient(app) as client:
@@ -189,6 +213,38 @@ def test_rest_auth_task_policy_and_websocket_replay(store):
                 if message["events"]:
                     assert message["cursor"] == 3
                     break
+
+
+def test_rest_imports_and_switches_local_projects(store):
+    second = store.root.parent / "api-second-game"
+    second.mkdir()
+    (second / "project.godot").write_text(
+        '[application]\nconfig/name="API Second Game"\n', encoding="utf-8"
+    )
+    app = create_app(store, TOKEN, ORIGIN, store.root.parent / "api-projects.json")
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+    with TestClient(app) as client:
+        initial = client.get("/projects", headers=headers).json()
+        assert len(initial["projects"]) == 1
+        imported = client.post(
+            "/project-import", headers=headers, json={"path": str(second)}
+        ).json()
+        assert len(imported["projects"]) == 2
+        assert client.get("/project", headers=headers).json()["project"]["project"]["name"] == (
+            "API Second Game"
+        )
+        selected = client.post(
+            "/project-select",
+            headers=headers,
+            json={"project_id": store.snapshot().project.project.id},
+        ).json()
+        assert selected["active_project_id"] == store.snapshot().project.project.id
+        assert (
+            client.post(
+                "/project-select", headers=headers, json={"project_id": "project-missing"}
+            ).status_code
+            == 409
+        )
 
 
 def test_websocket_rejects_foreign_origin_and_invalid_token(store):

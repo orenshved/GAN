@@ -5,8 +5,9 @@ into accountable tasks, specialist work and inspectable evidence.
 
 **Status: Phase 2 complete.** The local Studio now detects the signed-in ChatGPT
 account, starts and resumes persistent read-only Codex threads, records structured
-worker results in project history and shows worker state. Production orchestration
-and engine changes begin in later phases.
+worker results in project history, and switches between a persistent catalog of
+local game repositories. Production orchestration and engine changes begin in
+later phases.
 
 ## Architecture
 
@@ -62,6 +63,10 @@ reuses the Codex ChatGPT login and clears API-key environment variables. Set
 documents, assets and Git HEAD, and lists important unknowns without an intake
 questionnaire. Use `--profile path/to/project.yaml` only when an explicit Project
 contract should replace the detected baseline.
+
+Select the project name in Studio to switch projects or add another local
+repository. Import initializes `.gameagent` when needed. GAN does not automatically
+clone or execute remote repositories.
 
 ## Development
 

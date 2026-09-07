@@ -82,6 +82,7 @@ def _identifier(root: Path) -> str:
 
 def inspect(path: Path) -> tuple[Project, InitializationReport]:
     root = repository_root(path)
+    name = _name(root)
     documents = _files(root, DOCUMENT_SUFFIXES)
     assets = _files(root, ASSET_SUFFIXES)
     findings: list[InitializationFinding] = []
@@ -94,6 +95,9 @@ def inspect(path: Path) -> tuple[Project, InitializationReport]:
     unity = root / "ProjectSettings" / "ProjectVersion.txt"
     if godot.is_file():
         text = godot.read_text(encoding="utf-8", errors="replace")
+        name_match = re.search(r'^config/name="([^"]+)"', text, re.MULTILINE)
+        if name_match:
+            name = name_match.group(1).strip() or name
         version = "unknown"
         match = re.search(r"config/features=PackedStringArray\(([^)]*)\)", text)
         if match:
@@ -182,7 +186,6 @@ def inspect(path: Path) -> tuple[Project, InitializationReport]:
             ),
         ]
     )
-    name = _name(root)
     project = Project(
         project=ProjectIdentity(
             id=_identifier(root),

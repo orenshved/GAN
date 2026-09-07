@@ -45,6 +45,10 @@
   gap: 6px;
   padding: 0 9px;
   font-size: 12px;
+  text-align: left;
+  background: transparent;
+  border-color: transparent;
+  width: 100%;
 }
 .project-label strong {
   font-size: 14px;
@@ -424,6 +428,30 @@ dialog::backdrop {
   gap: 10px;
   justify-content: flex-end;
   margin-top: 22px;
+}
+.project-list {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 26px;
+}
+.project-list button {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px 16px;
+  text-align: left;
+}
+.project-list button strong {
+  font-size: 13px;
+}
+.project-list button span {
+  color: var(--ga-muted);
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+.project-list button span:last-child {
+  grid-column: 2;
+  grid-row: 1;
+  color: #bddbc9;
 }
 .setup {
   max-width: 700px;
