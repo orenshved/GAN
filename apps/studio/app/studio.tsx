@@ -8,13 +8,19 @@ import {
 } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import type {
+  AgentDefinition,
+  ContextPackage,
+  EngineProjectInspection,
   EventPage,
   InboxDecision,
   Policy,
   ProjectCatalog,
+  ProjectSummary,
   ProjectSnapshot,
   ReconciliationRecord,
+  RuntimeCaptureResult,
   TaskContract,
   TaskProposal,
 } from "@gameagent/protocol";
@@ -23,12 +29,20 @@ const Network = dynamic(() => import("./network"), {
   loading: () => <p role="status">Loading network…</p>,
   ssr: false,
 });
+const AgentNetwork = dynamic(
+  () => import("./network").then((module) => module.AgentNetwork),
+  {
+    loading: () => <p role="status">Loading agent network…</p>,
+    ssr: false,
+  },
+);
 const views = [
   "Director Desk",
   "Production",
   "Needs Oren",
   "Workers",
   "Network",
+  "Project Intelligence",
   "Activity",
   "Settings",
 ] as const;
@@ -62,7 +76,7 @@ async function request<T>(
     method,
     headers: { "Content-Type": "application/json" },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(path === "/runtime-capture" ? 120000 : 10000),
   });
   const value = await response.json();
   if (!response.ok)
@@ -103,6 +117,16 @@ function Desk(connection: Connection) {
         `/events?after=${activityAfter}&limit=100`,
       ),
     enabled: !!project.data && !!activeProjectId,
+  });
+  const agentRoster = useQuery({
+    queryKey: ["agent-roster"],
+    queryFn: () => request<AgentDefinition[]>(connection, "/agent-roster"),
+    enabled: view === "Production" && !!activeProjectId,
+  });
+  const agentHistory = useQuery({
+    queryKey: ["events", activeProjectId, "agent-network"],
+    queryFn: () => request<EventPage>(connection, "/events?after=0&limit=500"),
+    enabled: view === "Production" && !!project.data && !!activeProjectId,
   });
   const ready = !!project.data;
   useEffect(() => {
@@ -196,12 +220,14 @@ function Desk(connection: Connection) {
     <div className="workspace">
       <aside className="sidebar" aria-label="Main navigation">
         <div className="brand">
-          <span className="brand-mark">G</span>
-          <span>
-            GAME AGENT
-            <br />
-            <strong>NETWORK</strong>
-          </span>
+          <Image
+            className="brand-logo"
+            src="/logo.png"
+            alt="Game Agent Network"
+            width={160}
+            height={147}
+            priority
+          />
         </div>
         <button
           className="project-label"
@@ -307,7 +333,7 @@ function Desk(connection: Connection) {
                   connection={connection}
                 />
               )}
-              {(view === "Director Desk" || view === "Production") && (
+              {view === "Director Desk" && (
                 <GMPanel
                   key={activeProjectId}
                   snapshot={snapshot}
@@ -387,13 +413,33 @@ function Desk(connection: Connection) {
                 </>
               )}
               {view === "Production" && (
-                <section className="panel">
-                  <div className="section-heading">
-                    <h2>Task contracts</h2>
-                    <span className="muted">{tasks.length} total</span>
-                  </div>
-                  <TaskTable tasks={tasks} select={selectTask} />
-                </section>
+                <>
+                  <AgentNetwork
+                    key={`agent-network-${activeProjectId}`}
+                    snapshot={snapshot}
+                    roster={agentRoster.data ?? []}
+                    events={agentHistory.data?.events ?? []}
+                    loading={agentRoster.isPending || agentHistory.isPending}
+                    error={
+                      agentRoster.error?.message ??
+                      agentHistory.error?.message ??
+                      null
+                    }
+                    selectTask={selectTask}
+                  />
+                  <RuntimeEvidencePanel
+                    key={activeProjectId}
+                    snapshot={snapshot}
+                    connection={connection}
+                  />
+                  <section className="panel">
+                    <div className="section-heading">
+                      <h2>Task contracts</h2>
+                      <span className="muted">{tasks.length} total</span>
+                    </div>
+                    <TaskTable tasks={tasks} select={selectTask} />
+                  </section>
+                </>
               )}
               {view === "Network" && (
                 <section className="panel">
@@ -405,6 +451,12 @@ function Desk(connection: Connection) {
                   </div>
                   <Network tasks={tasks} select={selectTask} />
                 </section>
+              )}
+              {view === "Project Intelligence" && (
+                <ProjectIntelligencePanel
+                  snapshot={snapshot}
+                  connection={connection}
+                />
               )}
               {view === "Activity" && (
                 <section className="panel">
@@ -549,6 +601,15 @@ function Desk(connection: Connection) {
           close={() => setManagingProjects(false)}
           activate={activateProject}
           imported={(next) => {
+            cursor.current = 0;
+            setActivityAfter(0);
+            setSelection(null);
+            client.setQueryData(["projects"], next);
+            void client.invalidateQueries({ queryKey: ["project"] });
+            void client.invalidateQueries({ queryKey: ["events"] });
+            setManagingProjects(false);
+          }}
+          removed={(next) => {
             cursor.current = 0;
             setActivityAfter(0);
             setSelection(null);
@@ -821,8 +882,11 @@ function DecisionCard({
 const descriptions: Record<Exclude<View, "Director Desk">, string> = {
   "Needs Oren": "Resolve the human choices holding production work.",
   Workers: "Run and resume read-only Codex analysis for a proposed task.",
-  Production: "Outcome-driven contracts, ready for planning.",
+  Production:
+    "Live agent topology, engine runs, runtime evidence, and task contracts.",
   Network: "The actual dependencies between project tasks.",
+  "Project Intelligence":
+    "Indexed facts, decisions, references, and task-scoped context.",
   Activity: "Every recorded action, attributable and inspectable.",
   Settings: "Define how the project may proceed.",
 };
@@ -831,7 +895,7 @@ const policyLabels: Record<NonNullable<Policy["authority"]>, string> = {
   recommend_and_proceed: "Recommend and proceed",
   autonomous_within_policy: "Autonomous within policy",
 };
-function Metric({ label, value }: { label: string; value: number }) {
+function Metric({ label, value }: { label: string; value: string | number }) {
   return (
     <div>
       <span className="eyebrow">{label}</span>
@@ -1002,6 +1066,7 @@ function ProjectDialog({
   close,
   activate,
   imported,
+  removed,
 }: {
   catalog: ProjectCatalog;
   connection: Connection;
@@ -1009,9 +1074,12 @@ function ProjectDialog({
   close: () => void;
   activate: (projectId: string) => Promise<void>;
   imported: (catalog: ProjectCatalog) => void;
+  removed: (catalog: ProjectCatalog) => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [importing, setImporting] = useState(false);
+  const [removing, setRemoving] = useState<ProjectSummary | null>(null);
+  const [removeBusy, setRemoveBusy] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
     dialog.current?.showModal();
@@ -1044,6 +1112,25 @@ function ProjectDialog({
       setImporting(false);
     }
   }
+  async function removeProject() {
+    if (!removing) return;
+    setRemoveBusy(true);
+    setError("");
+    try {
+      removed(
+        await request<ProjectCatalog>(
+          connection,
+          "/project-remove",
+          { project_id: removing.project_id },
+          "POST",
+        ),
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to remove project");
+    } finally {
+      setRemoveBusy(false);
+    }
+  }
   return (
     <dialog ref={dialog} onCancel={close} onClose={close}>
       <div className="section-heading">
@@ -1063,23 +1150,79 @@ function ProjectDialog({
         {catalog.projects.map((project) => {
           const active = project.project_id === catalog.active_project_id;
           return (
-            <button
-              type="button"
-              key={project.project_id}
-              disabled={busy || active}
-              aria-current={active ? "true" : undefined}
-              onClick={() => void choose(project.project_id)}
-            >
-              <strong>{project.name}</strong>
-              <span>
-                {project.engine ?? project.stage.replaceAll("_", " ")} ·{" "}
-                {project.root}
-              </span>
-              <span>{active ? "Current project" : "Open project"}</span>
-            </button>
+            <div className="project-entry" key={project.project_id}>
+              <button
+                className="project-choice"
+                type="button"
+                disabled={busy || active || removeBusy}
+                aria-current={active ? "true" : undefined}
+                onClick={() => void choose(project.project_id)}
+              >
+                <strong>{project.name}</strong>
+                <span>
+                  {project.engine ?? project.stage.replaceAll("_", " ")} ·{" "}
+                  {project.root}
+                </span>
+                <span>{active ? "Current project" : "Open project"}</span>
+              </button>
+              <button
+                className="project-remove"
+                type="button"
+                disabled={
+                  busy ||
+                  removeBusy ||
+                  importing ||
+                  catalog.projects.length === 1
+                }
+                aria-label={`Remove ${project.name} from GAN`}
+                title={
+                  catalog.projects.length === 1
+                    ? "GAN requires at least one registered project"
+                    : `Remove ${project.name} from GAN`
+                }
+                onClick={() => {
+                  setError("");
+                  setRemoving(project);
+                }}
+              >
+                Remove
+              </button>
+            </div>
           );
         })}
       </div>
+      {removing && (
+        <section
+          className="project-removal-confirmation"
+          role="alertdialog"
+          aria-labelledby="remove-project-title"
+          aria-describedby="remove-project-detail"
+        >
+          <h3 id="remove-project-title">Remove {removing.name} from GAN?</h3>
+          <p id="remove-project-detail">
+            This forgets the project from this Studio. Repository files and its
+            .gameagent history stay on disk.
+          </p>
+          <div className="form-actions">
+            <button
+              type="button"
+              disabled={removeBusy}
+              autoFocus
+              onClick={() => setRemoving(null)}
+            >
+              Keep project
+            </button>
+            <button
+              className="danger"
+              type="button"
+              disabled={removeBusy}
+              onClick={() => void removeProject()}
+            >
+              {removeBusy ? "Removing…" : "Remove project"}
+            </button>
+          </div>
+        </section>
+      )}
       <form onSubmit={(event) => void importProject(event)}>
         <label>
           Add local repository
@@ -1103,7 +1246,10 @@ function ProjectDialog({
           <button type="button" onClick={close}>
             Cancel
           </button>
-          <button className="primary" disabled={busy || importing}>
+          <button
+            className="primary"
+            disabled={busy || importing || removeBusy}
+          >
             {importing ? "Importing…" : "Import repository"}
           </button>
         </div>
@@ -1225,6 +1371,395 @@ function ProposalDialog({
     </dialog>
   );
 }
+function ProjectIntelligencePanel({
+  snapshot,
+  connection,
+}: {
+  snapshot: ProjectSnapshot;
+  connection: Connection;
+}) {
+  const client = useQueryClient();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [taskId, setTaskId] = useState(snapshot.tasks[0]?.task_id ?? "");
+  const [context, setContext] = useState<ContextPackage | null>(null);
+  const intelligence = snapshot.intelligence;
+  const counts = intelligence?.resources.reduce<Record<string, number>>(
+    (total, resource) => {
+      total[resource.kind] = (total[resource.kind] ?? 0) + 1;
+      return total;
+    },
+    {},
+  );
+
+  async function refresh() {
+    setBusy(true);
+    setError("");
+    setContext(null);
+    try {
+      await request(
+        connection,
+        "/project-intelligence-refresh",
+        { request_id: `index-${crypto.randomUUID()}` },
+        "POST",
+      );
+      await client.invalidateQueries({ queryKey: ["project"] });
+      await client.invalidateQueries({ queryKey: ["events"] });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to index project");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function retrieve(event: FormEvent) {
+    event.preventDefault();
+    if (!taskId) return;
+    setBusy(true);
+    setError("");
+    try {
+      setContext(
+        await request<ContextPackage>(
+          connection,
+          "/task-context",
+          { task_id: taskId },
+          "POST",
+        ),
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Unable to assemble context",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="intelligence-view">
+      <section className="panel">
+        <div className="section-heading">
+          <div>
+            <h2>Repository index</h2>
+            <span className="muted">
+              {intelligence
+                ? `Indexed ${new Date(intelligence.indexed_at).toLocaleString()}`
+                : "No project index recorded yet"}
+            </span>
+          </div>
+          <button
+            className="primary"
+            disabled={busy}
+            onClick={() => void refresh()}
+          >
+            {busy
+              ? "Indexing…"
+              : intelligence
+                ? "Refresh index"
+                : "Index project"}
+          </button>
+        </div>
+        {error && (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        )}
+        {intelligence && (
+          <>
+            <div className="intelligence-metrics">
+              <Metric label="Documents" value={counts?.document ?? 0} />
+              <Metric label="Source files" value={counts?.source ?? 0} />
+              <Metric label="Assets" value={counts?.asset ?? 0} />
+              <Metric label="Knowledge" value={intelligence.knowledge.length} />
+            </div>
+            <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Indexed resource</th>
+                    <th>Kind</th>
+                    <th>Size</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {intelligence.resources.slice(0, 40).map((resource) => (
+                    <tr key={resource.path}>
+                      <td className="mono">{resource.path}</td>
+                      <td>{resource.kind}</td>
+                      <td>{resource.size.toLocaleString()} bytes</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {intelligence.resources.length > 40 && (
+              <p className="muted">
+                Showing 40 of {intelligence.resources.length} indexed resources.
+              </p>
+            )}
+          </>
+        )}
+      </section>
+
+      {intelligence && (
+        <div className="two-column intelligence-columns">
+          <section className="panel">
+            <h2>Knowledge with provenance</h2>
+            <ul className="knowledge-list">
+              {intelligence.knowledge.slice(0, 20).map((entry) => (
+                <li key={entry.knowledge_id}>
+                  <div>
+                    <Status state={entry.kind} />
+                    <span className="mono">
+                      {Math.round(entry.confidence * 100)}% confidence
+                    </span>
+                  </div>
+                  <strong>{entry.statement}</strong>
+                  <span>{entry.source.uri}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <section className="panel">
+            <h2>Targeted context assembly</h2>
+            <p className="muted">
+              Preview the bounded package a worker receives instead of the full
+              repository history.
+            </p>
+            <form onSubmit={(event) => void retrieve(event)}>
+              <label>
+                Task
+                <select
+                  value={taskId}
+                  onChange={(event) => setTaskId(event.target.value)}
+                  disabled={!snapshot.tasks.length}
+                >
+                  {snapshot.tasks.map((task) => (
+                    <option key={task.task_id} value={task.task_id}>
+                      {task.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button className="primary" disabled={busy || !taskId}>
+                Assemble context
+              </button>
+            </form>
+            {context && (
+              <div className="context-result" role="status">
+                <p>
+                  <strong>
+                    {context.selected_resource_count} of{" "}
+                    {context.indexed_resource_count}
+                  </strong>{" "}
+                  resources selected · event history excluded
+                </p>
+                <dl className="details">
+                  <dt>Knowledge entries</dt>
+                  <dd>{context.knowledge.length}</dd>
+                  <dt>Human decisions</dt>
+                  <dd>{context.decisions.length}</dd>
+                  <dt>References</dt>
+                  <dd>{context.references.length}</dd>
+                </dl>
+                <details>
+                  <summary>Inspect context package</summary>
+                  <pre>{JSON.stringify(context, null, 2)}</pre>
+                </details>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RuntimeEvidencePanel({
+  snapshot,
+  connection,
+}: {
+  snapshot: ProjectSnapshot;
+  connection: Connection;
+}) {
+  const client = useQueryClient();
+  const initialTask =
+    snapshot.tasks.find((task) =>
+      `${task.title} ${task.objective}`.toLowerCase().includes("dropdown"),
+    ) ?? snapshot.tasks.find((task) => task.state === "RUNNING");
+  const [taskId, setTaskId] = useState(
+    initialTask?.task_id ?? snapshot.tasks[0]?.task_id ?? "",
+  );
+  const [nodePath, setNodePath] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [latest, setLatest] = useState<RuntimeCaptureResult | null>(null);
+  const requestId = useRef(`capture-${crypto.randomUUID()}`);
+  const inspection = useQuery({
+    queryKey: ["engine-inspection", snapshot.project.project.id, taskId],
+    queryFn: () =>
+      request<EngineProjectInspection>(
+        connection,
+        `/engine-inspection?task_id=${encodeURIComponent(taskId)}`,
+      ),
+    enabled: !!taskId,
+  });
+
+  useEffect(() => {
+    const nodes = inspection.data?.ui_nodes ?? [];
+    if (!nodes.some((node) => node.path === nodePath)) {
+      setNodePath(nodes[0]?.path ?? "");
+    }
+  }, [inspection.data, nodePath]);
+
+  async function capture() {
+    if (!taskId || !nodePath) return;
+    setBusy(true);
+    setError("");
+    try {
+      const result = await request<RuntimeCaptureResult>(
+        connection,
+        "/runtime-capture",
+        { request_id: requestId.current, task_id: taskId, node_path: nodePath },
+        "POST",
+      );
+      setLatest(result);
+      requestId.current = `capture-${crypto.randomUUID()}`;
+      await client.invalidateQueries({ queryKey: ["project"] });
+      await client.invalidateQueries({ queryKey: ["events"] });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Runtime capture failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const evidence = (snapshot.evidence ?? []).filter(
+    (item) => item.task_id === taskId,
+  );
+  const evaluations = snapshot.evaluations ?? [];
+  const shownEvidence = latest
+    ? [
+        latest.evidence,
+        ...evidence.filter(
+          (item) => item.evidence_id !== latest.evidence.evidence_id,
+        ),
+      ]
+    : [...evidence].reverse();
+
+  return (
+    <section className="panel runtime-evidence">
+      <div className="section-heading">
+        <div>
+          <h2>Godot vertical slice</h2>
+          <span className="muted">
+            Inspect → build → run → capture → evaluate
+          </span>
+        </div>
+        <button
+          className="primary"
+          disabled={busy || inspection.isPending || !nodePath}
+          onClick={() => void capture()}
+        >
+          {busy ? "Running Godot…" : "Capture runtime evidence"}
+        </button>
+      </div>
+      <div className="runtime-controls">
+        <label>
+          Registered task
+          <select
+            value={taskId}
+            onChange={(event) => {
+              setTaskId(event.target.value);
+              setLatest(null);
+            }}
+          >
+            {snapshot.tasks.map((task) => (
+              <option key={task.task_id} value={task.task_id}>
+                {task.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Inspected UI element
+          <select
+            value={nodePath}
+            onChange={(event) => setNodePath(event.target.value)}
+            disabled={!inspection.data?.ui_nodes.length}
+          >
+            {(inspection.data?.ui_nodes ?? []).map((node) => (
+              <option key={`${node.scene}:${node.path}`} value={node.path}>
+                {node.path}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      {inspection.data && (
+        <div className="runtime-metrics">
+          <Metric label="Adapter" value={inspection.data.adapter.version} />
+          <Metric label="Godot" value={inspection.data.engine_version} />
+          <Metric label="UI nodes" value={inspection.data.ui_nodes.length} />
+          <Metric
+            label="Approved assets"
+            value={inspection.data.approved_assets.length}
+          />
+        </div>
+      )}
+      {inspection.isPending && <p role="status">Inspecting Godot project…</p>}
+      {(error || inspection.error) && (
+        <p className="error" role="alert">
+          {error || inspection.error?.message}
+        </p>
+      )}
+      {shownEvidence.length > 0 ? (
+        <div className="evidence-grid">
+          {shownEvidence.map((item) => {
+            const evaluation =
+              latest?.evidence.evidence_id === item.evidence_id
+                ? latest.evaluation
+                : evaluations.find((record) =>
+                    record.evidence_ids.includes(item.evidence_id),
+                  );
+            return (
+              <article key={item.evidence_id} className="evidence-card">
+                {item.source.media_type === "image/png" && (
+                  <Image
+                    src={`/api/daemon/evidence-file?evidence_id=${encodeURIComponent(item.evidence_id)}`}
+                    alt={item.summary}
+                    width={1600}
+                    height={900}
+                    sizes="(max-width: 1200px) 100vw, 60vw"
+                    unoptimized
+                  />
+                )}
+                <div>
+                  <Status state={evaluation?.result ?? item.evidence_class} />
+                  <h3>{item.summary}</h3>
+                  <p className="muted">
+                    {item.capture_origin} · {item.source.locator ?? "artifact"}{" "}
+                    · {new Date(item.captured_at).toLocaleString()}
+                  </p>
+                  {evaluation && <p>{evaluation.rationale}</p>}
+                  <details>
+                    <summary>Inspect evidence record</summary>
+                    <pre>{JSON.stringify({ item, evaluation }, null, 2)}</pre>
+                  </details>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="muted">
+          No runtime evidence is recorded for this task yet.
+        </p>
+      )}
+    </section>
+  );
+}
+
 function Workers({
   snapshot,
   connection,

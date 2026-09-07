@@ -30,3 +30,8 @@ Phase 5 owns repository/design-document indexing and targeted context assembly.
 
 The daemon and Studio build, protocol drift checks, Python tests, and the
 existing Studio-to-daemon Playwright smoke flow pass in the clean build path.
+
+## Live preview
+
+[Open the verified GAN Studio preview](http://127.0.0.1:4242/). The local daemon
+and Studio were left running for Director review on 2026-09-07.

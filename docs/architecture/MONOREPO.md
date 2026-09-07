@@ -1,4 +1,4 @@
-# Monorepo structure (Phase 3)
+# Monorepo structure (Phase 6)
 
 ```text
 apps/studio/                    Next 16 / React 19 local production Studio
@@ -8,6 +8,8 @@ services/daemon/
   gameagent/models/            Canonical Pydantic contracts
   gameagent/constitution.py    Pure state/authority admission rules
   gameagent/intake.py          Repository and engine inspection
+  gameagent/intelligence.py    Bounded indexing, provenance and context retrieval
+  gameagent/adapters/godot.py  Godot inspection, build and runtime capture
   gameagent/projects.py        Registration, watcher, reconciliation and replay
   gameagent/api.py             Authenticated REST/WebSocket service
   gameagent/codex_bridge.py    ChatGPT-authenticated Codex thread lifecycle
@@ -26,11 +28,11 @@ packages/
   engine-adapters/             Engine-neutral adapter contract facade
   qa-schema/                   Evidence and evaluation facade
 adapters/
-  engines/godot/               Reserved implementation boundary
+  engines/godot/               Adapter documentation boundary
   generation/comfyui/          Reserved implementation boundary
   inference/ollama/            Reserved implementation boundary
   source-control/git/          Reserved implementation boundary
-agents/builtin/                Roster deferred to Phase 4
+agents/builtin/                Phase 4 capability specialist roster
 capabilities/ontology/         PRD section 15 capability catalog
 docs/
   GREENLIGHT_HARVEST.md
@@ -61,7 +63,7 @@ selection only. It does not contain project history, conversation context or
 creative identity. Each listed repository remains authoritative through its own
 `.gameagent` history and projection.
 
-## Phase 3 runtime
+## Phase 6 runtime
 
 The daemon owns the official `openai-codex` SDK adapter. It selects the current
 Codex executable when available, falls back to the SDK runtime, clears API-key
@@ -80,9 +82,31 @@ the human explanation and an associated task. Replay keeps the project unclean
 until the matching reconciliation event exists. Studio presents this state and
 the production browser smoke exercises the complete workflow.
 
-Later phases add `gm`, `orchestration`, `providers`, `qa`, `recruiter`, project
-intelligence and engine adapters when their workflows can be tested. No engine
-execution or paid-provider call path exists in Phase 3.
+Project Intelligence indexes bounded inspectable repository files without executing
+discovered code. It records content-addressed documents, source, configuration and
+asset references plus typed knowledge that keeps source facts, deterministic
+consequences, inferences, constraints and human decisions distinct. Task context
+retrieval scores only the current project's index against the task contract, returns
+bounded excerpts and references, and explicitly includes zero canonical history
+events. Codex workers consume this package before any targeted read-only inspection.
+
+Studio exposes the same index and context package through authenticated loopback
+routes. Index events remain canonical and rebuild into SQLite with the rest of the
+project snapshot.
+
+The Godot adapter detects a single project manifest up to three levels below the
+repository root, reads its engine version and main scene, inventories `OptionButton`
+nodes and imported PNG references, builds C# projects when present, and launches a
+single-window capture driver. The driver advances the mapped `ui_accept` action only
+until the selected control is visible, opens its real popup and saves the live
+viewport as PNG. Runtime bytes and logs live under project-local `.gameagent`; the
+canonical history records their digest, dimensions, scope, capture origin and the
+resulting evaluation. Studio serves only recorded evidence whose current bytes match
+the canonical digest.
+
+Phase 7 generalizes the first runtime gate into a reusable QA fabric. Provider,
+model-router and recruiter execution paths remain absent; no paid-provider call path
+exists in Phase 6.
 
 ## Wire conventions
 

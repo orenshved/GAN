@@ -1,6 +1,7 @@
 """Loopback-only service for project state and authenticated Codex workers."""
 
 import asyncio
+import hashlib
 import logging
 import secrets
 import time
@@ -12,22 +13,29 @@ from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
+from gameagent.adapters.godot import GodotAdapter
 from gameagent.codex_bridge import CodexBridge
-from gameagent.constitution import ConstitutionError
+from gameagent.constitution import ConstitutionError, require
 from gameagent.models.api import (
+    ContextCommand,
     DecisionCommand,
+    EngineProjectInspection,
     EventPage,
+    IntelligenceRefreshCommand,
     ObjectiveCommand,
     PolicyCommand,
     ProjectCatalog,
     ProjectImport,
+    ProjectRemoval,
     ProjectSelection,
     ProjectSnapshot,
     ReconcileCommand,
+    RuntimeCaptureCommand,
+    RuntimeCaptureResult,
     StreamMessage,
     TaskProgressCommand,
     TaskProposal,
@@ -36,9 +44,11 @@ from gameagent.models.api import (
 )
 from gameagent.models.contracts import (
     AgentDefinition,
+    ContextPackage,
     GMRecord,
     InboxDecision,
     Policy,
+    ProjectIntelligence,
     ReconciliationRecord,
     TaskContract,
     WorkerRecord,
@@ -95,7 +105,7 @@ def create_app(
             await asyncio.gather(watcher, return_exceptions=True)
             await asyncio.gather(*(worker_bridge.close() for worker_bridge in bridges.values()))
 
-    app = FastAPI(title="Game Agent Network", version="0.3.0", lifespan=lifespan)
+    app = FastAPI(title="Game Agent Network", version="0.6.0", lifespan=lifespan)
     app.state.registry = registry
 
     @app.exception_handler(Exception)
@@ -183,13 +193,13 @@ def create_app(
         if watcher_failures:
             return {
                 "status": "degraded",
-                "phase": "3",
+                "phase": "6",
                 "error": "workspace_watcher_failed",
                 "detail": "; ".join(
                     f"{root}: {detail}" for root, detail in watcher_failures.items()
                 ),
             }
-        return {"status": "ready", "phase": "3"}
+        return {"status": "ready", "phase": "6"}
 
     @app.get("/projects", response_model=ProjectCatalog)
     def projects() -> ProjectCatalog:
@@ -205,9 +215,99 @@ def create_app(
         await bridge().recover()
         return catalog
 
+    @app.post("/project-remove", response_model=ProjectCatalog)
+    async def remove_project(command: ProjectRemoval) -> ProjectCatalog:
+        catalog = registry.remove(command)
+        removed_bridge = bridges.pop(command.project_id, None)
+        if removed_bridge is not None:
+            await removed_bridge.close()
+        return catalog
+
     @app.get("/project", response_model=ProjectSnapshot)
     def project() -> ProjectSnapshot:
         return registry.current.snapshot()
+
+    @app.get("/project-intelligence", response_model=ProjectIntelligence | None)
+    def project_intelligence() -> ProjectIntelligence | None:
+        return registry.current.snapshot().intelligence
+
+    @app.post("/project-intelligence-refresh", response_model=ProjectIntelligence)
+    def project_intelligence_refresh(
+        command: IntelligenceRefreshCommand,
+    ) -> ProjectIntelligence:
+        return registry.current.refresh_intelligence(command)
+
+    @app.post("/task-context", response_model=ContextPackage)
+    def task_context(command: ContextCommand) -> ContextPackage:
+        return registry.current.task_context(command)
+
+    @app.get("/engine-inspection", response_model=EngineProjectInspection)
+    def engine_inspection(task_id: str) -> EngineProjectInspection:
+        snapshot = registry.current.snapshot()
+        require(any(task.task_id == task_id for task in snapshot.tasks), "task_not_found", task_id)
+        return GodotAdapter(registry.current.root).inspect(snapshot.project.project.id, task_id)
+
+    @app.post("/runtime-capture", response_model=RuntimeCaptureResult)
+    def runtime_capture(command: RuntimeCaptureCommand) -> RuntimeCaptureResult:
+        snapshot = registry.current.snapshot()
+        require(
+            any(task.task_id == command.task_id for task in snapshot.tasks),
+            "task_not_found",
+            command.task_id,
+        )
+        adapter = GodotAdapter(registry.current.root)
+        evidence_id = f"evidence-{command.request_id}"
+        existing = next(
+            (item for item in snapshot.evidence if item.evidence_id == evidence_id), None
+        )
+        if existing is not None:
+            evaluation = next(
+                (
+                    item
+                    for item in snapshot.evaluations
+                    if item.evaluation_id == f"evaluation-{command.request_id}"
+                ),
+                None,
+            )
+            require(evaluation is not None, "capture_evaluation_missing", evidence_id)
+            assert evaluation is not None
+            return RuntimeCaptureResult(
+                inspection=adapter.inspect(snapshot.project.project.id, command.task_id),
+                evidence=existing,
+                evaluation=evaluation,
+                log=adapter.log_reference(evidence_id),
+            )
+        inspection, evidence, evaluation, log = adapter.capture(
+            snapshot.project.project.id,
+            command.task_id,
+            command.request_id,
+            command.node_path,
+        )
+        registry.current.record_runtime_evaluation(command.request_id, evidence, evaluation)
+        return RuntimeCaptureResult(
+            inspection=inspection,
+            evidence=evidence,
+            evaluation=evaluation,
+            log=log,
+        )
+
+    @app.get("/evidence-file")
+    def evidence_file(evidence_id: str) -> FileResponse:
+        snapshot = registry.current.snapshot()
+        evidence = next(
+            (item for item in snapshot.evidence if item.evidence_id == evidence_id), None
+        )
+        require(evidence is not None, "evidence_not_found", evidence_id)
+        assert evidence is not None
+        path = (registry.current.root / evidence.source.uri).resolve(strict=True)
+        evidence_root = (registry.current.root / ".gameagent" / "evidence").resolve(strict=True)
+        require(path.is_relative_to(evidence_root), "unsafe_evidence_path", str(path))
+        require(
+            hashlib.sha256(path.read_bytes()).hexdigest() == evidence.source.sha256,
+            "evidence_digest_mismatch",
+            evidence_id,
+        )
+        return FileResponse(path, media_type=evidence.source.media_type)
 
     @app.get("/events", response_model=EventPage)
     def events(after: int = 0, limit: int = 100) -> EventPage:

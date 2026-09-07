@@ -64,7 +64,7 @@ def validate_event_authority(event: EventBase) -> None:
         authorize(event.actor_type, actions[event_type])
     if isinstance(event, TaskEvent):
         require(event.task_id == event.payload.task_id, "task_scope_mismatch", event.event_id)
-    if event_type.startswith(("task.", "agent.", "evaluation.", "artifact.", "git.")):
+    if event_type.startswith(("task.", "agent.", "evaluation.", "evidence.", "artifact.", "git.")):
         require(event.task_id is not None, "task_registration_required", event.event_id)
 
 

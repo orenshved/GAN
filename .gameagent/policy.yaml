@@ -1,0 +1,24 @@
+approval_threshold_cents: 100
+authority: recommend_and_proceed
+currency: USD
+monthly_external_budget_cents: 2500
+post_specialist_nonprogress_limit: 3
+proactivity: balanced
+project_id: project-gan-3bf786d4
+require_provider_hard_cap: true
+require_registration_or_reconciliation: true
+schema_version: 1
+worker_permissions:
+  access_secrets: false
+  execute_commands: false
+  execute_discovered_code: ask
+  git_commit: false
+  git_merge: false
+  install_dependencies: ask
+  modify_assets: false
+  modify_code: false
+  modify_global_files: false
+  modify_project_settings: false
+  network: false
+  read_project: true
+  write_task_workspace: false

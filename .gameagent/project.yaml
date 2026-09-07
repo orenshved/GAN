@@ -1,0 +1,25 @@
+audio:
+  direction: Undetermined
+  references: []
+constraints: []
+engine: null
+input_methods: []
+locked_decision_ids: []
+medium: digital_game
+multiplayer:
+  max_players: 1
+  type: single_player
+platforms: []
+production:
+  current_milestone: null
+  stage: preproduction
+  team_size: 1
+project:
+  description: Existing GAN game project initialized by Game Agent Network.
+  id: project-gan-3bf786d4
+  name: GAN
+rendering: non_applicable
+schema_version: 1
+visual:
+  direction: Undetermined
+  references: []

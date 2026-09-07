@@ -476,6 +476,17 @@
     }
   },
   {
+    "name": "invalid project index digest",
+    "definition": "ProjectIntelligence",
+    "value": {
+      "project_id": "project-a",
+      "indexed_at": "2026-09-06T12:00:00Z",
+      "workspace_digest": "not-a-digest",
+      "resources": [],
+      "knowledge": []
+    }
+  },
+  {
     "name": "impossible calendar date",
     "definition": "Evidence",
     "value": {

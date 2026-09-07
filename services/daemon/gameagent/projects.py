@@ -16,13 +16,18 @@ from uuid import uuid4
 import yaml
 from filelock import FileLock
 
-from gameagent.constitution import require
+from gameagent.constitution import require, validate_evaluation
 from gameagent.gm import plan_decisions, task_readiness, validate_plan
+from gameagent.intelligence import assemble_context as build_context
+from gameagent.intelligence import index_repository
 from gameagent.models.api import (
+    ContextCommand,
     DecisionCommand,
     EventPage,
+    IntelligenceRefreshCommand,
     PolicyCommand,
     ProjectCatalog,
+    ProjectRemoval,
     ProjectSnapshot,
     ProjectSummary,
     ReconcileCommand,
@@ -31,7 +36,12 @@ from gameagent.models.api import (
     TaskStartCommand,
 )
 from gameagent.models.contracts import (
+    ContextPackage,
+    Evaluation,
+    EvaluationRecordedEvent,
     Event,
+    Evidence,
+    EvidenceRecordedEvent,
     ExternalChangeEvent,
     ExternalChangePayload,
     GMEvent,
@@ -39,6 +49,7 @@ from gameagent.models.contracts import (
     InboxDecision,
     InboxEvent,
     InitializationReport,
+    IntelligenceEvent,
     Permissions,
     PlanEvent,
     Policy,
@@ -47,6 +58,7 @@ from gameagent.models.contracts import (
     Project,
     ProjectInitializedEvent,
     ProjectInitializedPayload,
+    ProjectIntelligence,
     ProjectReconciledEvent,
     ReconciliationPayload,
     ReconciliationRecord,
@@ -83,6 +95,7 @@ IGNORED_WORKSPACE_PARTS = {
 AGENT_INSTRUCTIONS_BEGIN = "<!-- BEGIN GAME AGENT NETWORK -->"
 AGENT_INSTRUCTIONS_END = "<!-- END GAME AGENT NETWORK -->"
 AGENT_INSTRUCTIONS = f"""{AGENT_INSTRUCTIONS_BEGIN}
+
 ## Game Agent Network registration
 
 When this repository is managed by GAN, register meaningful project work before editing:
@@ -397,6 +410,9 @@ class ProjectStore:
         gm: GMRecord | None = None
         plans: dict[str, ProductionPlan] = {}
         decisions: dict[str, InboxDecision] = {}
+        intelligence: ProjectIntelligence | None = None
+        evidence: dict[str, Evidence] = {}
+        evaluations: dict[str, Evaluation] = {}
         for index, event in enumerate(events):
             require(
                 event.project_id == project.project.id, "project_scope_mismatch", event.event_id
@@ -522,30 +538,32 @@ class ProjectStore:
                 )
                 workspace = event.payload.fingerprint
             elif isinstance(event, GMEvent):
-                record = event.payload
+                gm_record = event.payload
                 require(
                     event.actor_type == "gm"
                     and event.actor_id == "project-gm"
                     and event.task_id is None
-                    and record.project_id == project.project.id,
+                    and gm_record.project_id == project.project.id,
                     "invalid_gm_event",
                     event.event_id,
                 )
                 require(
-                    gm is None or gm.thread_id == record.thread_id,
+                    gm is None or gm.thread_id == gm_record.thread_id,
                     "gm_thread_changed",
                     event.event_id,
                 )
                 require(
-                    not any(w.thread_id == record.thread_id for w in workers.values()),
+                    not any(w.thread_id == gm_record.thread_id for w in workers.values()),
                     "thread_already_bound",
                     event.event_id,
                 )
-                if gm and gm.request_id == record.request_id:
+                if gm and gm.request_id == gm_record.request_id:
                     require(
-                        gm.objective == record.objective, "request_id_conflict", record.request_id
+                        gm.objective == gm_record.objective,
+                        "request_id_conflict",
+                        gm_record.request_id,
                     )
-                gm = record
+                gm = gm_record
             elif isinstance(event, PlanEvent):
                 plan = event.payload
                 require(
@@ -595,6 +613,17 @@ class ProjectStore:
                     event.event_id,
                 )
                 decisions[decision.decision_id] = decision
+            elif isinstance(event, IntelligenceEvent):
+                index_record = event.payload
+                require(
+                    event.actor_type == "system"
+                    and event.actor_id == "project-indexer"
+                    and event.task_id is None
+                    and index_record.project_id == project.project.id,
+                    "invalid_intelligence_event",
+                    event.event_id,
+                )
+                intelligence = index_record
             elif isinstance(event, WorkerEvent):
                 worker_record = event.payload
                 require(
@@ -626,6 +655,31 @@ class ProjectStore:
                     worker_record.worker_id,
                 )
                 workers[worker_record.worker_id] = worker_record
+            elif isinstance(event, EvidenceRecordedEvent):
+                evidence_record = event.payload
+                require(
+                    event.actor_type == "system"
+                    and event.task_id == evidence_record.task_id
+                    and evidence_record.project_id == project.project.id
+                    and evidence_record.task_id in tasks
+                    and evidence_record.evidence_id not in evidence,
+                    "invalid_evidence_event",
+                    event.event_id,
+                )
+                evidence[evidence_record.evidence_id] = evidence_record
+            elif isinstance(event, EvaluationRecordedEvent):
+                evaluation_record = event.payload
+                require(
+                    event.actor_type == "system"
+                    and event.task_id == evaluation_record.task_id
+                    and evaluation_record.project_id == project.project.id
+                    and evaluation_record.task_id in tasks
+                    and evaluation_record.evaluation_id not in evaluations,
+                    "invalid_evaluation_event",
+                    event.event_id,
+                )
+                validate_evaluation(evaluation_record, list(evidence.values()))
+                evaluations[evaluation_record.evaluation_id] = evaluation_record
             else:
                 # Do not silently project future event semantics as current Phase 1 state.
                 require(False, "unsupported_projection_event", event.event_type)
@@ -644,12 +698,141 @@ class ProjectStore:
             gm=gm,
             plans=list(plans.values()),
             decisions=list(decisions.values()),
+            intelligence=intelligence,
+            evidence=list(evidence.values()),
+            evaluations=list(evaluations.values()),
             workspace=workspace,
             reconciliations=list(reconciliations.values()),
             requires_reconciliation=any(
                 record.state == "unresolved" for record in reconciliations.values()
             ),
         ), events
+
+    def record_runtime_evaluation(
+        self,
+        request_id: str,
+        evidence: Evidence,
+        evaluation: Evaluation,
+    ) -> tuple[Evidence, Evaluation]:
+        with self.lock:
+            snapshot, events = self._replay()
+            task = self._task(snapshot, evidence.task_id)
+            require(
+                evidence.project_id == task.project_id
+                and evaluation.project_id == task.project_id
+                and evaluation.task_id == task.task_id,
+                "project_scope_mismatch",
+                task.task_id,
+            )
+            validate_evaluation(evaluation, [*snapshot.evidence, evidence])
+            evidence_event_id = f"evt-{request_id}-evidence"
+            evaluation_event_id = f"evt-{request_id}-evaluation"
+            previous_evidence = next(
+                (item for item in events if item.event_id == evidence_event_id), None
+            )
+            previous_evaluation = next(
+                (item for item in events if item.event_id == evaluation_event_id), None
+            )
+            if previous_evidence or previous_evaluation:
+                require(
+                    isinstance(previous_evidence, EvidenceRecordedEvent)
+                    and previous_evidence.payload == evidence
+                    and isinstance(previous_evaluation, EvaluationRecordedEvent)
+                    and previous_evaluation.payload == evaluation,
+                    "request_id_conflict",
+                    request_id,
+                )
+                return evidence, evaluation
+            append(
+                self.directory / "events",
+                EvidenceRecordedEvent(
+                    event_id=evidence_event_id,
+                    project_id=task.project_id,
+                    timestamp=evidence.captured_at,
+                    actor_type="system",
+                    actor_id="engine-adapter",
+                    correlation_id=request_id,
+                    task_id=task.task_id,
+                    sequence=snapshot.cursor + 1,
+                    event_type="evidence.recorded",
+                    payload=evidence,
+                ),
+                self.max_segment_bytes,
+            )
+            snapshot, _ = self._replay()
+            append(
+                self.directory / "events",
+                EvaluationRecordedEvent(
+                    event_id=evaluation_event_id,
+                    project_id=task.project_id,
+                    timestamp=evaluation.evaluated_at,
+                    actor_type="system",
+                    actor_id="engine-adapter",
+                    correlation_id=request_id,
+                    task_id=task.task_id,
+                    sequence=snapshot.cursor + 1,
+                    event_type="evaluation.recorded",
+                    payload=evaluation,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return evidence, evaluation
+
+    def refresh_intelligence(self, command: IntelligenceRefreshCommand) -> ProjectIntelligence:
+        with self.lock:
+            snapshot, events = self._replay()
+            event_id = f"evt-{command.request_id}"
+            previous = next((event for event in events if event.event_id == event_id), None)
+            if previous:
+                require(
+                    isinstance(previous, IntelligenceEvent),
+                    "request_id_conflict",
+                    command.request_id,
+                )
+                assert isinstance(previous, IntelligenceEvent)
+                return previous.payload
+            initial = events[0]
+            assert isinstance(initial, ProjectInitializedEvent)
+            record = index_repository(
+                self.root,
+                snapshot.project,
+                initial.payload.intake,
+                snapshot.decisions,
+                timestamp(),
+            )
+            append(
+                self.directory / "events",
+                IntelligenceEvent(
+                    event_id=event_id,
+                    project_id=snapshot.project.project.id,
+                    timestamp=record.indexed_at,
+                    actor_type="system",
+                    actor_id="project-indexer",
+                    correlation_id=command.request_id,
+                    task_id=None,
+                    sequence=snapshot.cursor + 1,
+                    event_type="project.intelligence_indexed",
+                    payload=record,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            assert replayed.intelligence is not None
+            return replayed.intelligence
+
+    def task_context(self, command: ContextCommand) -> ContextPackage:
+        snapshot = self.snapshot()
+        intelligence = snapshot.intelligence
+        if intelligence is None:
+            intelligence = self.refresh_intelligence(
+                IntelligenceRefreshCommand(request_id=f"index-{uuid4()}")
+            )
+            snapshot = self.snapshot()
+        task = self._task(snapshot, command.task_id)
+        return build_context(task, intelligence, snapshot.decisions, timestamp())
 
     def gm_request(self, request_id: str) -> GMRecord | None:
         with self.lock:
@@ -1478,6 +1661,16 @@ class ProjectRegistry:
         with self.lock:
             require(project_id in self.stores, "project_not_found", project_id)
             self.active_project_id = project_id
+            self._persist()
+            return self.catalog()
+
+    def remove(self, command: ProjectRemoval) -> ProjectCatalog:
+        with self.lock:
+            require(command.project_id in self.stores, "project_not_found", command.project_id)
+            require(len(self.stores) > 1, "last_project_removal_forbidden", command.project_id)
+            del self.stores[command.project_id]
+            if self.active_project_id == command.project_id:
+                self.active_project_id = sorted(self.stores)[0]
             self._persist()
             return self.catalog()
 

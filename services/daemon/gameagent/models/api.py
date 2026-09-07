@@ -5,7 +5,11 @@ from typing import Annotated, Literal
 from pydantic import Field
 
 from gameagent.models.contracts import (
+    ContextPackage,
+    EngineAdapter,
+    Evaluation,
     Event,
+    Evidence,
     GMRecord,
     Identifier,
     InboxDecision,
@@ -13,9 +17,12 @@ from gameagent.models.contracts import (
     Policy,
     ProductionPlan,
     Project,
+    ProjectIntelligence,
     ReconciliationRecord,
+    SourceRef,
     TaskContract,
     Text,
+    Timestamp,
     Value,
     WorkerRecord,
     WorkspaceFingerprint,
@@ -72,6 +79,17 @@ class ProjectSnapshot(Value):
     gm: GMRecord | None = None
     plans: list[ProductionPlan] = Field(default_factory=list)
     decisions: list[InboxDecision] = Field(default_factory=list)
+    intelligence: ProjectIntelligence | None = None
+    evidence: list[Evidence] = Field(default_factory=list)
+    evaluations: list[Evaluation] = Field(default_factory=list)
+
+
+class IntelligenceRefreshCommand(Value):
+    request_id: Identifier
+
+
+class ContextCommand(Value):
+    task_id: Identifier
 
 
 class ObjectiveCommand(Value):
@@ -107,6 +125,41 @@ class ProjectSelection(Value):
     project_id: Identifier
 
 
+class ProjectRemoval(Value):
+    project_id: Identifier
+
+
+class EngineNodeInspection(Value):
+    scene: Text
+    path: Text
+    node_type: Identifier
+
+
+class EngineProjectInspection(Value):
+    project_id: Identifier
+    task_id: Identifier
+    adapter: EngineAdapter
+    project_path: Text
+    engine_version: Text
+    main_scene: Text
+    ui_nodes: list[EngineNodeInspection]
+    approved_assets: list[SourceRef]
+    inspected_at: Timestamp
+
+
+class RuntimeCaptureCommand(Value):
+    request_id: Identifier
+    task_id: Identifier
+    node_path: Text
+
+
+class RuntimeCaptureResult(Value):
+    inspection: EngineProjectInspection
+    evidence: Evidence
+    evaluation: Evaluation
+    log: SourceRef
+
+
 class WorkerCommand(Value):
     task_id: Identifier
     worker_id: Identifier | None = None
@@ -126,9 +179,16 @@ class ApiCatalog(Value):
     plan_draft: PlanDraft
     objective_command: ObjectiveCommand
     decision_command: DecisionCommand
+    intelligence_refresh_command: IntelligenceRefreshCommand
+    context_command: ContextCommand
+    context_package: ContextPackage
     project_catalog: ProjectCatalog
     project_import: ProjectImport
+    project_removal: ProjectRemoval
     project_selection: ProjectSelection
+    engine_project_inspection: EngineProjectInspection
+    runtime_capture_command: RuntimeCaptureCommand
+    runtime_capture_result: RuntimeCaptureResult
     worker_command: WorkerCommand
     snapshot: ProjectSnapshot
     proposal: TaskProposal

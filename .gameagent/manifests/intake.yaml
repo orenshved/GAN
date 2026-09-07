@@ -1,0 +1,130 @@
+findings:
+- field: engine
+  kind: missing
+  source: No supported engine manifest found
+  value: null
+- field: rendering
+  kind: missing
+  source: No engine scenes identified
+  value: null
+- field: platforms
+  kind: missing
+  source: No reliable platform declaration was identified
+  value: null
+- field: input_methods
+  kind: missing
+  source: No reliable input target was identified
+  value: null
+- field: visual_direction
+  kind: missing
+  source: Creative direction requires a human source
+  value: null
+- field: audio_direction
+  kind: missing
+  source: Audio direction requires a human source
+  value: null
+- field: medium
+  kind: inferred
+  source: Repository initialized as a GAN game project
+  value: digital_game
+- field: production_stage
+  kind: inferred
+  source: No production milestone record was identified
+  value: preproduction
+git_head: 61519d344a3274e0ddd6e6f4af92d93573a9ce72
+git_recent_commits:
+- "61519d344a3274e0ddd6e6f4af92d93573a9ce72\tfeat: add persistent GM planning and\
+  \ capability matching"
+- "6696858800655684374530b1d5bb49206da7d74d\tfeat: complete phase 3 registration and\
+  \ reconciliation"
+- "3a93ab73ee16991b32fe851329dc8679a76fdf3b\tAdd multi-project Studio navigation"
+- "853d6ba6080281a183e4ce89027b80599eaf8e9d\tImplement Phase 1 and Phase 2 local Studio"
+- "9eed15498444a32fd463aba052bfe001fbb94de1\tScaffold Phase -1 and Phase 0 foundation"
+inspected_assets: []
+inspected_documents:
+- AGENTS.md
+- Game Agent Network - Product Requirements & Technical Architecture.md
+- README.md
+- adapters/engines/godot/README.md
+- adapters/generation/comfyui/README.md
+- adapters/inference/ollama/README.md
+- adapters/source-control/git/README.md
+- agents/builtin/README.md
+- apps/studio/AGENTS.md
+- apps/studio/CLAUDE.md
+- docs/GREENLIGHT_HARVEST.md
+- docs/architecture/INVARIANTS.md
+- docs/architecture/MONOREPO.md
+- docs/architecture/VOCABULARY.md
+- docs/decisions/0001-event-sourced-project-history.md
+- docs/decisions/0002-sqlite-projections.md
+- docs/decisions/0003-python-daemon.md
+- docs/decisions/0004-codex-authenticated-worker-bridge.md
+- docs/decisions/0005-gm-centric-orchestration.md
+- docs/decisions/0006-capability-based-agents.md
+- docs/decisions/0007-qa-evidence-model.md
+- docs/decisions/0008-provider-hard-cap-enforcement.md
+- docs/development/PHASE_0_HANDOFF.md
+- docs/development/PHASE_1_HANDOFF.md
+- docs/development/PHASE_2_HANDOFF.md
+- docs/development/PHASE_3_HANDOFF.md
+- docs/development/PHASE_4_HANDOFF.md
+- examples/README.md
+- services/daemon/.pytest_cache/README.md
+- services/daemon/.venv/Lib/site-packages/alembic-1.19.2.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/alembic-1.19.2.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/annotated_doc-0.0.5.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/anyio-4.15.1.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/anyio-4.15.1.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/certifi-2026.7.22.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/click-8.5.0.dist-info/licenses/LICENSE.txt
+- services/daemon/.venv/Lib/site-packages/colorama-0.4.6.dist-info/licenses/LICENSE.txt
+- services/daemon/.venv/Lib/site-packages/fastapi-0.141.1.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/fastapi/.agents/skills/fastapi/SKILL.md
+- services/daemon/.venv/Lib/site-packages/fastapi/.agents/skills/fastapi/references/dependencies.md
+- services/daemon/.venv/Lib/site-packages/fastapi/.agents/skills/fastapi/references/other-tools.md
+- services/daemon/.venv/Lib/site-packages/fastapi/.agents/skills/fastapi/references/path-operations.md
+- services/daemon/.venv/Lib/site-packages/fastapi/.agents/skills/fastapi/references/pydantic.md
+- services/daemon/.venv/Lib/site-packages/fastapi/.agents/skills/fastapi/references/responses.md
+- services/daemon/.venv/Lib/site-packages/fastapi/.agents/skills/fastapi/references/streaming.md
+- services/daemon/.venv/Lib/site-packages/gameagent_daemon-0.0.1.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/greenlet-3.5.5.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/h11-0.16.0.dist-info/licenses/LICENSE.txt
+- services/daemon/.venv/Lib/site-packages/h11-0.16.0.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/httpcore-1.0.9.dist-info/licenses/LICENSE.md
+- services/daemon/.venv/Lib/site-packages/httptools-0.8.0.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/httpx-0.28.1.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/httpx-0.28.1.dist-info/licenses/LICENSE.md
+- services/daemon/.venv/Lib/site-packages/idna-3.19.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/idna-3.19.dist-info/licenses/LICENSE.md
+- services/daemon/.venv/Lib/site-packages/iniconfig-2.3.0.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/jsonschema-4.26.0.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/librt-0.15.0.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/mako-1.4.1.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/mako-1.4.1.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/markupsafe-3.0.3.dist-info/licenses/LICENSE.txt
+- services/daemon/.venv/Lib/site-packages/markupsafe-3.0.3.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/mypy-1.20.2.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/mypy-1.20.2.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/pluggy-1.6.0.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/pygments-2.21.0.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/pytest-9.1.1.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/pytest-9.1.1.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/python_dotenv-1.2.3.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/python_dotenv-1.2.3.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/pyyaml-6.0.3.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/sqlalchemy-2.0.52.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/sqlalchemy/dialects/type_migration_guidelines.txt
+- services/daemon/.venv/Lib/site-packages/starlette-1.6.0.dist-info/licenses/LICENSE.md
+- services/daemon/.venv/Lib/site-packages/types_jsonschema-4.26.0.20260518.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/types_pyyaml-6.0.12.20260906.dist-info/top_level.txt
+- services/daemon/.venv/Lib/site-packages/uvicorn-0.52.4.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/uvicorn-0.52.4.dist-info/licenses/LICENSE.md
+- services/daemon/.venv/Lib/site-packages/watchfiles-1.2.0.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/websockets-17.1.dist-info/entry_points.txt
+- services/daemon/.venv/Lib/site-packages/websockets-17.1.dist-info/top_level.txt
+repository_root: C:\AI tools\GAN
+required_capabilities:
+- project_analysis
+- version_control_analysis
+schema_version: 1

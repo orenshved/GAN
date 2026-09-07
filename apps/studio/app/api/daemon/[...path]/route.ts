@@ -6,6 +6,13 @@ const allowed = new Set([
   "project",
   "project-select",
   "project-import",
+  "project-remove",
+  "project-intelligence",
+  "project-intelligence-refresh",
+  "task-context",
+  "engine-inspection",
+  "runtime-capture",
+  "evidence-file",
   "events",
   "tasks",
   "task-start",
@@ -71,7 +78,9 @@ async function proxy(
       },
       ...body,
       cache: "no-store",
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(
+        path[0] === "runtime-capture" ? 120000 : 10000,
+      ),
     });
     return new Response(response.body, {
       status: response.status,

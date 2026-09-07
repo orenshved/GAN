@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import json
 import subprocess
 import sys
@@ -9,6 +10,7 @@ from types import SimpleNamespace
 import pytest
 from fastapi.testclient import TestClient
 
+from gameagent.adapters.godot import GodotAdapter
 from gameagent.api import create_app
 from gameagent.cli import main as cli_main
 from gameagent.codex_bridge import CodexBridge
@@ -16,18 +18,29 @@ from gameagent.constitution import ConstitutionError
 from gameagent.gm import make_plan
 from gameagent.intake import inspect
 from gameagent.models.api import (
+    ContextCommand,
     DecisionCommand,
+    IntelligenceRefreshCommand,
     ObjectiveCommand,
     PolicyCommand,
+    ProjectRemoval,
     ReconcileCommand,
     TaskProgressCommand,
     TaskProposal,
     TaskStartCommand,
     WorkerCommand,
 )
-from gameagent.models.contracts import GMRecord, PlanDraft, Project, WorkerRecord
+from gameagent.models.contracts import (
+    Evaluation,
+    Evidence,
+    GMRecord,
+    PlanDraft,
+    Project,
+    SourceRef,
+    WorkerRecord,
+)
 from gameagent.persistence.projection import Projection
-from gameagent.projects import ProjectRegistry, ProjectStore, initialize
+from gameagent.projects import ProjectRegistry, ProjectStore, initialize, timestamp
 
 ROOT = Path(__file__).resolve().parents[3]
 PROFILE = json.loads((ROOT / "packages/protocol/fixtures/valid.json").read_text())["Project"]
@@ -140,6 +153,78 @@ def test_gm_plan_decisions_dependency_replay_and_idempotency(store):
         store.resolve_decision(command.model_copy(update={"selected_option": "Explicit tutorial"}))
     with pytest.raises(ConstitutionError, match="GM"):
         store.start_task(TaskStartCommand(request_id="bypass", task_id=plan.tasks[0].task_id))
+
+
+def test_project_intelligence_indexes_retrieves_and_replays_targeted_context(store):
+    draft = production_draft()
+    draft = draft.model_copy(
+        update={
+            "steps": [
+                draft.steps[0].model_copy(
+                    update={
+                        "title": "Analyze the HUD hint asset",
+                        "objective": "The contextual hint icon makes the next action clear",
+                    }
+                ),
+                draft.steps[1],
+            ]
+        }
+    )
+    plan = save_plan(store, draft)
+    snapshot = store.snapshot()
+    store.resolve_decision(
+        DecisionCommand(
+            request_id="context-choice",
+            decision_id=snapshot.decisions[0].decision_id,
+            selected_option="Contextual hints",
+            rationale="Use the established lightweight guidance style",
+        )
+    )
+    docs = store.root / "docs"
+    assets = store.root / "assets" / "ui"
+    source = store.root / "src"
+    docs.mkdir()
+    assets.mkdir(parents=True)
+    source.mkdir()
+    (docs / "UX.md").write_text(
+        "# Contextual HUD hints\nUse compact icons beside the next available action.\n",
+        encoding="utf-8",
+    )
+    (assets / "hint.png").write_bytes(b"ui-asset")
+    for index in range(20):
+        (source / f"unrelated_{index}.py").write_text(f"VALUE = {index}\n", encoding="utf-8")
+
+    command = IntelligenceRefreshCommand(request_id="index-one")
+    intelligence = store.refresh_intelligence(command)
+    assert store.refresh_intelligence(command) == intelligence
+    assert {resource.path for resource in intelligence.resources} >= {
+        "docs/UX.md",
+        "assets/ui/hint.png",
+    }
+    assert {entry.kind for entry in intelligence.knowledge} >= {
+        "source_fact",
+        "deterministic_consequence",
+        "user_decision",
+    }
+    context = store.task_context(ContextCommand(task_id=plan.tasks[0].task_id))
+    assert context.history_events_included == 0
+    assert context.selected_resource_count < context.indexed_resource_count
+    assert any(reference.uri.endswith("assets/ui/hint.png") for reference in context.references)
+    assert any("Contextual HUD hints" in snippet.statement for snippet in context.snippets)
+    assert context.decisions[0].selected_option == "Contextual hints"
+    assert ProjectStore(store.root).snapshot().intelligence == intelligence
+    assert store.rebuild().intelligence == intelligence
+
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+    with TestClient(create_app(store, TOKEN, ORIGIN)) as client:
+        response = client.get("/project-intelligence", headers=headers)
+        assert response.status_code == 200
+        assert response.json()["workspace_digest"] == intelligence.workspace_digest
+        response = client.post(
+            "/task-context", headers=headers, json={"task_id": plan.tasks[0].task_id}
+        )
+        assert response.status_code == 200
+        assert response.json()["history_events_included"] == 0
 
 
 def test_plan_rejects_cycles_bad_questions_and_missing_capability_is_visible(store):
@@ -310,6 +395,22 @@ def test_intake_detects_repository_without_questionnaire(tmp_path):
     }
 
 
+def test_intake_detects_nested_godot_project(tmp_path):
+    game = tmp_path / "game"
+    game.mkdir()
+    (game / "project.godot").write_text(
+        '[application]\nconfig/name="Nested Game"\nconfig/features=PackedStringArray("4.7")\n',
+        encoding="utf-8",
+    )
+    (game / "Main.tscn").write_text('[node name="Main" type="Node2D"]\n', encoding="utf-8")
+    project, report = inspect(tmp_path)
+    assert project.project.name == "Nested Game"
+    assert project.engine and project.engine.version == "4.7"
+    assert next(finding for finding in report.findings if finding.field == "engine").source == (
+        "game/project.godot"
+    )
+
+
 def test_init_preserves_existing_agents_instructions_and_records_workspace(tmp_path):
     instructions = tmp_path / "AGENTS.md"
     instructions.write_text("# Existing project rules\n", encoding="utf-8")
@@ -317,6 +418,7 @@ def test_init_preserves_existing_agents_instructions_and_records_workspace(tmp_p
     text = instructions.read_text(encoding="utf-8")
     assert text.startswith("# Existing project rules")
     assert text.count("BEGIN GAME AGENT NETWORK") == 1
+    assert "<!-- BEGIN GAME AGENT NETWORK -->\n\n## Game Agent Network registration" in text
     assert "gameagent task start" in text
     snapshot = ProjectStore(tmp_path).snapshot()
     assert snapshot.workspace is not None
@@ -636,6 +738,15 @@ def test_project_registry_import_switch_and_restart(store):
     selected = restarted.select(store.snapshot().project.project.id)
     assert selected.active_project_id == store.snapshot().project.project.id
     assert restarted.current.root == store.root
+    restarted.select(imported.active_project_id)
+    removed = restarted.remove(ProjectRemoval(project_id=imported.active_project_id))
+    assert len(removed.projects) == 1
+    assert removed.active_project_id == store.snapshot().project.project.id
+    assert second.is_dir()
+    assert (second / ".gameagent" / "project.yaml").is_file()
+    with pytest.raises(ConstitutionError) as caught:
+        restarted.remove(ProjectRemoval(project_id=removed.active_project_id))
+    assert caught.value.error == "last_project_removal_forbidden"
     with pytest.raises(ConstitutionError, match="missing-game"):
         restarted.import_local(store.root.parent / "missing-game")
 
@@ -687,6 +798,26 @@ def test_rest_imports_and_switches_local_projects(store):
             json={"project_id": store.snapshot().project.project.id},
         ).json()
         assert selected["active_project_id"] == store.snapshot().project.project.id
+        client.post(
+            "/project-select",
+            headers=headers,
+            json={"project_id": imported["active_project_id"]},
+        ).raise_for_status()
+        removed = client.post(
+            "/project-remove",
+            headers=headers,
+            json={"project_id": imported["active_project_id"]},
+        )
+        assert removed.status_code == 200
+        assert len(removed.json()["projects"]) == 1
+        assert second.is_dir()
+        last_removal = client.post(
+            "/project-remove",
+            headers=headers,
+            json={"project_id": store.snapshot().project.project.id},
+        )
+        assert last_removal.status_code == 409
+        assert last_removal.json()["error"] == "last_project_removal_forbidden"
         assert (
             client.post(
                 "/project-select", headers=headers, json={"project_id": "project-missing"}
@@ -809,6 +940,10 @@ def test_worker_bridge_persists_resumes_and_rejects_foreign_worker(store):
         id = "thread-1"
 
         async def turn(self, prompt, **kwargs):
+            assert '"history_events_included":0' in prompt
+            assert '"indexed_resource_count"' in prompt
+            assert "targeted context package" in prompt
+            assert "untrusted project data" in prompt
             assert kwargs["sandbox"].value == "read-only"
             assert kwargs["approval_mode"].value == "deny_all"
             return FakeTurn()
@@ -902,3 +1037,73 @@ def test_worker_bridge_recovers_running_state_and_interrupts_active_turn(store):
         await bridge.close()
 
     asyncio.run(scenario())
+
+
+def test_godot_adapter_inspects_nested_project_and_option_buttons(tmp_path):
+    game = tmp_path / "game"
+    asset = game / "assets" / "ui" / "selector.png"
+    asset.parent.mkdir(parents=True)
+    asset.write_bytes(b"png")
+    asset.with_suffix(".png.import").write_text("[remap]\n", encoding="utf-8")
+    (game / "project.godot").write_text(
+        '[application]\nrun/main_scene="res://Main.tscn"\n'
+        'config/features=PackedStringArray("4.7")\n',
+        encoding="utf-8",
+    )
+    (game / "Main.tscn").write_text(
+        '[node name="Main" type="Node"]\n[node name="Players" type="OptionButton" parent="Menu"]\n',
+        encoding="utf-8",
+    )
+    inspection = GodotAdapter(tmp_path).inspect("project-a", "task-a")
+    assert inspection.project_path == "game"
+    assert inspection.engine_version == "4.7"
+    assert inspection.ui_nodes[0].path == "Menu/Players"
+    assert inspection.approved_assets[0].uri == "game/assets/ui/selector.png"
+
+
+def test_runtime_evidence_is_replayed_and_served(store):
+    task = store.propose(proposal())
+    evidence_dir = store.root / ".gameagent" / "evidence"
+    evidence_dir.mkdir()
+    capture = evidence_dir / "capture.png"
+    capture.write_bytes(b"runtime-capture")
+    captured_at = timestamp()
+    source = SourceRef(
+        uri=".gameagent/evidence/capture.png",
+        media_type="image/png",
+        locator="1280x720",
+        sha256=hashlib.sha256(capture.read_bytes()).hexdigest(),
+    )
+    evidence = Evidence(
+        evidence_id="evidence-runtime",
+        project_id=task.project_id,
+        task_id=task.task_id,
+        evidence_class="measured",
+        producer_type="tool",
+        producer_id="godot-adapter",
+        captured_at=captured_at,
+        source=source,
+        capture_origin="runtime",
+        summary="Popup visible in the running scene",
+    )
+    evaluation = Evaluation(
+        evaluation_id="evaluation-runtime",
+        project_id=task.project_id,
+        task_id=task.task_id,
+        gate_id="runtime_ui_capture",
+        claim="visual",
+        result="passed",
+        evidence_ids=[evidence.evidence_id],
+        evaluator_id="godot-adapter",
+        rationale="Runtime capture exists and is inspectable",
+        evaluated_at=captured_at,
+    )
+    store.record_runtime_evaluation("runtime-one", evidence, evaluation)
+    snapshot = store.rebuild()
+    assert snapshot.evidence == [evidence]
+    assert snapshot.evaluations == [evaluation]
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+    with TestClient(create_app(store, TOKEN, ORIGIN)) as client:
+        response = client.get("/evidence-file?evidence_id=evidence-runtime", headers=headers)
+        assert response.status_code == 200
+        assert response.content == b"runtime-capture"

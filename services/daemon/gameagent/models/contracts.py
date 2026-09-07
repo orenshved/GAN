@@ -360,6 +360,23 @@ class KnowledgeEntry(Contract):
     supersedes_id: Identifier | None = None
 
 
+class IndexedResource(Value):
+    path: Text
+    kind: Literal["document", "source", "asset", "configuration"]
+    media_type: Text
+    size: Count
+    sha256: Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
+    excerpt: Text | None = None
+
+
+class ProjectIntelligence(Contract):
+    project_id: Identifier
+    indexed_at: Timestamp
+    workspace_digest: Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
+    resources: list[IndexedResource]
+    knowledge: list[KnowledgeEntry]
+
+
 class UnverifiedCap(Value):
     verified: Literal[False]
 
@@ -630,6 +647,27 @@ class InboxDecision(Contract):
     rationale: Text | None = None
 
 
+class ContextSnippet(Value):
+    statement: Text
+    source: SourceRef
+    relevance: Annotated[float, Field(ge=0, le=1)]
+
+
+class ContextPackage(Contract):
+    context_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    assembled_at: Timestamp
+    task: TaskContract
+    knowledge: list[KnowledgeEntry]
+    decisions: list[InboxDecision]
+    references: list[SourceRef]
+    snippets: list[ContextSnippet]
+    indexed_resource_count: Count
+    selected_resource_count: Count
+    history_events_included: Literal[0] = 0
+
+
 class GMEvent(EventBase):
     event_type: Literal["gm.updated"]
     payload: GMRecord
@@ -643,6 +681,21 @@ class PlanEvent(EventBase):
 class InboxEvent(EventBase):
     event_type: Literal["gm.decision_resolved"]
     payload: InboxDecision
+
+
+class IntelligenceEvent(EventBase):
+    event_type: Literal["project.intelligence_indexed"]
+    payload: ProjectIntelligence
+
+
+class EvidenceRecordedEvent(EventBase):
+    event_type: Literal["evidence.recorded"]
+    payload: Evidence
+
+
+class EvaluationRecordedEvent(EventBase):
+    event_type: Literal["evaluation.recorded"]
+    payload: Evaluation
 
 
 Event = Annotated[
@@ -663,7 +716,10 @@ Event = Annotated[
     | WorkerEvent
     | GMEvent
     | PlanEvent
-    | InboxEvent,
+    | InboxEvent
+    | IntelligenceEvent
+    | EvidenceRecordedEvent
+    | EvaluationRecordedEvent,
     Field(discriminator="event_type"),
 ]
 
@@ -683,5 +739,7 @@ class ProtocolDocument(Value):
     evaluation: Evaluation | None = None
     decision: Decision | None = None
     knowledge: KnowledgeEntry | None = None
+    project_intelligence: ProjectIntelligence | None = None
+    context_package: ContextPackage | None = None
     provider: Provider | None = None
     event: Event | None = None

@@ -70,6 +70,20 @@ def _files(root: Path, suffixes: set[str], limit: int = 200) -> list[str]:
     return sorted(found)
 
 
+def _manifests(root: Path, name: str, suffix: str | None = None) -> list[Path]:
+    found: list[Path] = []
+    for directory, names, files in os.walk(root, followlinks=False):
+        relative = Path(directory).relative_to(root)
+        if len(relative.parts) >= 3:
+            names.clear()
+        else:
+            names[:] = [item for item in names if item not in IGNORED_PARTS]
+        for file_name in files:
+            if file_name == name or (suffix is not None and file_name.endswith(suffix)):
+                found.append(Path(directory) / file_name)
+    return sorted(found)
+
+
 def _name(root: Path) -> str:
     return re.sub(r"\s+", " ", root.name.replace("_", " ").replace("-", " ")).strip()
 
@@ -90,10 +104,12 @@ def inspect(path: Path) -> tuple[Project, InitializationReport]:
     engine: Engine | None = None
     rendering: Literal["2d", "2.5d", "3d", "non_applicable"] = "non_applicable"
 
-    godot = root / "project.godot"
-    unreal = sorted(root.glob("*.uproject"))
-    unity = root / "ProjectSettings" / "ProjectVersion.txt"
-    if godot.is_file():
+    godot_projects = _manifests(root, "project.godot")
+    godot = godot_projects[0] if len(godot_projects) == 1 else None
+    unreal = _manifests(root, "", ".uproject")
+    unity_projects = _manifests(root, "ProjectVersion.txt")
+    unity = unity_projects[0] if len(unity_projects) == 1 else None
+    if godot is not None:
         text = godot.read_text(encoding="utf-8", errors="replace")
         name_match = re.search(r'^config/name="([^"]+)"', text, re.MULTILINE)
         if name_match:
@@ -106,12 +122,12 @@ def inspect(path: Path) -> tuple[Project, InitializationReport]:
                 version = versions[0]
         engine = Engine(type="godot", version=version)
         capabilities.append("godot_development")
-        source = "project.godot"
+        source = godot.relative_to(root).as_posix()
     elif unreal:
         engine = Engine(type="unreal", version="unknown")
         capabilities.append("unreal_development")
         source = unreal[0].name
-    elif unity.is_file():
+    elif unity is not None:
         version = unity.read_text(encoding="utf-8", errors="replace").partition(":")[2].strip()
         engine = Engine(type="unity", version=version or "unknown")
         capabilities.append("unity_development")

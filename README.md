@@ -3,14 +3,17 @@
 A local-first production orchestration foundation for turning human game direction
 into accountable tasks, specialist work and inspectable evidence.
 
-**Status: Phase 4 complete.** The persistent project GM turns objectives into
-typed multidisciplinary plans, matches built-in capabilities, and surfaces
-human decisions. Direct agents can register meaningful work through
+**Status: Phase 6 complete.** The persistent project GM turns objectives into
+typed multidisciplinary plans, while Project Intelligence indexes repository
+files, design documents, decisions, and asset references into bounded,
+provenance-aware worker context. The first Godot adapter now inspects nested Godot
+projects and UI nodes, builds the project, opens a selected dropdown in the real
+scene, captures a runtime PNG, records evidence plus evaluation events, and exposes
+the verified artifact in Studio. Direct agents can register meaningful work through
 the CLI; each GAN-enabled repository receives managed `AGENTS.md` instructions.
 The daemon watches project files, Git status, and commits, records unregistered
 changes, and keeps Studio visibly unresolved until those changes are attributed
-through reconciliation. Production orchestration and engine changes begin in
-later phases.
+through reconciliation. Phase 7 generalizes this vertical slice into the QA fabric.
 
 ## Architecture
 
@@ -19,9 +22,13 @@ flowchart TD
   Human[Director: intent and judgment] --> Studio[Studio: Next.js / React]
   Studio -->|Server-side bearer bridge| Daemon[Python daemon]
   Daemon --> GM[GM production authority: contracts only]
+  Daemon --> Intelligence[Project Intelligence: indexed facts and references]
+  Daemon --> Godot[Godot adapter: inspect, build, run, capture]
   GM --> Tasks[Capability-based task proposals]
+  Intelligence --> Tasks
   Tasks --> Workers[Authenticated Codex read-only analysis]
   Workers --> Evidence[Artifacts and QA evidence]
+  Godot --> Evidence
   Evidence --> GM
   Daemon --> History[Canonical project files and JSONL events]
   Daemon --> Watcher[Git and meaningful-file watcher]
@@ -118,6 +125,8 @@ task in `REVIEW` and records Git context plus content-addressed surviving files.
 - [Phase 2 handoff](docs/development/PHASE_2_HANDOFF.md)
 - [Phase 3 handoff](docs/development/PHASE_3_HANDOFF.md)
 - [Phase 4 handoff](docs/development/PHASE_4_HANDOFF.md)
+- [Phase 5 handoff](docs/development/PHASE_5_HANDOFF.md)
+- [Phase 6 handoff](docs/development/PHASE_6_HANDOFF.md)
 
 ## Roadmap
 
@@ -127,8 +136,10 @@ task in `REVIEW` and records Git context plus content-addressed surviving files.
 | 1      | Complete: project protocol, persistence, daemon and Studio shell |
 | 2      | Complete: authenticated Codex worker bridge                      |
 | 3      | Complete: registration, change detection and reconciliation      |
-| 4–5    | GM matching and project intelligence                             |
-| 6–7    | Cosmic Meltdown UI workflow and evidence-backed QA               |
+| 4      | Complete: GM planning, matching and decision inbox               |
+| 5      | Complete: project intelligence and targeted context assembly     |
+| 6      | Complete: Cosmic Meltdown Godot UI vertical slice                |
+| 7      | Evidence-backed QA fabric                                        |
 | 8–10   | Local model routing, real budget gateway, specialist recruitment |
 | 11–12  | Additional disciplines and desktop packaging                     |
 

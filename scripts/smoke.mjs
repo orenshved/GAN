@@ -205,6 +205,24 @@ try {
   await page.getByRole("button", { name: "Switch or import project" }).click();
   await page.getByRole("button", { name: /Smoke Game.*Open project/ }).click();
   await page.getByText("Smoke Game / Director Desk").waitFor();
+  await page.getByRole("button", { name: "Switch or import project" }).click();
+  await page
+    .getByRole("button", { name: /Second Smoke Game.*Open project/ })
+    .click();
+  await page.getByText("Second Smoke Game / Director Desk").waitFor();
+  await page.getByRole("button", { name: "Switch or import project" }).click();
+  await page
+    .getByRole("button", { name: "Remove Second Smoke Game from GAN" })
+    .click();
+  await page
+    .getByRole("heading", { name: "Remove Second Smoke Game from GAN?" })
+    .waitFor();
+  const removalResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/daemon/project-remove"),
+  );
+  await page.getByRole("button", { name: "Remove project" }).click();
+  assert.equal((await removalResponse).status(), 200);
+  await page.getByText("Smoke Game / Director Desk").waitFor();
   await page.getByRole("button", { name: "+ Propose task" }).click();
   await page.getByLabel("Title").fill("Verify the opening turn");
   await page
@@ -216,6 +234,38 @@ try {
   await page
     .getByRole("heading", { name: "Verify the opening turn" })
     .waitFor();
+  await page
+    .locator("nav")
+    .getByRole("button", { name: /Production/ })
+    .click();
+  const agentNetwork = page.locator('[aria-label="Agent network"]');
+  await agentNetwork.getByRole("heading", { name: "Agent network" }).waitFor();
+  await agentNetwork.locator(".react-flow__node").first().waitFor();
+  assert.equal(await agentNetwork.locator(".react-flow__node").count(), 7);
+  assert.equal(
+    await page.getByRole("heading", { name: "Direct the project" }).count(),
+    0,
+  );
+  await agentNetwork.getByRole("button", { name: /Available to hire/ }).click();
+  assert.equal(await agentNetwork.locator(".react-flow__node").count(), 7);
+  await agentNetwork.getByRole("button", { name: /All agents/ }).click();
+  await page
+    .locator("nav")
+    .getByRole("button", { name: /Project Intelligence/ })
+    .click();
+  await page.getByRole("heading", { name: "Repository index" }).waitFor();
+  const indexResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/daemon/project-intelligence-refresh"),
+  );
+  await page.getByRole("button", { name: "Index project" }).click();
+  assert.equal((await indexResponse).status(), 200);
+  await page.getByText("README.md", { exact: true }).waitFor();
+  const contextResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/daemon/task-context"),
+  );
+  await page.getByRole("button", { name: "Assemble context" }).click();
+  assert.equal((await contextResponse).status(), 200);
+  await page.getByText(/resources selected · event history excluded/).waitFor();
   await page.getByRole("button", { name: /Activity/ }).click();
   await page.getByText("task / proposed").waitFor();
   await page.getByRole("button", { name: /Network/ }).click();
