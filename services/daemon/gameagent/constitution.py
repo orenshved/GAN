@@ -16,6 +16,8 @@ from gameagent.models.contracts import (
     Evaluation,
     EventBase,
     Evidence,
+    GateWaiver,
+    ModelRoutingRecord,
     Policy,
     Provider,
     TaskContract,
@@ -57,15 +59,52 @@ def validate_event_authority(event: EventBase) -> None:
     actions = {
         "agent.assigned": "assign",
         "agent.hired": "hire",
+        "recruitment.updated": "hire",
         "task.completed": "complete",
         "decision.resolved": "resolve_decision",
+        "qa.gate_waived": "override",
     }
     if event_type in actions:
         authorize(event.actor_type, actions[event_type])
     if isinstance(event, TaskEvent):
         require(event.task_id == event.payload.task_id, "task_scope_mismatch", event.event_id)
-    if event_type.startswith(("task.", "agent.", "evaluation.", "evidence.", "artifact.", "git.")):
+    if event_type.startswith(
+        (
+            "task.",
+            "agent.",
+            "recruitment.",
+            "evaluation.",
+            "evidence.",
+            "qa.",
+            "artifact.",
+            "git.",
+            "model.",
+        )
+    ):
         require(event.task_id is not None, "task_registration_required", event.event_id)
+
+
+def validate_model_routing(record: ModelRoutingRecord) -> None:
+    routes = [candidate.route for candidate in record.candidates]
+    require(len(routes) == len(set(routes)), "duplicate_model_route", record.routing_id)
+    matching = [
+        candidate
+        for candidate in record.candidates
+        if candidate.route == record.selected_route
+        and candidate.provider_id == record.selected_provider_id
+        and candidate.model_name == record.selected_model_name
+    ]
+    require(
+        len(matching) == 1 and matching[0].viable,
+        "model_route_not_viable",
+        record.routing_id,
+    )
+    if record.selected_route == "paid_provider":
+        require(
+            matching[0].expected_external_cost_cents is not None,
+            "unknown_cost",
+            "A paid route needs an upper-bound external cost",
+        )
 
 
 def validate_assignment(
@@ -165,7 +204,7 @@ def completion_allowed(
     *,
     human_rejected: bool,
     unresolved_change_ids: list[str],
-    waivers: list[DecisionEvent] | None = None,
+    waivers: list[DecisionEvent | GateWaiver] | None = None,
 ) -> bool:
     require(not human_rejected, "human_rejection", "User judgment overrides automated passes")
     require(not unresolved_change_ids, "reconciliation_required", "External changes are unresolved")
@@ -180,19 +219,34 @@ def completion_allowed(
         latest[evaluation.gate_id] = evaluation
     waived: set[str] = set()
     for waiver in waivers or []:
-        require(
-            waiver.event_type == "gate.waived"
-            and waiver.actor_type == "human"
-            and waiver.project_id == task.project_id
-            and waiver.task_id == task.task_id,
-            "invalid_waiver",
-            "Waivers require a scoped human audit event",
-        )
-        # correlation_id identifies the gate; payload links the human decision record.
-        waived.add(waiver.correlation_id)
+        if isinstance(waiver, GateWaiver):
+            require(
+                waiver.waived_by == "human"
+                and waiver.project_id == task.project_id
+                and waiver.task_id == task.task_id,
+                "invalid_waiver",
+                "Waivers require a scoped human audit record",
+            )
+            waived.add(waiver.gate_id)
+        else:
+            require(
+                waiver.event_type == "gate.waived"
+                and waiver.actor_type == "human"
+                and waiver.project_id == task.project_id
+                and waiver.task_id == task.task_id,
+                "invalid_waiver",
+                "Waivers require a scoped human audit event",
+            )
+            # Legacy foundation event: correlation_id identifies the gate.
+            waived.add(waiver.correlation_id)
     for gate in task.required_evaluations:
         require(
-            gate in waived or (gate in latest and latest[gate].result == "passed"),
+            gate in waived
+            or (
+                gate in latest
+                and latest[gate].result == "passed"
+                and latest[gate].authority != "advisory"
+            ),
             "quality_gate_failed",
             gate,
         )

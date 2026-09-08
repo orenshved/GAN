@@ -44,9 +44,16 @@ const filterLabels: Record<AgentFilter, string> = {
 
 function payloadAgentId(event: HistoryEvent) {
   const payload: unknown = event.payload;
-  if (!payload || typeof payload !== "object" || !("agent_id" in payload))
-    return null;
-  const agentId = (payload as { agent_id?: unknown }).agent_id;
+  if (!payload || typeof payload !== "object") return null;
+  const agentId =
+    "agent_id" in payload
+      ? (payload as { agent_id?: unknown }).agent_id
+      : "candidate" in payload &&
+          payload.candidate &&
+          typeof payload.candidate === "object" &&
+          "agent_id" in payload.candidate
+        ? (payload.candidate as { agent_id?: unknown }).agent_id
+        : null;
   return typeof agentId === "string" ? agentId : null;
 }
 
@@ -93,7 +100,12 @@ export function AgentNetwork({
     }
     const hiredAgentIds = new Set(
       events
-        .filter((event) => event.event_type === "agent.hired")
+        .filter(
+          (event) =>
+            event.event_type === "agent.hired" ||
+            (event.event_type === "recruitment.updated" &&
+              event.payload.state === "probation"),
+        )
         .map(payloadAgentId)
         .filter((id): id is string => Boolean(id)),
     );

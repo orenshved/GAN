@@ -5,20 +5,30 @@ from typing import Annotated, Literal
 from pydantic import Field
 
 from gameagent.models.contracts import (
+    AgentRegistrySnapshot,
     ContextPackage,
     EngineAdapter,
     Evaluation,
     Event,
     Evidence,
+    GateWaiver,
     GMRecord,
     Identifier,
     InboxDecision,
+    LocalHardwareInventory,
+    LocalModelInventory,
+    LocalModelRecommendation,
+    ModelBenchmark,
+    ModelRoutingRecord,
     PlanDraft,
     Policy,
     ProductionPlan,
     Project,
     ProjectIntelligence,
+    QAGateDefinition,
+    QAReport,
     ReconciliationRecord,
+    RecruitmentRecord,
     SourceRef,
     TaskContract,
     Text,
@@ -82,6 +92,10 @@ class ProjectSnapshot(Value):
     intelligence: ProjectIntelligence | None = None
     evidence: list[Evidence] = Field(default_factory=list)
     evaluations: list[Evaluation] = Field(default_factory=list)
+    waivers: list[GateWaiver] = Field(default_factory=list)
+    recruitments: list[RecruitmentRecord] = Field(default_factory=list)
+    model_benchmarks: list[ModelBenchmark] = Field(default_factory=list)
+    model_routing_records: list[ModelRoutingRecord] = Field(default_factory=list)
 
 
 class IntelligenceRefreshCommand(Value):
@@ -165,6 +179,54 @@ class WorkerCommand(Value):
     worker_id: Identifier | None = None
 
 
+class RecruitmentCommand(Value):
+    request_id: Identifier
+    task_id: Identifier
+
+
+class QARunCommand(Value):
+    request_id: Identifier
+    task_id: Identifier
+
+
+class HumanReviewCommand(Value):
+    request_id: Identifier
+    task_id: Identifier
+    gate_id: Identifier
+    verdict: Literal["approved", "rejected", "observation"]
+    summary: Text
+    supporting_evidence_ids: list[Identifier] = Field(default_factory=list)
+
+
+class GateWaiverCommand(Value):
+    request_id: Identifier
+    task_id: Identifier
+    gate_id: Identifier
+    reason: Text
+
+
+class ModelEnvironment(Value):
+    hardware: LocalHardwareInventory
+    models: LocalModelInventory
+
+
+class ModelBenchmarkCommand(Value):
+    request_id: Identifier
+    task_id: Identifier
+    model_name: Text | None = None
+
+
+class ModelRecommendationCommand(Value):
+    request_id: Identifier
+    task_id: Identifier
+
+
+class ModelRouteCommand(Value):
+    request_id: Identifier
+    task_id: Identifier
+    urgency: Literal["low", "normal", "high"] = "normal"
+
+
 class EventPage(Value):
     events: list[Event]
     cursor: Annotated[int, Field(ge=0)]
@@ -176,6 +238,20 @@ class StreamMessage(EventPage):
 
 
 class ApiCatalog(Value):
+    agent_registry: AgentRegistrySnapshot
+    recruitment_command: RecruitmentCommand
+    qa_gates: list[QAGateDefinition]
+    qa_report: QAReport
+    qa_run_command: QARunCommand
+    human_review_command: HumanReviewCommand
+    gate_waiver_command: GateWaiverCommand
+    model_environment: ModelEnvironment
+    model_benchmark_command: ModelBenchmarkCommand
+    model_benchmark: ModelBenchmark
+    model_recommendation_command: ModelRecommendationCommand
+    local_model_recommendation: LocalModelRecommendation
+    model_route_command: ModelRouteCommand
+    model_routing: ModelRoutingRecord
     plan_draft: PlanDraft
     objective_command: ObjectiveCommand
     decision_command: DecisionCommand

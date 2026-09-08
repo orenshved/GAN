@@ -20,12 +20,19 @@ from sqlalchemy.exc import SQLAlchemyError
 from gameagent.adapters.godot import GodotAdapter
 from gameagent.codex_bridge import CodexBridge
 from gameagent.constitution import ConstitutionError, require
+from gameagent.local_models import LocalModelExpert
 from gameagent.models.api import (
     ContextCommand,
     DecisionCommand,
     EngineProjectInspection,
     EventPage,
+    GateWaiverCommand,
+    HumanReviewCommand,
     IntelligenceRefreshCommand,
+    ModelBenchmarkCommand,
+    ModelEnvironment,
+    ModelRecommendationCommand,
+    ModelRouteCommand,
     ObjectiveCommand,
     PolicyCommand,
     ProjectCatalog,
@@ -33,7 +40,9 @@ from gameagent.models.api import (
     ProjectRemoval,
     ProjectSelection,
     ProjectSnapshot,
+    QARunCommand,
     ReconcileCommand,
+    RecruitmentCommand,
     RuntimeCaptureCommand,
     RuntimeCaptureResult,
     StreamMessage,
@@ -44,16 +53,25 @@ from gameagent.models.api import (
 )
 from gameagent.models.contracts import (
     AgentDefinition,
+    AgentRegistrySnapshot,
     ContextPackage,
     GMRecord,
     InboxDecision,
+    LocalModelRecommendation,
+    ModelBenchmark,
+    ModelRoutingRecord,
     Policy,
     ProjectIntelligence,
+    QAGateDefinition,
+    QAReport,
     ReconciliationRecord,
+    RecruitmentRecord,
     TaskContract,
     WorkerRecord,
 )
 from gameagent.projects import ProjectRegistry, ProjectStore
+from gameagent.qa import gate_catalog
+from gameagent.recruiter import Recruiter
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +85,15 @@ def create_app(
     if len(token) < 32:
         raise ValueError("GAMEAGENT_DAEMON_TOKEN must contain at least 32 characters")
     registry = ProjectRegistry(store, registry_path)
+    agent_registry_path = (
+        registry_path.parent / "agents.json"
+        if registry_path is not None
+        else Path.home() / ".gameagent" / "agents.json"
+    )
+    recruiter = Recruiter.from_environment(agent_registry_path)
+    model_expert = LocalModelExpert.from_environment()
     bridges = {
-        project_id: CodexBridge(project_store)
+        project_id: CodexBridge(project_store, recruiter)
         for project_id, project_store in registry.stores.items()
     }
     watcher_failures: dict[str, str] = {}
@@ -76,7 +101,7 @@ def create_app(
     def bridge() -> CodexBridge:
         project_id = registry.active_project_id
         if project_id not in bridges:
-            bridges[project_id] = CodexBridge(registry.current)
+            bridges[project_id] = CodexBridge(registry.current, recruiter)
         return bridges[project_id]
 
     async def watch_projects() -> None:
@@ -105,7 +130,7 @@ def create_app(
             await asyncio.gather(watcher, return_exceptions=True)
             await asyncio.gather(*(worker_bridge.close() for worker_bridge in bridges.values()))
 
-    app = FastAPI(title="Game Agent Network", version="0.6.0", lifespan=lifespan)
+    app = FastAPI(title="Game Agent Network", version="0.11.0", lifespan=lifespan)
     app.state.registry = registry
 
     @app.exception_handler(Exception)
@@ -130,6 +155,108 @@ def create_app(
     @app.get("/agent-roster", response_model=list[AgentDefinition])
     def agent_roster() -> list[AgentDefinition]:
         return bridge().roster()
+
+    @app.get("/agent-registry", response_model=AgentRegistrySnapshot)
+    def agent_registry() -> AgentRegistrySnapshot:
+        return recruiter.registry.snapshot()
+
+    @app.get("/recruitments", response_model=list[RecruitmentRecord])
+    def recruitments() -> list[RecruitmentRecord]:
+        return registry.current.snapshot().recruitments
+
+    @app.post("/recruit", response_model=RecruitmentRecord)
+    async def recruit(command: RecruitmentCommand) -> RecruitmentRecord:
+        return await bridge().recruit(command)
+
+    @app.get("/qa-gates", response_model=list[QAGateDefinition])
+    def qa_gates() -> list[QAGateDefinition]:
+        return gate_catalog()
+
+    @app.get("/qa-report", response_model=QAReport)
+    def qa_report(task_id: str) -> QAReport:
+        return registry.current.qa_report(task_id)
+
+    @app.post("/qa-run", response_model=QAReport)
+    def qa_run(command: QARunCommand) -> QAReport:
+        return registry.current.run_qa(command)
+
+    @app.post("/qa-human-review", response_model=QAReport)
+    def qa_human_review(command: HumanReviewCommand) -> QAReport:
+        return registry.current.record_human_review(command)
+
+    @app.post("/qa-waive", response_model=QAReport)
+    def qa_waive(command: GateWaiverCommand) -> QAReport:
+        return registry.current.waive_gate(command)
+
+    @app.get("/model-environment", response_model=ModelEnvironment)
+    async def model_environment() -> ModelEnvironment:
+        return await asyncio.to_thread(model_expert.inspect)
+
+    @app.post("/model-benchmark", response_model=ModelBenchmark)
+    async def model_benchmark(command: ModelBenchmarkCommand) -> ModelBenchmark:
+        snapshot = registry.current.snapshot()
+        benchmark_id = f"benchmark-{command.request_id}"
+        existing = next(
+            (item for item in snapshot.model_benchmarks if item.benchmark_id == benchmark_id),
+            None,
+        )
+        if existing is not None:
+            require(existing.task_id == command.task_id, "request_id_conflict", command.request_id)
+            return existing
+        task = next((item for item in snapshot.tasks if item.task_id == command.task_id), None)
+        require(task is not None, "task_not_found", command.task_id)
+        assert task is not None
+        benchmark = await asyncio.to_thread(
+            model_expert.benchmark,
+            registry.current.root,
+            task,
+            command.request_id,
+            command.model_name,
+        )
+        return registry.current.record_model_benchmark(benchmark)
+
+    @app.post("/model-recommend", response_model=LocalModelRecommendation)
+    async def model_recommend(
+        command: ModelRecommendationCommand,
+    ) -> LocalModelRecommendation:
+        task = next(
+            (item for item in registry.current.snapshot().tasks if item.task_id == command.task_id),
+            None,
+        )
+        require(task is not None, "task_not_found", command.task_id)
+        assert task is not None
+        return await asyncio.to_thread(
+            model_expert.recommend,
+            task,
+            command.request_id,
+        )
+
+    @app.post("/model-route", response_model=ModelRoutingRecord)
+    async def model_route(command: ModelRouteCommand) -> ModelRoutingRecord:
+        snapshot = registry.current.snapshot()
+        routing_id = f"routing-{command.request_id}"
+        existing = next(
+            (item for item in snapshot.model_routing_records if item.routing_id == routing_id),
+            None,
+        )
+        if existing is not None:
+            require(existing.task_id == command.task_id, "request_id_conflict", command.request_id)
+            return existing
+        task = next((item for item in snapshot.tasks if item.task_id == command.task_id), None)
+        require(task is not None, "task_not_found", command.task_id)
+        assert task is not None
+        environment, account = await asyncio.gather(
+            asyncio.to_thread(model_expert.inspect), bridge().account()
+        )
+        routing = model_expert.route(
+            task,
+            command.request_id,
+            environment,
+            snapshot.model_benchmarks,
+            account.get("state") == "ready",
+            command.urgency,
+        )
+        return registry.current.record_model_routing(routing)
 
     @app.post("/decision-resolve", response_model=InboxDecision)
     def decision_resolve(command: DecisionCommand) -> InboxDecision:
@@ -193,13 +320,13 @@ def create_app(
         if watcher_failures:
             return {
                 "status": "degraded",
-                "phase": "6",
+                "phase": "8+10",
                 "error": "workspace_watcher_failed",
                 "detail": "; ".join(
                     f"{root}: {detail}" for root, detail in watcher_failures.items()
                 ),
             }
-        return {"status": "ready", "phase": "6"}
+        return {"status": "ready", "phase": "8+10"}
 
     @app.get("/projects", response_model=ProjectCatalog)
     def projects() -> ProjectCatalog:

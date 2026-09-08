@@ -1,3 +1,7 @@
-# Reserved adapter boundary
+# Ollama adapter boundary
 
-No runtime implementation in Phase 0. Future adapters implement versioned tool/engine contracts; core must never import this directory.
+Phase 8 implements the runtime adapter in
+`services/daemon/gameagent/local_models.py`. It uses only the configured local
+endpoint, performs no model installation, and records project-scoped benchmark
+artifacts outside this documentation boundary. Core contracts do not import the
+adapter.

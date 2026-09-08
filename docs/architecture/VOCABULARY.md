@@ -18,11 +18,23 @@
 | Provider cap     | Verified provider-side bound; application accounting alone is insufficient                                          |
 | Reconciliation   | Required attribution of meaningful work performed outside registered tasks                                          |
 | Recovery         | Measured progress or change of strategy; three further non-progress failures after specialist intervention escalate |
+| Capability gap   | Project/task-scoped record that no registered agent satisfies the complete required capability contract             |
+| Recruiter        | GM-controlled subsystem that searches, composes, auditions and admits capability packages                           |
+| Audition         | Read-only representative sandbox task plus independent seven-dimension review; qualification, not QA evidence       |
+| Probation        | Globally available agent lifecycle with advisory QA authority and mandatory independent verification                |
+| QA gate          | Reusable discipline policy defining claim, required evidence classes, producers and runtime/independence rules      |
+| QA report        | Derived task view explaining each required or optional gate without creating a second source of truth               |
+| Gate waiver      | Canonical, task-scoped Director exception that satisfies one required gate while preserving the rationale           |
+| Local inventory  | Live machine hardware and installed Ollama metadata; never project or conversation truth                            |
+| Model benchmark  | Project/task-scoped representative execution pinned to model digest, output contract, latency and artifact          |
+| Model route      | Canonical comparison and selected viable execution path with quality, confidence, runtime, cost and rationale       |
 
 Evidence classes are deterministic, measured, comparative, heuristic and human.
 Confidence, evidence class and human acceptance are distinct dimensions.
 Model-generated claims remain heuristic; a model can interpret independent
 captures without becoming the source of those captures.
+Evaluation authority is advisory, eligible, or human. An advisory pass remains
+visible but cannot satisfy completion.
 
 PRD sections 12, 16 and 18 show conceptual YAML. The versioned implementation
 uses explicit top-level IDs and `_ids` reference arrays instead of ambiguous

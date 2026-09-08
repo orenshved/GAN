@@ -1,0 +1,35 @@
+[
+  {
+    "schema_version": 1,
+    "tool_id": "codex-readonly-analysis",
+    "version": "1.0.0",
+    "capabilities": [
+      "functional_testing",
+      "regression_testing",
+      "gameplay_testing",
+      "balance_testing",
+      "ux_testing",
+      "automated_testing",
+      "visual_regression",
+      "compatibility_testing",
+      "performance_testing",
+      "save_compatibility",
+      "multiplayer_testing",
+      "localization_qa",
+      "accessibility_qa"
+    ],
+    "install_state": "installed",
+    "invocation": "sdk",
+    "input_contract": "TaskContract + ContextPackage",
+    "output_contract": "AuditionSubmission",
+    "permissions": {
+      "read_project": true
+    },
+    "health_check": "Authenticated Codex session is available",
+    "location": "local",
+    "cost_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    }
+  }
+]

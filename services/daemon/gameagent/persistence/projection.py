@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from sqlite3 import Connection
+from threading import Lock
 
 from alembic import command
 from alembic.config import Config
@@ -11,6 +12,8 @@ from sqlalchemy.pool import NullPool
 
 from gameagent.models.api import ProjectSnapshot
 from gameagent.models.contracts import Event
+
+_ALEMBIC_LOCK = Lock()
 
 
 class Projection:
@@ -26,11 +29,14 @@ class Projection:
             cursor.execute("PRAGMA busy_timeout=5000")
             cursor.close()
 
-        cfg = Config()
-        cfg.set_main_option("script_location", str(Path(__file__).parent / "migrations"))
-        with self.engine.begin() as connection:
-            cfg.attributes["connection"] = connection
-            command.upgrade(cfg, "head")
+        # Alembic's EnvironmentContext proxy is process-global and not thread-safe.
+        # Studio may read multiple project projections while the watcher is active.
+        with _ALEMBIC_LOCK:
+            cfg = Config()
+            cfg.set_main_option("script_location", str(Path(__file__).parent / "migrations"))
+            with self.engine.begin() as connection:
+                cfg.attributes["connection"] = connection
+                command.upgrade(cfg, "head")
 
     def replace(self, snapshot: ProjectSnapshot, events: list[Event]) -> None:
         with self.engine.begin() as connection:

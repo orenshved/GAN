@@ -11,14 +11,21 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import type {
   AgentDefinition,
+  AgentRegistrySnapshot,
   ContextPackage,
   EngineProjectInspection,
   EventPage,
   InboxDecision,
+  LocalModelRecommendation,
+  ModelBenchmark,
+  ModelEnvironment,
+  ModelRoutingRecord,
   Policy,
   ProjectCatalog,
+  QAReport,
   ProjectSummary,
   ProjectSnapshot,
+  RecruitmentRecord,
   ReconciliationRecord,
   RuntimeCaptureResult,
   TaskContract,
@@ -39,10 +46,13 @@ const AgentNetwork = dynamic(
 const views = [
   "Director Desk",
   "Production",
+  "QA",
   "Needs Oren",
   "Workers",
   "Network",
   "Project Intelligence",
+  "Agents",
+  "Models",
   "Activity",
   "Settings",
 ] as const;
@@ -76,7 +86,14 @@ async function request<T>(
     method,
     headers: { "Content-Type": "application/json" },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    signal: AbortSignal.timeout(path === "/runtime-capture" ? 120000 : 10000),
+    signal: AbortSignal.timeout(
+      path === "/runtime-capture" ||
+        path === "/recruit" ||
+        path === "/model-benchmark" ||
+        path === "/model-recommend"
+        ? 120000
+        : 10000,
+    ),
   });
   const value = await response.json();
   if (!response.ok)
@@ -128,6 +145,17 @@ function Desk(connection: Connection) {
     queryFn: () => request<EventPage>(connection, "/events?after=0&limit=500"),
     enabled: view === "Production" && !!project.data && !!activeProjectId,
   });
+  const registry = useQuery({
+    queryKey: ["agent-registry"],
+    queryFn: () =>
+      request<AgentRegistrySnapshot>(connection, "/agent-registry"),
+    enabled: view === "Agents",
+  });
+  const modelEnvironment = useQuery({
+    queryKey: ["model-environment"],
+    queryFn: () => request<ModelEnvironment>(connection, "/model-environment"),
+    enabled: view === "Models",
+  });
   const ready = !!project.data;
   useEffect(() => {
     if (!ready) return;
@@ -162,6 +190,8 @@ function Desk(connection: Connection) {
           if (data.events.length) {
             void client.invalidateQueries({ queryKey: ["project"] });
             void client.invalidateQueries({ queryKey: ["events"] });
+            void client.invalidateQueries({ queryKey: ["agent-registry"] });
+            void client.invalidateQueries({ queryKey: ["agent-roster"] });
           }
         };
         socket.onclose = reconnect;
@@ -441,6 +471,13 @@ function Desk(connection: Connection) {
                   </section>
                 </>
               )}
+              {view === "QA" && (
+                <QAPanel
+                  key={`qa-${activeProjectId}`}
+                  snapshot={snapshot}
+                  connection={connection}
+                />
+              )}
               {view === "Network" && (
                 <section className="panel">
                   <div className="section-heading">
@@ -455,6 +492,34 @@ function Desk(connection: Connection) {
               {view === "Project Intelligence" && (
                 <ProjectIntelligencePanel
                   snapshot={snapshot}
+                  connection={connection}
+                />
+              )}
+              {view === "Agents" && (
+                <AgentRegistryPanel
+                  snapshot={snapshot}
+                  registry={registry.data}
+                  loading={registry.isPending}
+                  error={registry.error?.message ?? null}
+                  connection={connection}
+                  refreshed={() => {
+                    void client.invalidateQueries({
+                      queryKey: ["agent-registry"],
+                    });
+                    void client.invalidateQueries({ queryKey: ["project"] });
+                    void client.invalidateQueries({
+                      queryKey: ["agent-roster"],
+                    });
+                  }}
+                />
+              )}
+              {view === "Models" && (
+                <ModelRouterPanel
+                  key={`models-${activeProjectId}`}
+                  snapshot={snapshot}
+                  environment={modelEnvironment.data}
+                  loading={modelEnvironment.isPending}
+                  error={modelEnvironment.error?.message ?? null}
                   connection={connection}
                 />
               )}
@@ -884,9 +949,14 @@ const descriptions: Record<Exclude<View, "Director Desk">, string> = {
   Workers: "Run and resume read-only Codex analysis for a proposed task.",
   Production:
     "Live agent topology, engine runs, runtime evidence, and task contracts.",
+  QA: "Required gates, evidence provenance, human judgment, and explicit waivers.",
   Network: "The actual dependencies between project tasks.",
   "Project Intelligence":
     "Indexed facts, decisions, references, and task-scoped context.",
+  Agents:
+    "Capability gaps, sandbox auditions, probation, and the global production roster.",
+  Models:
+    "Local hardware, installed models, representative benchmarks, and explainable routing.",
   Activity: "Every recorded action, attributable and inspectable.",
   Settings: "Define how the project may proceed.",
 };
@@ -1575,6 +1645,379 @@ function ProjectIntelligencePanel({
   );
 }
 
+function QAPanel({
+  snapshot,
+  connection,
+}: {
+  snapshot: ProjectSnapshot;
+  connection: Connection;
+}) {
+  const client = useQueryClient();
+  const [taskId, setTaskId] = useState(snapshot.tasks.at(-1)?.task_id ?? "");
+  const [discipline, setDiscipline] = useState<"all" | "ui" | "engineering">(
+    "all",
+  );
+  const [requiredOnly, setRequiredOnly] = useState(false);
+  const [busy, setBusy] = useState<"run" | "review" | "waive" | null>(null);
+  const [error, setError] = useState("");
+  const [reviewVerdict, setReviewVerdict] = useState<
+    "approved" | "rejected" | "observation"
+  >("observation");
+  const [reviewSummary, setReviewSummary] = useState("");
+  const [waiverGate, setWaiverGate] = useState("");
+  const [waiverReason, setWaiverReason] = useState("");
+  const report = useQuery({
+    queryKey: [
+      "qa-report",
+      snapshot.project.project.id,
+      taskId,
+      snapshot.cursor,
+    ],
+    queryFn: () =>
+      request<QAReport>(
+        connection,
+        `/qa-report?task_id=${encodeURIComponent(taskId)}`,
+      ),
+    enabled: !!taskId,
+  });
+  const selectedTask = snapshot.tasks.find((item) => item.task_id === taskId);
+  const shownGates = (report.data?.gates ?? []).filter(
+    (item) =>
+      (discipline === "all" || item.gate.discipline === discipline) &&
+      (!requiredOnly || item.required),
+  );
+  const evidenceById = new Map(
+    (snapshot.evidence ?? []).map((item) => [item.evidence_id, item]),
+  );
+  const evaluationById = new Map(
+    (snapshot.evaluations ?? []).map((item) => [item.evaluation_id, item]),
+  );
+
+  async function refresh(next: QAReport) {
+    client.setQueryData(
+      ["qa-report", snapshot.project.project.id, taskId, snapshot.cursor],
+      next,
+    );
+    await Promise.all([
+      client.invalidateQueries({ queryKey: ["project"] }),
+      client.invalidateQueries({ queryKey: ["events"] }),
+      client.invalidateQueries({ queryKey: ["qa-report"] }),
+    ]);
+  }
+
+  async function runQA() {
+    if (!taskId) return;
+    setBusy("run");
+    setError("");
+    try {
+      const next = await request<QAReport>(
+        connection,
+        "/qa-run",
+        { request_id: `qa-${crypto.randomUUID()}`, task_id: taskId },
+        "POST",
+      );
+      await refresh(next);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "QA run failed");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function recordReview(event: FormEvent) {
+    event.preventDefault();
+    if (!taskId || !reviewSummary.trim()) return;
+    setBusy("review");
+    setError("");
+    try {
+      const next = await request<QAReport>(
+        connection,
+        "/qa-human-review",
+        {
+          request_id: `human-review-${crypto.randomUUID()}`,
+          task_id: taskId,
+          gate_id: "human_judgment",
+          verdict: reviewVerdict,
+          summary: reviewSummary.trim(),
+          supporting_evidence_ids: [],
+        },
+        "POST",
+      );
+      setReviewSummary("");
+      await refresh(next);
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Human review failed",
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function waive(event: FormEvent) {
+    event.preventDefault();
+    if (!taskId || !waiverGate || !waiverReason.trim()) return;
+    setBusy("waive");
+    setError("");
+    try {
+      const next = await request<QAReport>(
+        connection,
+        "/qa-waive",
+        {
+          request_id: `waiver-${crypto.randomUUID()}`,
+          task_id: taskId,
+          gate_id: waiverGate,
+          reason: waiverReason.trim(),
+        },
+        "POST",
+      );
+      setWaiverGate("");
+      setWaiverReason("");
+      await refresh(next);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Gate waiver failed");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="qa-workspace">
+      <section className="panel qa-overview">
+        <div className="section-heading">
+          <div>
+            <h2>Quality gates</h2>
+            <span className="muted">
+              Evidence class, authority, and rationale remain separate
+            </span>
+          </div>
+          <button
+            className="primary"
+            onClick={() => void runQA()}
+            disabled={!taskId || busy !== null}
+          >
+            {busy === "run" ? "Running checks…" : "Run deterministic gates"}
+          </button>
+        </div>
+        <div className="qa-task-control">
+          <label>
+            Task under review
+            <select
+              value={taskId}
+              onChange={(event) => {
+                setTaskId(event.target.value);
+                setWaiverGate("");
+                setError("");
+              }}
+            >
+              {snapshot.tasks.map((task) => (
+                <option key={task.task_id} value={task.task_id}>
+                  {task.title}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        {report.data && (
+          <>
+            <div className="qa-metrics">
+              <Metric label="Completion" value={report.data.completion_state} />
+              <Metric
+                label="Required"
+                value={report.data.required_gate_count}
+              />
+              <Metric label="Passed" value={report.data.passed_gate_count} />
+              <Metric label="Waived" value={report.data.waived_gate_count} />
+            </div>
+            <div
+              className={`qa-verdict qa-verdict-${report.data.completion_state}`}
+            >
+              <Status state={report.data.completion_state} />
+              <strong>{selectedTask?.title}</strong>
+              <p>{report.data.explanation}</p>
+            </div>
+          </>
+        )}
+        {report.isPending && <p role="status">Assembling QA report…</p>}
+        {(error || report.error) && (
+          <p className="error" role="alert">
+            {error || report.error?.message}
+          </p>
+        )}
+      </section>
+
+      <section className="panel qa-gates-panel">
+        <div className="qa-filter-row" aria-label="QA filters">
+          {(["all", "ui", "engineering"] as const).map((item) => (
+            <button
+              key={item}
+              aria-pressed={discipline === item}
+              onClick={() => setDiscipline(item)}
+            >
+              {item === "all" ? "All disciplines" : item}
+            </button>
+          ))}
+          <label className="qa-required-filter">
+            <input
+              type="checkbox"
+              checked={requiredOnly}
+              onChange={(event) => setRequiredOnly(event.target.checked)}
+            />
+            Required only
+          </label>
+        </div>
+        <div className="qa-gate-list">
+          {shownGates.map((item) => {
+            const evaluation = item.latest_evaluation_id
+              ? evaluationById.get(item.latest_evaluation_id)
+              : undefined;
+            const evidence = (item.evidence_ids ?? []).flatMap((id) => {
+              const record = evidenceById.get(id);
+              return record ? [record] : [];
+            });
+            return (
+              <article key={item.gate.gate_id} className="qa-gate-card">
+                <div className="qa-gate-heading">
+                  <div>
+                    <span className="eyebrow">
+                      {item.gate.discipline} ·{" "}
+                      {item.required ? "required" : "optional"}
+                    </span>
+                    <h3>{item.gate.title}</h3>
+                  </div>
+                  <Status state={item.state} />
+                </div>
+                <p>{item.explanation}</p>
+                <div className="qa-evidence-classes">
+                  {item.gate.required_evidence_classes.map((evidenceClass) => (
+                    <span key={evidenceClass}>{evidenceClass}</span>
+                  ))}
+                  {item.gate.requires_runtime_capture && (
+                    <span>runtime required</span>
+                  )}
+                  {item.gate.requires_independent_verification && (
+                    <span>independent verification</span>
+                  )}
+                </div>
+                {evaluation && (
+                  <p className="muted">
+                    {evaluation.evaluator_id} · {evaluation.authority} authority
+                    · {new Date(evaluation.evaluated_at).toLocaleString()}
+                  </p>
+                )}
+                {evidence.map((record) => (
+                  <details key={record.evidence_id}>
+                    <summary>
+                      {record.evidence_class} · {record.summary}
+                    </summary>
+                    <pre>
+                      {JSON.stringify(
+                        { evidence: record, evaluation },
+                        null,
+                        2,
+                      )}
+                    </pre>
+                  </details>
+                ))}
+                {item.required &&
+                  !["passed", "waived"].includes(item.state) && (
+                    <button
+                      className="text-button"
+                      onClick={() => setWaiverGate(item.gate.gate_id)}
+                    >
+                      Request explicit waiver →
+                    </button>
+                  )}
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="qa-actions">
+        <form className="panel" onSubmit={(event) => void recordReview(event)}>
+          <p className="eyebrow">HUMAN EVIDENCE</p>
+          <h2>Director judgment</h2>
+          <p className="muted">
+            A rejection overrides automated passes. An observation stays
+            inconclusive.
+          </p>
+          <label>
+            Verdict
+            <select
+              value={reviewVerdict}
+              onChange={(event) =>
+                setReviewVerdict(
+                  event.target.value as "approved" | "rejected" | "observation",
+                )
+              }
+            >
+              <option value="observation">Observation</option>
+              <option value="approved">Approve</option>
+              <option value="rejected">Reject</option>
+            </select>
+          </label>
+          <label>
+            Review note
+            <textarea
+              value={reviewSummary}
+              onChange={(event) => setReviewSummary(event.target.value)}
+              placeholder="What did you observe, accept, or reject?"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={busy !== null || !taskId || !reviewSummary.trim()}
+          >
+            {busy === "review" ? "Recording…" : "Record human evidence"}
+          </button>
+        </form>
+
+        <form className="panel" onSubmit={(event) => void waive(event)}>
+          <p className="eyebrow">AUDITED EXCEPTION</p>
+          <h2>Gate waiver</h2>
+          <p className="muted">
+            Waivers satisfy one required gate but remain explicit in project
+            history.
+          </p>
+          <label>
+            Required gate
+            <select
+              value={waiverGate}
+              onChange={(event) => setWaiverGate(event.target.value)}
+            >
+              <option value="">Select a gate</option>
+              {(report.data?.gates ?? [])
+                .filter((item) => item.required && item.state !== "passed")
+                .map((item) => (
+                  <option key={item.gate.gate_id} value={item.gate.gate_id}>
+                    {item.gate.title}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <label>
+            Waiver rationale
+            <textarea
+              value={waiverReason}
+              onChange={(event) => setWaiverReason(event.target.value)}
+              placeholder="Why is this gate being waived for this task?"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={
+              busy !== null || !taskId || !waiverGate || !waiverReason.trim()
+            }
+          >
+            {busy === "waive" ? "Recording…" : "Record Director waiver"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function RuntimeEvidencePanel({
   snapshot,
   connection,
@@ -1760,6 +2203,262 @@ function RuntimeEvidencePanel({
   );
 }
 
+function AgentRegistryPanel({
+  snapshot,
+  registry,
+  loading,
+  error,
+  connection,
+  refreshed,
+}: {
+  snapshot: ProjectSnapshot;
+  registry: AgentRegistrySnapshot | undefined;
+  loading: boolean;
+  error: string | null;
+  connection: Connection;
+  refreshed: () => void;
+}) {
+  const [recruitingTask, setRecruitingTask] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const recruitments = snapshot.recruitments ?? [];
+  const unresolved = (snapshot.plans ?? []).flatMap((plan) =>
+    plan.assignments
+      .filter((assignment) => assignment.agent === null)
+      .map((assignment) => ({
+        assignment,
+        task: snapshot.tasks.find(
+          (task) => task.task_id === assignment.task_id,
+        ),
+      })),
+  );
+  const entries = registry?.entries ?? [];
+  const probation = entries.filter(
+    (entry) => entry.lifecycle === "probation",
+  ).length;
+  const eligible = entries.filter(
+    (entry) => entry.qa_decision_role === "eligible",
+  ).length;
+
+  async function recruit(taskId: string) {
+    setRecruitingTask(taskId);
+    setActionError(null);
+    setNotice(null);
+    try {
+      const result = await request<RecruitmentRecord>(
+        connection,
+        "/recruit",
+        {
+          request_id: `recruit-${Date.now()}`,
+          task_id: taskId,
+        },
+        "POST",
+      );
+      setNotice(
+        result.state === "probation"
+          ? `${result.candidate.name} passed the audition and entered probation.`
+          : `${result.candidate.name} was ${result.state}.`,
+      );
+      refreshed();
+    } catch (caught) {
+      setActionError(
+        caught instanceof Error ? caught.message : "Recruitment failed",
+      );
+    } finally {
+      setRecruitingTask(null);
+    }
+  }
+
+  return (
+    <div className="registry-layout">
+      <section className="panel registry-hero">
+        <div>
+          <p className="eyebrow">PHASE 10 · RECRUITER</p>
+          <h2>Capability registry</h2>
+          <p className="muted">
+            Missing expertise becomes an explicit gap, a sandbox audition, and a
+            probation decision. Capability claims are never fabricated.
+          </p>
+        </div>
+        <div className="registry-metrics" aria-label="Registry totals">
+          <Metric label="Global agents" value={entries.length} />
+          <Metric label="Probation" value={probation} />
+          <Metric label="QA eligible" value={eligible} />
+          <Metric label="Open gaps" value={unresolved.length} />
+        </div>
+      </section>
+
+      <section className="panel qa-authority-note">
+        <span className="eyebrow">QA AUTHORITY BOUNDARY</span>
+        <strong>
+          Recruitment changes evaluator availability, not evidence truth.
+        </strong>
+        <p>
+          Probationary specialists are advisory and require independent
+          verification. Automated evaluation cannot override a Director
+          rejection.
+        </p>
+      </section>
+
+      {loading && <div className="empty">Loading the global registry…</div>}
+      {(error || actionError) && (
+        <p className="error" role="alert">
+          {error ?? actionError}
+        </p>
+      )}
+      {notice && <p role="status">{notice}</p>}
+
+      <div className="registry-columns">
+        <section className="panel">
+          <div className="section-heading">
+            <h2>Capability gaps</h2>
+            <span className="muted">GM-detected · project scoped</span>
+          </div>
+          {unresolved.length ? (
+            <div className="gap-list">
+              {unresolved.map(({ assignment, task }) => {
+                const existing = recruitments.find(
+                  (item) => item.task_id === assignment.task_id,
+                );
+                return (
+                  <article key={assignment.task_id} className="gap-card">
+                    <div>
+                      <Status state={existing?.state ?? "CAPABILITY GAP"} />
+                      <h3>{task?.title ?? assignment.task_id}</h3>
+                      <p>
+                        {assignment.missing_capabilities
+                          .map((item) => item.replaceAll("_", " "))
+                          .join(", ")}
+                      </p>
+                    </div>
+                    {!existing && (
+                      <button
+                        className="primary"
+                        disabled={recruitingTask !== null}
+                        onClick={() => void recruit(assignment.task_id)}
+                      >
+                        {recruitingTask === assignment.task_id
+                          ? "Auditioning…"
+                          : "Recruit specialist"}
+                      </button>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="empty">No unresolved capability gaps.</div>
+          )}
+        </section>
+
+        <section className="panel">
+          <div className="section-heading">
+            <h2>Recruitment history</h2>
+            <span className="muted">Canonical project events</span>
+          </div>
+          {recruitments.length ? (
+            <div className="recruitment-list">
+              {recruitments.map((item) => (
+                <article key={item.recruitment_id}>
+                  <div className="section-heading">
+                    <div>
+                      <Status state={item.state} />
+                      <h3>{item.candidate.name}</h3>
+                    </div>
+                    <time dateTime={item.updated_at}>
+                      {new Date(item.updated_at).toLocaleString()}
+                    </time>
+                  </div>
+                  <p>{item.gap.reason}</p>
+                  <dl className="details">
+                    <dt>Adjacent roster</dt>
+                    <dd>{item.adjacent_agent_ids.join(", ") || "None"}</dd>
+                    <dt>Trusted tools</dt>
+                    <dd>
+                      {item.tool_discoveries
+                        .filter((tool) => tool.decision === "trusted")
+                        .map((tool) => tool.tool_id)
+                        .join(", ") || "No tool admitted"}
+                    </dd>
+                    <dt>Audition</dt>
+                    <dd>
+                      {item.audition
+                        ? `${item.audition.result} · ${item.audition.review.recommendation}`
+                        : "Pending"}
+                    </dd>
+                  </dl>
+                  {item.audition && (
+                    <details>
+                      <summary>Inspect audition scorecard</summary>
+                      <ul className="scorecard">
+                        {item.audition.review.dimensions.map((dimension) => (
+                          <li key={dimension.dimension}>
+                            <Status state={dimension.result} />
+                            <span>
+                              {dimension.dimension.replaceAll("_", " ")}
+                            </span>
+                            <small>{dimension.detail}</small>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="empty">
+              No specialists have been auditioned for this project.
+            </div>
+          )}
+        </section>
+      </div>
+
+      <section className="panel">
+        <div className="section-heading">
+          <h2>Global roster</h2>
+          <span className="muted">
+            Reusable definitions · project memory excluded
+          </span>
+        </div>
+        <div className="registry-table-wrap">
+          <table className="registry-table">
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Lifecycle</th>
+                <th>QA role</th>
+                <th>Capabilities</th>
+                <th>Auditions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map((entry) => (
+                <tr key={entry.agent.agent_id}>
+                  <td>
+                    <strong>{entry.agent.name}</strong>
+                    <span>{entry.agent.description}</span>
+                  </td>
+                  <td>
+                    <Status state={entry.lifecycle} />
+                  </td>
+                  <td>{entry.qa_decision_role}</td>
+                  <td>
+                    {entry.agent.capabilities
+                      .map((item) => item.replaceAll("_", " "))
+                      .join(", ")}
+                  </td>
+                  <td>{(entry.audition_ids ?? []).length}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function Workers({
   snapshot,
   connection,
@@ -1888,6 +2587,543 @@ function Workers({
         <p>Propose a task to run your first analysis.</p>
       )}
     </section>
+  );
+}
+
+function formatCapacity(bytes: number | null | undefined) {
+  if (!bytes) return "Unknown";
+  return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+}
+
+function routeLabel(route: ModelRoutingRecord["selected_route"]) {
+  return {
+    deterministic_tool: "Deterministic tool",
+    local_ollama: "Local Ollama",
+    codex_authenticated: "Authenticated Codex",
+    paid_provider: "Paid provider",
+    wait_for_codex: "Wait for Codex",
+  }[route];
+}
+
+function BenchmarkHistory({ records }: { records: ModelBenchmark[] }) {
+  if (!records.length) {
+    return (
+      <div className="empty model-empty">
+        No representative local benchmark has been recorded for this task.
+      </div>
+    );
+  }
+  return (
+    <div className="model-history">
+      {records
+        .slice()
+        .reverse()
+        .map((benchmark) => (
+          <article key={benchmark.benchmark_id} className="model-history-row">
+            <div>
+              <strong>{benchmark.model_name}</strong>
+              <span className="muted">
+                {benchmark.prompt_tokens} in · {benchmark.completion_tokens} out
+                · {benchmark.output_channel} channel
+              </span>
+            </div>
+            <div>
+              <span className={`route-state ${benchmark.result}`}>
+                {benchmark.result}
+              </span>
+              <span className="mono">
+                {(benchmark.contract_score * 100).toFixed(0)}% ·{" "}
+                {(benchmark.latency_ms / 1000).toFixed(1)}s
+              </span>
+            </div>
+          </article>
+        ))}
+    </div>
+  );
+}
+
+function RoutingDecision({ record }: { record: ModelRoutingRecord }) {
+  return (
+    <>
+      <div className="model-decision">
+        <div>
+          <span className="eyebrow">SELECTED ROUTE</span>
+          <h3>{routeLabel(record.selected_route)}</h3>
+          <p className="mono">
+            {record.selected_model_name ??
+              record.selected_provider_id ??
+              "No model"}
+          </p>
+        </div>
+        <p>{record.reason}</p>
+      </div>
+      <div className="route-candidates">
+        {record.candidates.map((candidate) => (
+          <article
+            key={candidate.route}
+            className={`route-candidate ${candidate.viable ? "viable" : "blocked"}`}
+          >
+            <div className="section-heading">
+              <strong>{routeLabel(candidate.route)}</strong>
+              <span
+                className={`route-state ${candidate.viable ? "passed" : "missing"}`}
+              >
+                {candidate.viable ? "viable" : "unavailable"}
+              </span>
+            </div>
+            <p>{candidate.reason}</p>
+            <dl className="route-facts">
+              <dt>Expected quality</dt>
+              <dd>{candidate.expected_quality}</dd>
+              <dt>Confidence</dt>
+              <dd>{(candidate.confidence * 100).toFixed(0)}%</dd>
+              <dt>Expected runtime</dt>
+              <dd>
+                {candidate.expected_runtime_ms == null
+                  ? "Not measured"
+                  : `${(candidate.expected_runtime_ms / 1000).toFixed(1)}s`}
+              </dd>
+              <dt>External cost</dt>
+              <dd>
+                {candidate.expected_external_cost_cents == null
+                  ? "Unknown"
+                  : `$${(candidate.expected_external_cost_cents / 100).toFixed(2)}`}
+              </dd>
+              <dt>External cost avoided</dt>
+              <dd>
+                $
+                {(
+                  (candidate.expected_external_cost_avoided_cents ?? 0) / 100
+                ).toFixed(2)}
+              </dd>
+            </dl>
+          </article>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function ModelRouterPanel({
+  snapshot,
+  environment,
+  loading,
+  error: environmentError,
+  connection,
+}: {
+  snapshot: ProjectSnapshot;
+  environment: ModelEnvironment | undefined;
+  loading: boolean;
+  error: string | null;
+  connection: Connection;
+}) {
+  const client = useQueryClient();
+  const [taskId, setTaskId] = useState(snapshot.tasks[0]?.task_id ?? "");
+  const [modelName, setModelName] = useState("");
+  const [urgency, setUrgency] = useState<"low" | "normal" | "high">("normal");
+  const [busy, setBusy] = useState<
+    "benchmark" | "recommend" | "route" | "scan" | null
+  >(null);
+  const [recommendation, setRecommendation] =
+    useState<LocalModelRecommendation>();
+  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
+  const models = environment?.models.models ?? [];
+  const selectedModel = modelName || models[0]?.name || "";
+  const benchmarks = (snapshot.model_benchmarks ?? []).filter(
+    (benchmark) => benchmark.task_id === taskId,
+  );
+  const routings = (snapshot.model_routing_records ?? []).filter(
+    (routing) => routing.task_id === taskId,
+  );
+  const latestRouting = routings.at(-1);
+
+  async function refreshProject() {
+    await Promise.all([
+      client.invalidateQueries({ queryKey: ["project"] }),
+      client.invalidateQueries({ queryKey: ["events"] }),
+    ]);
+  }
+
+  async function scan() {
+    setBusy("scan");
+    setError("");
+    try {
+      await client.invalidateQueries({ queryKey: ["model-environment"] });
+      setNotice("Local hardware and Ollama inventory refreshed.");
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Inventory refresh failed",
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function benchmark() {
+    setBusy("benchmark");
+    setError("");
+    setNotice("");
+    try {
+      const result = await request<ModelBenchmark>(
+        connection,
+        "/model-benchmark",
+        {
+          request_id: `model-benchmark-${crypto.randomUUID()}`,
+          task_id: taskId,
+          model_name: selectedModel,
+        },
+        "POST",
+      );
+      await refreshProject();
+      setNotice(
+        `${result.model_name} benchmark ${result.result} at ${(result.contract_score * 100).toFixed(0)}%.`,
+      );
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Local benchmark failed",
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function recommend() {
+    setBusy("recommend");
+    setError("");
+    setNotice("");
+    try {
+      const result = await request<LocalModelRecommendation>(
+        connection,
+        "/model-recommend",
+        {
+          request_id: `model-recommend-${crypto.randomUUID()}`,
+          task_id: taskId,
+        },
+        "POST",
+      );
+      setRecommendation(result);
+      setNotice(
+        result.action === "install"
+          ? `Install candidate found: ${result.recommended_model_name}. No download was started.`
+          : result.action === "keep_installed"
+            ? `${result.recommended_model_name} remains the strongest hardware/task fit.`
+            : "No install recommendation was made without verified catalog evidence.",
+      );
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Model discovery failed",
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function explainRoute() {
+    setBusy("route");
+    setError("");
+    setNotice("");
+    try {
+      const result = await request<ModelRoutingRecord>(
+        connection,
+        "/model-route",
+        {
+          request_id: `model-route-${crypto.randomUUID()}`,
+          task_id: taskId,
+          urgency,
+        },
+        "POST",
+      );
+      await refreshProject();
+      setNotice(`Routing record saved: ${routeLabel(result.selected_route)}.`);
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Model routing failed",
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  const gpu = environment?.hardware.graphics?.[0];
+  return (
+    <div className="model-router">
+      <section className="panel model-overview">
+        <div className="section-heading">
+          <div>
+            <h2>Local Model Expert</h2>
+            <p className="muted">
+              Machine facts are live. Benchmarks and routing decisions are
+              project history.
+            </p>
+          </div>
+          <button disabled={busy !== null} onClick={() => void scan()}>
+            {busy === "scan" ? "Scanning…" : "Refresh inventory"}
+          </button>
+        </div>
+        {loading && <p role="status">Inspecting local hardware and Ollama…</p>}
+        {(environmentError || error) && (
+          <p className="error" role="alert">
+            {error || environmentError}
+          </p>
+        )}
+        {environment && (
+          <>
+            <div className="metrics model-metrics">
+              <Metric
+                label="System RAM"
+                value={formatCapacity(environment.hardware.ram_bytes)}
+              />
+              <Metric label="Primary GPU" value={gpu?.name ?? "Not detected"} />
+              <Metric
+                label="GPU memory"
+                value={formatCapacity(gpu?.memory_bytes)}
+              />
+              <Metric label="Local models" value={models.length} />
+            </div>
+            <p className="model-machine">
+              <strong>{environment.hardware.cpu}</strong>
+              <span className="muted">
+                {environment.hardware.operating_system} ·{" "}
+                {environment.hardware.logical_core_count} logical cores · Ollama{" "}
+                {environment.models.version ?? environment.models.state}
+              </span>
+            </p>
+          </>
+        )}
+      </section>
+
+      <section className="panel model-controls">
+        <div>
+          <span className="eyebrow">REPRESENTATIVE TASK</span>
+          <h2>Choose with evidence</h2>
+        </div>
+        <div className="model-control-grid">
+          <label>
+            Task contract
+            <select
+              value={taskId}
+              onChange={(event) => {
+                setTaskId(event.target.value);
+                setRecommendation(undefined);
+              }}
+            >
+              {snapshot.tasks.map((task) => (
+                <option key={task.task_id} value={task.task_id}>
+                  {task.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Local model
+            <select
+              value={selectedModel}
+              onChange={(event) => setModelName(event.target.value)}
+            >
+              {!models.length && <option value="">No fitting model</option>}
+              {models.map((model) => (
+                <option
+                  key={model.digest}
+                  value={model.name}
+                  disabled={!model.fits_memory}
+                >
+                  {model.name} · {formatCapacity(model.size_bytes)}
+                  {model.fits_memory ? "" : " · exceeds memory"}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Urgency
+            <select
+              value={urgency}
+              onChange={(event) =>
+                setUrgency(event.target.value as "low" | "normal" | "high")
+              }
+            >
+              <option value="low">Low · waiting is acceptable</option>
+              <option value="normal">Normal · quality and cost first</option>
+              <option value="high">High · prefer ready paths</option>
+            </select>
+          </label>
+        </div>
+        <div className="model-actions">
+          <button
+            disabled={busy !== null || !taskId}
+            onClick={() => void recommend()}
+          >
+            {busy === "recommend"
+              ? "Checking catalog…"
+              : "Check install options"}
+          </button>
+          <button
+            disabled={busy !== null || !taskId || !selectedModel}
+            onClick={() => void benchmark()}
+          >
+            {busy === "benchmark" ? "Benchmarking…" : "Benchmark local model"}
+          </button>
+          <button
+            className="primary"
+            disabled={busy !== null || !taskId}
+            onClick={() => void explainRoute()}
+          >
+            {busy === "route" ? "Routing…" : "Explain recommended route"}
+          </button>
+        </div>
+        {notice && <p role="status">{notice}</p>}
+      </section>
+
+      {recommendation && (
+        <section className="panel model-recommendation">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">LIVE CATALOG CHECK</span>
+              <h2>
+                {recommendation.action === "install"
+                  ? `Install ${recommendation.recommended_model_name}`
+                  : recommendation.action === "keep_installed"
+                    ? "Best fit is already installed"
+                    : "No verified install recommendation"}
+              </h2>
+            </div>
+            <span
+              className={`route-state ${recommendation.catalog_state === "live" ? "passed" : "missing"}`}
+            >
+              {recommendation.catalog_state}
+            </span>
+          </div>
+          <p>{recommendation.reason}</p>
+          {recommendation.candidate && (
+            <dl className="route-facts recommendation-facts">
+              <dt>Recommended model</dt>
+              <dd>{recommendation.candidate.name}</dd>
+              <dt>Estimated footprint</dt>
+              <dd>
+                {formatCapacity(recommendation.candidate.estimated_size_bytes)}
+              </dd>
+              <dt>Hardware mode</dt>
+              <dd>{recommendation.candidate.memory_tier.replace("_", " ")}</dd>
+              <dt>Task suitability</dt>
+              <dd>
+                {(recommendation.candidate.suitability_score * 100).toFixed(0)}%
+              </dd>
+              <dt>Catalog evidence</dt>
+              <dd>
+                <a
+                  href={recommendation.candidate.source_url}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Ollama model page ↗
+                </a>
+              </dd>
+              <dt>Checked</dt>
+              <dd>
+                {new Date(recommendation.catalog_checked_at).toLocaleString()}
+              </dd>
+            </dl>
+          )}
+          {recommendation.install_command && (
+            <div className="install-command">
+              <span className="eyebrow">
+                RECOMMENDATION ONLY · DOWNLOAD NOT STARTED
+              </span>
+              <code>{recommendation.install_command}</code>
+            </div>
+          )}
+          {!!recommendation.alternatives?.length && (
+            <div className="model-alternatives">
+              <span className="eyebrow">ALTERNATIVES CHECKED</span>
+              {(recommendation.alternatives ?? []).map((candidate) => (
+                <div key={candidate.name}>
+                  <strong>{candidate.name}</strong>
+                  <span className="muted">
+                    {candidate.installed ? "installed" : "available"} ·{" "}
+                    {candidate.memory_tier.replace("_", " ")} ·{" "}
+                    {(candidate.suitability_score * 100).toFixed(0)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {latestRouting ? (
+        <section className="panel">
+          <div className="section-heading">
+            <h2>Latest routing decision</h2>
+            <span className="mono">{latestRouting.routing_id}</span>
+          </div>
+          <RoutingDecision record={latestRouting} />
+        </section>
+      ) : (
+        <section className="panel empty model-empty">
+          <h2>No routing record yet</h2>
+          <p>
+            Ask the router to compare deterministic, local, Codex, and paid
+            paths.
+          </p>
+        </section>
+      )}
+
+      <section className="panel">
+        <div className="section-heading">
+          <h2>Benchmark history</h2>
+          <span className="muted">
+            {benchmarks.length} recorded for this task
+          </span>
+        </div>
+        <BenchmarkHistory records={benchmarks} />
+      </section>
+
+      <section className="panel">
+        <div className="section-heading">
+          <h2>Installed local models</h2>
+          <span
+            className={`route-state ${environment?.models.state === "available" ? "passed" : "missing"}`}
+          >
+            {environment?.models.state ?? "loading"}
+          </span>
+        </div>
+        <div className="local-model-grid">
+          {models.map((model) => (
+            <article key={model.digest} className="local-model-card">
+              <div className="section-heading">
+                <h3>{model.name}</h3>
+                <span
+                  className={`route-state ${model.fits_memory ? "passed" : "missing"}`}
+                >
+                  {model.fits_memory ? "fits" : "too large"}
+                </span>
+              </div>
+              <p className="mono">
+                {model.parameter_size ?? "Unknown size"} ·{" "}
+                {model.quantization_level ?? "Unknown quantization"} ·{" "}
+                {model.digest.slice(0, 12)}
+              </p>
+              <dl className="route-facts">
+                <dt>Stored size</dt>
+                <dd>{formatCapacity(model.size_bytes)}</dd>
+                <dt>Context</dt>
+                <dd>{model.context_limit?.toLocaleString() ?? "Unknown"}</dd>
+                <dt>Modalities</dt>
+                <dd>{model.modalities.join(", ")}</dd>
+                <dt>Tool support</dt>
+                <dd>{model.tool_support ? "Reported" : "Not reported"}</dd>
+              </dl>
+            </article>
+          ))}
+          {!models.length && (
+            <div className="empty model-empty">
+              {environment?.models.detail ??
+                "Ollama inventory is not available."}
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }
 

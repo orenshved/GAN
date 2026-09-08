@@ -1,6 +1,6 @@
 # Game Agent Network contributor instructions
 
-- Phase 6 is explicitly authorized by the Director on 2026-09-07 after accepting Phase 5. Stop before Phase 7.
+- Phase 8 was explicitly authorized after the Director accepted Phase 7 on 2026-09-08. Stop before Phase 9.
 - Read the PRD, `docs/GREENLIGHT_HARVEST.md`, architecture and decision records.
 - Do not edit the PRD without an explicit documented change request.
 - Pydantic models own contracts. Run `pnpm protocol:generate` after changes;

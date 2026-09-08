@@ -28,6 +28,15 @@ Cents = Annotated[int, Field(ge=0, le=9007199254740991, strict=True)]
 Count = Annotated[int, Field(ge=0, strict=True)]
 Actor = Literal["human", "gm", "agent", "system", "external"]
 EvidenceClass = Literal["deterministic", "measured", "comparative", "heuristic", "human"]
+EvaluationAuthority = Literal["advisory", "eligible", "human"]
+QADiscipline = Literal["ui", "engineering"]
+ModelRoute = Literal[
+    "deterministic_tool",
+    "local_ollama",
+    "codex_authenticated",
+    "paid_provider",
+    "wait_for_codex",
+]
 TaskState = Literal[
     "PROPOSED",
     "QUEUED",
@@ -127,6 +136,26 @@ class AgentDefinition(Contract):
     # Project context and conversation memory are intentionally not fields here.
 
 
+class CapabilityPerformance(Value):
+    capability_id: Identifier
+    task_count: Count = 0
+    passed_count: Count = 0
+    failed_count: Count = 0
+    human_rejection_count: Count = 0
+    revision_count: Count = 0
+    total_cost_cents: Cents = 0
+    total_latency_ms: Count = 0
+
+
+class AgentRegistryEntry(Contract):
+    agent: AgentDefinition
+    lifecycle: Literal["builtin", "probation", "active", "demoted", "retired"]
+    qa_decision_role: Literal["advisory", "eligible"]
+    audition_ids: list[Identifier] = Field(default_factory=list)
+    recruited_at: Timestamp | None = None
+    performance: list[CapabilityPerformance] = Field(default_factory=list)
+
+
 class AgentAssignment(Contract):
     assignment_id: Identifier
     project_id: Identifier
@@ -152,6 +181,85 @@ class ToolDefinition(Contract):
     health_check: Text
     location: Literal["local", "cloud"]
     cost_policy: ResourcePolicy
+
+
+class CapabilityGap(Contract):
+    gap_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    missing_capabilities: Annotated[list[Identifier], Field(min_length=1)]
+    reason: Text
+    detected_at: Timestamp
+
+
+class ToolDiscovery(Value):
+    tool_id: Identifier
+    capability_ids: list[Identifier]
+    decision: Literal["trusted", "needs_approval", "forbidden", "unavailable"]
+    detail: Text
+
+
+class AuditionTestCase(Value):
+    capability_id: Identifier
+    procedure: Text
+    expected_result: Text
+    evidence_class: EvidenceClass
+
+
+class AuditionSubmission(Value):
+    summary: Text
+    test_cases: Annotated[list[AuditionTestCase], Field(min_length=3)]
+    requested_tool_ids: list[Identifier] = Field(default_factory=list)
+    risks: Annotated[list[Text], Field(min_length=1)]
+
+
+class AuditionDimension(Value):
+    dimension: Literal[
+        "technical_correctness",
+        "output_compliance",
+        "quality",
+        "reliability",
+        "style_adherence",
+        "cost_latency",
+        "security_tool_behavior",
+    ]
+    result: Literal["passed", "failed"]
+    detail: Text
+
+
+class AuditionReview(Value):
+    dimensions: Annotated[list[AuditionDimension], Field(min_length=7, max_length=7)]
+    recommendation: Literal["probation", "reject"]
+    rationale: Text
+
+
+class AgentAudition(Contract):
+    audition_id: Identifier
+    candidate_id: Identifier
+    sandbox: Literal["read_only"] = "read_only"
+    representative_objective: Text
+    submission: AuditionSubmission
+    review: AuditionReview
+    result: Literal["passed", "failed"]
+    evaluated_at: Timestamp
+
+
+class RecruitmentRecord(Contract):
+    recruitment_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    gap: CapabilityGap
+    candidate: AgentDefinition
+    adjacent_agent_ids: list[Identifier]
+    tool_discoveries: list[ToolDiscovery]
+    state: Literal["candidate_composed", "auditioning", "probation", "rejected"]
+    audition: AgentAudition | None = None
+    created_at: Timestamp
+    updated_at: Timestamp
+
+
+class AgentRegistrySnapshot(Value):
+    entries: list[AgentRegistryEntry]
 
 
 class EngineAdapter(Contract):
@@ -317,8 +425,55 @@ class Evaluation(Contract):
     result: Literal["passed", "failed", "inconclusive"]
     evidence_ids: Annotated[list[Identifier], Field(min_length=1)]
     evaluator_id: Identifier
+    authority: EvaluationAuthority = "eligible"
     rationale: Text
     evaluated_at: Timestamp
+
+
+class QAGateDefinition(Contract):
+    gate_id: Identifier
+    version: Version
+    discipline: QADiscipline
+    title: Text
+    description: Text
+    claim: Literal["technical", "visual", "subjective", "fun"]
+    required_evidence_classes: Annotated[list[EvidenceClass], Field(min_length=1)]
+    allowed_producer_types: Annotated[list[Literal["tool", "model", "human"]], Field(min_length=1)]
+    requires_runtime_capture: bool = False
+    requires_independent_verification: bool = False
+
+
+class GateWaiver(Contract):
+    waiver_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    gate_id: Identifier
+    reason: Text
+    waived_by: Literal["human"]
+    waived_at: Timestamp
+
+
+class QAGateStatus(Value):
+    gate: QAGateDefinition
+    required: bool
+    state: Literal["missing", "passed", "failed", "inconclusive", "advisory", "waived"]
+    latest_evaluation_id: Identifier | None = None
+    evidence_ids: list[Identifier] = Field(default_factory=list)
+    waiver_id: Identifier | None = None
+    explanation: Text
+
+
+class QAReport(Contract):
+    report_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    generated_at: Timestamp
+    completion_state: Literal["passed", "blocked", "human_rejected"]
+    required_gate_count: Count
+    passed_gate_count: Count
+    waived_gate_count: Count
+    gates: Annotated[list[QAGateStatus], Field(min_length=1)]
+    explanation: Text
 
 
 class Decision(Contract):
@@ -398,6 +553,125 @@ class Provider(Contract):
     currency: Literal["USD"] = "USD"
     cap: UnverifiedCap | VerifiedCap
     # Secrets are resolved through an OS credential service, not these records.
+
+
+class GraphicsDevice(Value):
+    name: Text
+    vendor: Text
+    memory_bytes: Count | None = None
+    driver_version: Text | None = None
+
+
+class LocalHardwareInventory(Contract):
+    machine_id: Identifier
+    captured_at: Timestamp
+    operating_system: Text
+    cpu: Text
+    physical_core_count: Count | None = None
+    logical_core_count: Count
+    ram_bytes: Count | None = None
+    graphics: list[GraphicsDevice] = Field(default_factory=list)
+
+
+class LocalModel(Value):
+    name: Text
+    digest: Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
+    size_bytes: Count
+    modified_at: Timestamp
+    parameter_size: Text | None = None
+    quantization_level: Text | None = None
+    context_limit: Count | None = None
+    modalities: Annotated[list[Literal["text", "image", "audio"]], Field(min_length=1)]
+    tool_support: bool = False
+    fits_memory: bool
+
+
+class LocalModelInventory(Contract):
+    runtime_id: Literal["ollama"] = "ollama"
+    state: Literal["available", "unavailable"]
+    version: Text | None = None
+    endpoint: Text
+    inspected_at: Timestamp
+    models: list[LocalModel] = Field(default_factory=list)
+    detail: Text
+
+
+class ModelCatalogCandidate(Value):
+    name: Text
+    family: Text
+    parameter_size: Text
+    estimated_size_bytes: Count
+    modalities: Annotated[list[Literal["text", "image", "audio"]], Field(min_length=1)]
+    tool_support: bool
+    thinking_support: bool
+    memory_tier: Literal["full_gpu", "hybrid", "system", "unfit"]
+    installed: bool
+    suitability_score: Annotated[float, Field(ge=0, le=1)]
+    source_url: Text
+    description: Text
+    reason: Text
+
+
+class LocalModelRecommendation(Contract):
+    recommendation_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    required_capability_ids: Annotated[list[Identifier], Field(min_length=1)]
+    action: Literal["install", "keep_installed", "no_recommendation"]
+    recommended_model_name: Text | None = None
+    installed: bool = False
+    install_command: Text | None = None
+    candidate: ModelCatalogCandidate | None = None
+    alternatives: list[ModelCatalogCandidate] = Field(default_factory=list)
+    catalog_state: Literal["live", "unavailable"]
+    catalog_url: Text
+    catalog_checked_at: Timestamp
+    catalog_sha256: Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")] | None = None
+    reason: Text
+
+
+class ModelBenchmark(Contract):
+    benchmark_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    model_name: Text
+    model_digest: Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
+    required_capability_ids: Annotated[list[Identifier], Field(min_length=1)]
+    prompt_sha256: Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
+    response: SourceRef | None = None
+    output_channel: Literal["response", "thinking"] = "response"
+    result: Literal["passed", "failed", "unavailable"]
+    contract_score: Annotated[float, Field(ge=0, le=1)]
+    latency_ms: Count
+    prompt_tokens: Count
+    completion_tokens: Count
+    summary: Text
+    benchmarked_at: Timestamp
+
+
+class ModelRouteCandidate(Value):
+    route: ModelRoute
+    provider_id: Identifier | None = None
+    model_name: Text | None = None
+    viable: bool
+    expected_quality: Literal["unknown", "low", "medium", "high"]
+    confidence: Annotated[float, Field(ge=0, le=1)]
+    expected_runtime_ms: Count | None = None
+    expected_external_cost_cents: Cents | None = None
+    expected_external_cost_avoided_cents: Cents
+    reason: Text
+
+
+class ModelRoutingRecord(Contract):
+    routing_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    selected_route: ModelRoute
+    selected_provider_id: Identifier | None = None
+    selected_model_name: Text | None = None
+    candidates: Annotated[list[ModelRouteCandidate], Field(min_length=3)]
+    reason: Text
+    created_at: Timestamp
 
 
 class TaskEventPayload(Value):
@@ -698,6 +972,26 @@ class EvaluationRecordedEvent(EventBase):
     payload: Evaluation
 
 
+class RecruitmentEvent(EventBase):
+    event_type: Literal["recruitment.updated"]
+    payload: RecruitmentRecord
+
+
+class GateWaivedEvent(EventBase):
+    event_type: Literal["qa.gate_waived"]
+    payload: GateWaiver
+
+
+class ModelBenchmarkEvent(EventBase):
+    event_type: Literal["model.benchmark_recorded"]
+    payload: ModelBenchmark
+
+
+class ModelRoutingEvent(EventBase):
+    event_type: Literal["model.routing_recorded"]
+    payload: ModelRoutingRecord
+
+
 Event = Annotated[
     TaskEvent
     | AgentEvent
@@ -719,7 +1013,11 @@ Event = Annotated[
     | InboxEvent
     | IntelligenceEvent
     | EvidenceRecordedEvent
-    | EvaluationRecordedEvent,
+    | EvaluationRecordedEvent
+    | RecruitmentEvent
+    | GateWaivedEvent
+    | ModelBenchmarkEvent
+    | ModelRoutingEvent,
     Field(discriminator="event_type"),
 ]
 
@@ -737,9 +1035,20 @@ class ProtocolDocument(Value):
     policy: Policy | None = None
     evidence: Evidence | None = None
     evaluation: Evaluation | None = None
+    qa_gate: QAGateDefinition | None = None
+    qa_report: QAReport | None = None
+    gate_waiver: GateWaiver | None = None
     decision: Decision | None = None
     knowledge: KnowledgeEntry | None = None
     project_intelligence: ProjectIntelligence | None = None
     context_package: ContextPackage | None = None
     provider: Provider | None = None
+    hardware_inventory: LocalHardwareInventory | None = None
+    local_model_inventory: LocalModelInventory | None = None
+    local_model_recommendation: LocalModelRecommendation | None = None
+    model_benchmark: ModelBenchmark | None = None
+    model_routing: ModelRoutingRecord | None = None
+    capability_gap: CapabilityGap | None = None
+    agent_registry_entry: AgentRegistryEntry | None = None
+    recruitment: RecruitmentRecord | None = None
     event: Event | None = None

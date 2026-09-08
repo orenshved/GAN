@@ -112,6 +112,8 @@ const environment = {
   GAMEAGENT_DAEMON_URL: daemonUrl,
   GAMEAGENT_DAEMON_TOKEN: token,
   GAMEAGENT_REGISTRY_PATH: join(temporary, ".gameagent", "projects.json"),
+  GAMEAGENT_OLLAMA_URL: "",
+  OLLAMA_HOST: "",
 };
 const children = [];
 let browser;
@@ -266,6 +268,49 @@ try {
   await page.getByRole("button", { name: "Assemble context" }).click();
   assert.equal((await contextResponse).status(), 200);
   await page.getByText(/resources selected · event history excluded/).waitFor();
+  await page
+    .locator("nav")
+    .getByRole("button", { name: /Agents/ })
+    .click();
+  await page.getByRole("heading", { name: "Capability registry" }).waitFor();
+  await page.getByText("Recruitment changes evaluator availability").waitFor();
+  await page.locator(".registry-table tbody tr").first().waitFor();
+  assert.equal(await page.locator(".registry-table tbody tr").count(), 6);
+  await page
+    .locator("nav")
+    .getByRole("button", { name: /Models/ })
+    .click();
+  await page.getByRole("heading", { name: "Local Model Expert" }).waitFor();
+  const localModelSelect = page.getByLabel("Local model");
+  await localModelSelect.waitFor();
+  assert.equal(await localModelSelect.inputValue(), "");
+  const routeResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/daemon/model-route"),
+  );
+  await page.getByRole("button", { name: "Explain recommended route" }).click();
+  const recordedRoute = await routeResponse;
+  assert.equal(recordedRoute.status(), 200);
+  const route = await recordedRoute.json();
+  assert.ok(
+    ["codex_authenticated", "wait_for_codex"].includes(route.selected_route),
+  );
+  await page
+    .getByRole("heading", { name: "Latest routing decision" })
+    .waitFor();
+  await page.getByText(/Paid execution is unavailable until Phase 9/).waitFor();
+  await page.locator("nav").getByRole("button", { name: /QA/ }).click();
+  await page.getByRole("heading", { name: "Quality gates" }).waitFor();
+  await page.getByText("Required evidence has not been recorded.").waitFor();
+  const qaResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/daemon/qa-run"),
+  );
+  await page.getByRole("button", { name: "Run deterministic gates" }).click();
+  assert.equal((await qaResponse).status(), 200);
+  await page
+    .getByText(
+      "All contract, dependency, scope, gate-registry, and deliverable checks passed.",
+    )
+    .waitFor();
   await page.getByRole("button", { name: /Activity/ }).click();
   await page.getByText("task / proposed").waitFor();
   await page.getByRole("button", { name: /Network/ }).click();

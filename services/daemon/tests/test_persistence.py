@@ -3,6 +3,8 @@ import hashlib
 import json
 import subprocess
 import sys
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import SimpleNamespace
@@ -39,6 +41,7 @@ from gameagent.models.contracts import (
     SourceRef,
     WorkerRecord,
 )
+from gameagent.persistence import projection as projection_module
 from gameagent.persistence.projection import Projection
 from gameagent.projects import ProjectRegistry, ProjectStore, initialize, timestamp
 
@@ -644,6 +647,34 @@ def test_concurrent_writers_get_distinct_contiguous_sequences(store):
         list(pool.map(write, range(8)))
     assert store.snapshot().cursor == 9
     assert [e.sequence for e in store.events().events] == list(range(1, 10))
+
+
+def test_projection_migrations_are_serialized_across_projects(tmp_path, monkeypatch):
+    original = projection_module.command.upgrade
+    guard = threading.Lock()
+    active = 0
+    peak = 0
+
+    def observed_upgrade(*args, **kwargs):
+        nonlocal active, peak
+        with guard:
+            active += 1
+            peak = max(peak, active)
+        time.sleep(0.02)
+        try:
+            return original(*args, **kwargs)
+        finally:
+            with guard:
+                active -= 1
+
+    monkeypatch.setattr(projection_module.command, "upgrade", observed_upgrade)
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        projections = list(
+            pool.map(lambda index: Projection(tmp_path / f"projection-{index}.sqlite3"), range(4))
+        )
+    for projection in projections:
+        projection.close()
+    assert peak == 1
 
 
 def test_append_survives_projection_failure_and_retry_recovers(store, monkeypatch):

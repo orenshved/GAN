@@ -1,1 +1,5 @@
-export type { ToolDefinition, Permissions } from "@gameagent/protocol";
+export type {
+  Permissions,
+  ToolDefinition,
+  ToolDiscovery,
+} from "@gameagent/protocol";

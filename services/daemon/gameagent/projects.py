@@ -16,7 +16,7 @@ from uuid import uuid4
 import yaml
 from filelock import FileLock
 
-from gameagent.constitution import require, validate_evaluation
+from gameagent.constitution import require, validate_model_routing
 from gameagent.gm import plan_decisions, task_readiness, validate_plan
 from gameagent.intelligence import assemble_context as build_context
 from gameagent.intelligence import index_repository
@@ -24,12 +24,15 @@ from gameagent.models.api import (
     ContextCommand,
     DecisionCommand,
     EventPage,
+    GateWaiverCommand,
+    HumanReviewCommand,
     IntelligenceRefreshCommand,
     PolicyCommand,
     ProjectCatalog,
     ProjectRemoval,
     ProjectSnapshot,
     ProjectSummary,
+    QARunCommand,
     ReconcileCommand,
     TaskProgressCommand,
     TaskProposal,
@@ -44,12 +47,18 @@ from gameagent.models.contracts import (
     EvidenceRecordedEvent,
     ExternalChangeEvent,
     ExternalChangePayload,
+    GateWaivedEvent,
+    GateWaiver,
     GMEvent,
     GMRecord,
     InboxDecision,
     InboxEvent,
     InitializationReport,
     IntelligenceEvent,
+    ModelBenchmark,
+    ModelBenchmarkEvent,
+    ModelRoutingEvent,
+    ModelRoutingRecord,
     Permissions,
     PlanEvent,
     Policy,
@@ -60,8 +69,11 @@ from gameagent.models.contracts import (
     ProjectInitializedPayload,
     ProjectIntelligence,
     ProjectReconciledEvent,
+    QAReport,
     ReconciliationPayload,
     ReconciliationRecord,
+    RecruitmentEvent,
+    RecruitmentRecord,
     Requirements,
     SourceRef,
     TaskContract,
@@ -76,6 +88,12 @@ from gameagent.models.contracts import (
 )
 from gameagent.persistence.history import append, read_history, write_new
 from gameagent.persistence.projection import Projection
+from gameagent.qa import (
+    build_report,
+    contract_compliance_result,
+    human_review_result,
+    validate_gate_evaluation,
+)
 
 
 def timestamp() -> str:
@@ -413,6 +431,10 @@ class ProjectStore:
         intelligence: ProjectIntelligence | None = None
         evidence: dict[str, Evidence] = {}
         evaluations: dict[str, Evaluation] = {}
+        waivers: dict[str, GateWaiver] = {}
+        recruitments: dict[str, RecruitmentRecord] = {}
+        model_benchmarks: dict[str, ModelBenchmark] = {}
+        model_routing_records: dict[str, ModelRoutingRecord] = {}
         for index, event in enumerate(events):
             require(
                 event.project_id == project.project.id, "project_scope_mismatch", event.event_id
@@ -658,7 +680,8 @@ class ProjectStore:
             elif isinstance(event, EvidenceRecordedEvent):
                 evidence_record = event.payload
                 require(
-                    event.actor_type == "system"
+                    event.actor_type
+                    == ("human" if evidence_record.producer_type == "human" else "system")
                     and event.task_id == evidence_record.task_id
                     and evidence_record.project_id == project.project.id
                     and evidence_record.task_id in tasks
@@ -670,7 +693,8 @@ class ProjectStore:
             elif isinstance(event, EvaluationRecordedEvent):
                 evaluation_record = event.payload
                 require(
-                    event.actor_type == "system"
+                    event.actor_type
+                    == ("human" if evaluation_record.authority == "human" else "system")
                     and event.task_id == evaluation_record.task_id
                     and evaluation_record.project_id == project.project.id
                     and evaluation_record.task_id in tasks
@@ -678,8 +702,121 @@ class ProjectStore:
                     "invalid_evaluation_event",
                     event.event_id,
                 )
-                validate_evaluation(evaluation_record, list(evidence.values()))
+                validate_gate_evaluation(evaluation_record, list(evidence.values()))
                 evaluations[evaluation_record.evaluation_id] = evaluation_record
+            elif isinstance(event, GateWaivedEvent):
+                waiver = event.payload
+                require(
+                    event.actor_type == "human"
+                    and event.actor_id == "local-director"
+                    and event.task_id == waiver.task_id
+                    and waiver.project_id == project.project.id
+                    and waiver.task_id in tasks
+                    and waiver.waived_by == "human"
+                    and waiver.waiver_id not in waivers,
+                    "invalid_gate_waiver_event",
+                    event.event_id,
+                )
+                waivers[waiver.waiver_id] = waiver
+            elif isinstance(event, RecruitmentEvent):
+                record = event.payload
+                require(
+                    event.actor_type == "gm"
+                    and event.actor_id == "project-gm"
+                    and event.task_id == record.task_id
+                    and record.project_id == project.project.id
+                    and record.task_id in tasks
+                    and record.gap.project_id == record.project_id
+                    and record.gap.task_id == record.task_id,
+                    "invalid_recruitment_event",
+                    event.event_id,
+                )
+                recruitment_previous = recruitments.get(record.recruitment_id)
+                transitions = {
+                    None: {"candidate_composed"},
+                    "candidate_composed": {"auditioning"},
+                    "auditioning": {"probation", "rejected"},
+                    "probation": set(),
+                    "rejected": set(),
+                }
+                require(
+                    record.state
+                    in transitions[recruitment_previous.state if recruitment_previous else None],
+                    "invalid_recruitment_state",
+                    record.state,
+                )
+                require(
+                    record.created_at
+                    == (
+                        recruitment_previous.created_at
+                        if recruitment_previous
+                        else record.created_at
+                    )
+                    and (record.audition is not None)
+                    == (record.state in {"probation", "rejected"}),
+                    "invalid_recruitment_record",
+                    record.recruitment_id,
+                )
+                recruitments[record.recruitment_id] = record
+                if record.state == "probation":
+                    matching_plan = next(
+                        (
+                            item
+                            for item in plans.values()
+                            if record.task_id in {t.task_id for t in item.tasks}
+                        ),
+                        None,
+                    )
+                    require(matching_plan is not None, "recruitment_plan_missing", record.task_id)
+                    assert matching_plan is not None
+                    assignments = []
+                    for assignment in matching_plan.assignments:
+                        if assignment.task_id == record.task_id:
+                            require(
+                                assignment.agent is None
+                                and set(assignment.missing_capabilities)
+                                == set(record.gap.missing_capabilities)
+                                and set(tasks[record.task_id].required_capabilities)
+                                <= set(record.candidate.capabilities),
+                                "capability_gap_mismatch",
+                                record.task_id,
+                            )
+                            assignment = assignment.model_copy(
+                                update={"agent": record.candidate, "missing_capabilities": []}
+                            )
+                        assignments.append(assignment)
+                    plans[matching_plan.plan_id] = matching_plan.model_copy(
+                        update={"assignments": assignments}
+                    )
+            elif isinstance(event, ModelBenchmarkEvent):
+                benchmark = event.payload
+                benchmark_task = tasks.get(benchmark.task_id)
+                require(
+                    event.actor_type == "system"
+                    and event.actor_id == "local-model-expert"
+                    and event.task_id == benchmark.task_id
+                    and benchmark.project_id == project.project.id
+                    and benchmark_task is not None
+                    and benchmark.required_capability_ids == benchmark_task.required_capabilities
+                    and benchmark.benchmark_id not in model_benchmarks,
+                    "invalid_model_benchmark_event",
+                    event.event_id,
+                )
+                model_benchmarks[benchmark.benchmark_id] = benchmark
+            elif isinstance(event, ModelRoutingEvent):
+                routing = event.payload
+                require(
+                    event.actor_type == "system"
+                    and event.actor_id == "local-model-expert"
+                    and event.task_id == routing.task_id
+                    and routing.project_id == project.project.id
+                    and routing.task_id in tasks
+                    and routing.routing_id not in model_routing_records,
+                    "invalid_model_routing_event",
+                    event.event_id,
+                )
+                validate_model_routing(routing)
+                model_routing_records[routing.routing_id] = routing
             else:
                 # Do not silently project future event semantics as current Phase 1 state.
                 require(False, "unsupported_projection_event", event.event_type)
@@ -701,6 +838,10 @@ class ProjectStore:
             intelligence=intelligence,
             evidence=list(evidence.values()),
             evaluations=list(evaluations.values()),
+            waivers=list(waivers.values()),
+            recruitments=list(recruitments.values()),
+            model_benchmarks=list(model_benchmarks.values()),
+            model_routing_records=list(model_routing_records.values()),
             workspace=workspace,
             reconciliations=list(reconciliations.values()),
             requires_reconciliation=any(
@@ -708,11 +849,132 @@ class ProjectStore:
             ),
         ), events
 
+    def record_model_benchmark(self, benchmark: ModelBenchmark) -> ModelBenchmark:
+        with self.lock:
+            snapshot, events = self._replay()
+            existing = next(
+                (
+                    item
+                    for item in snapshot.model_benchmarks
+                    if item.benchmark_id == benchmark.benchmark_id
+                ),
+                None,
+            )
+            if existing is not None:
+                require(existing == benchmark, "request_id_conflict", benchmark.benchmark_id)
+                return existing
+            task = self._task(snapshot, benchmark.task_id)
+            require(
+                benchmark.project_id == snapshot.project.project.id
+                and benchmark.required_capability_ids == task.required_capabilities,
+                "model_benchmark_scope_mismatch",
+                benchmark.benchmark_id,
+            )
+            append(
+                self.directory / "events",
+                ModelBenchmarkEvent(
+                    event_id=f"evt-{benchmark.benchmark_id}",
+                    project_id=benchmark.project_id,
+                    timestamp=benchmark.benchmarked_at,
+                    actor_type="system",
+                    actor_id="local-model-expert",
+                    correlation_id=benchmark.benchmark_id,
+                    task_id=benchmark.task_id,
+                    sequence=len(events) + 1,
+                    event_type="model.benchmark_recorded",
+                    payload=benchmark,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return benchmark
+
+    def record_model_routing(self, routing: ModelRoutingRecord) -> ModelRoutingRecord:
+        with self.lock:
+            snapshot, events = self._replay()
+            existing = next(
+                (
+                    item
+                    for item in snapshot.model_routing_records
+                    if item.routing_id == routing.routing_id
+                ),
+                None,
+            )
+            if existing is not None:
+                require(existing == routing, "request_id_conflict", routing.routing_id)
+                return existing
+            self._task(snapshot, routing.task_id)
+            require(
+                routing.project_id == snapshot.project.project.id,
+                "model_routing_scope_mismatch",
+                routing.routing_id,
+            )
+            validate_model_routing(routing)
+            append(
+                self.directory / "events",
+                ModelRoutingEvent(
+                    event_id=f"evt-{routing.routing_id}",
+                    project_id=routing.project_id,
+                    timestamp=routing.created_at,
+                    actor_type="system",
+                    actor_id="local-model-expert",
+                    correlation_id=routing.routing_id,
+                    task_id=routing.task_id,
+                    sequence=len(events) + 1,
+                    event_type="model.routing_recorded",
+                    payload=routing,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return routing
+
+    def record_recruitment(self, record: RecruitmentRecord) -> RecruitmentRecord:
+        with self.lock:
+            snapshot, events = self._replay()
+            event_id = f"evt-{record.recruitment_id}-{record.state}"
+            duplicate = next((event for event in events if event.event_id == event_id), None)
+            if duplicate:
+                require(
+                    isinstance(duplicate, RecruitmentEvent) and duplicate.payload == record,
+                    "request_id_conflict",
+                    record.recruitment_id,
+                )
+                return record
+            event = RecruitmentEvent(
+                event_id=event_id,
+                project_id=record.project_id,
+                timestamp=record.updated_at,
+                actor_type="gm",
+                actor_id="project-gm",
+                correlation_id=record.recruitment_id,
+                task_id=record.task_id,
+                sequence=snapshot.cursor + 1,
+                event_type="recruitment.updated",
+                payload=record,
+            )
+            append(self.directory / "events", event, self.max_segment_bytes)
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return record
+
     def record_runtime_evaluation(
         self,
         request_id: str,
         evidence: Evidence,
         evaluation: Evaluation,
+    ) -> tuple[Evidence, Evaluation]:
+        return self.record_qa_result(request_id, evidence, evaluation, actor_id="engine-adapter")
+
+    def record_qa_result(
+        self,
+        request_id: str,
+        evidence: Evidence,
+        evaluation: Evaluation,
+        *,
+        actor_id: str,
     ) -> tuple[Evidence, Evaluation]:
         with self.lock:
             snapshot, events = self._replay()
@@ -724,7 +986,6 @@ class ProjectStore:
                 "project_scope_mismatch",
                 task.task_id,
             )
-            validate_evaluation(evaluation, [*snapshot.evidence, evidence])
             evidence_event_id = f"evt-{request_id}-evidence"
             evaluation_event_id = f"evt-{request_id}-evaluation"
             previous_evidence = next(
@@ -743,14 +1004,23 @@ class ProjectStore:
                     request_id,
                 )
                 return evidence, evaluation
+            validate_gate_evaluation(evaluation, [*snapshot.evidence, evidence])
+            actor_type: Literal["human", "system"] = (
+                "human" if evaluation.authority == "human" else "system"
+            )
+            require(
+                (evidence.producer_type == "human") == (actor_type == "human"),
+                "evidence_actor_mismatch",
+                evidence.evidence_id,
+            )
             append(
                 self.directory / "events",
                 EvidenceRecordedEvent(
                     event_id=evidence_event_id,
                     project_id=task.project_id,
                     timestamp=evidence.captured_at,
-                    actor_type="system",
-                    actor_id="engine-adapter",
+                    actor_type=actor_type,
+                    actor_id=actor_id,
                     correlation_id=request_id,
                     task_id=task.task_id,
                     sequence=snapshot.cursor + 1,
@@ -766,8 +1036,8 @@ class ProjectStore:
                     event_id=evaluation_event_id,
                     project_id=task.project_id,
                     timestamp=evaluation.evaluated_at,
-                    actor_type="system",
-                    actor_id="engine-adapter",
+                    actor_type=actor_type,
+                    actor_id=actor_id,
                     correlation_id=request_id,
                     task_id=task.task_id,
                     sequence=snapshot.cursor + 1,
@@ -779,6 +1049,152 @@ class ProjectStore:
             replayed, committed = self._replay()
             self._sync(replayed, committed)
             return evidence, evaluation
+
+    def qa_report(self, task_id: str) -> QAReport:
+        snapshot = self.snapshot()
+        task = self._task(snapshot, task_id)
+        return build_report(
+            task,
+            snapshot.evidence,
+            snapshot.evaluations,
+            snapshot.waivers,
+            unresolved_change_ids=[
+                item.change_id for item in snapshot.reconciliations if item.state == "unresolved"
+            ],
+            generated_at=timestamp(),
+        )
+
+    def run_qa(self, command: QARunCommand) -> QAReport:
+        snapshot = self.snapshot()
+        task = self._task(snapshot, command.task_id)
+        if any(
+            item.evidence_id == f"evidence-{command.request_id}-contract"
+            for item in snapshot.evidence
+        ):
+            require(
+                any(
+                    item.evaluation_id == f"evaluation-{command.request_id}-contract"
+                    for item in snapshot.evaluations
+                ),
+                "qa_evaluation_missing",
+                command.request_id,
+            )
+            return self.qa_report(task.task_id)
+        evidence, evaluation = contract_compliance_result(
+            self.root,
+            task,
+            snapshot.tasks,
+            request_id=command.request_id,
+            captured_at=timestamp(),
+        )
+        self.record_qa_result(command.request_id, evidence, evaluation, actor_id="qa-fabric")
+        return self.qa_report(task.task_id)
+
+    def record_human_review(self, command: HumanReviewCommand) -> QAReport:
+        snapshot = self.snapshot()
+        task = self._task(snapshot, command.task_id)
+        if any(
+            item.evidence_id == f"evidence-{command.request_id}-human" for item in snapshot.evidence
+        ):
+            require(
+                any(
+                    item.evaluation_id == f"evaluation-{command.request_id}-human"
+                    for item in snapshot.evaluations
+                ),
+                "qa_evaluation_missing",
+                command.request_id,
+            )
+            return self.qa_report(task.task_id)
+        by_id = {item.evidence_id: item for item in snapshot.evidence}
+        require(
+            all(item in by_id for item in command.supporting_evidence_ids),
+            "missing_evidence",
+            command.gate_id,
+        )
+        supporting = [by_id[item] for item in command.supporting_evidence_ids]
+        require(
+            all(item.task_id == task.task_id for item in supporting),
+            "evidence_scope_mismatch",
+            task.task_id,
+        )
+        evidence, evaluation = human_review_result(
+            self.root,
+            task,
+            supporting,
+            request_id=command.request_id,
+            gate_id=command.gate_id,
+            verdict=command.verdict,
+            summary=command.summary,
+            captured_at=timestamp(),
+        )
+        self.record_qa_result(
+            command.request_id,
+            evidence,
+            evaluation,
+            actor_id="local-director",
+        )
+        return self.qa_report(task.task_id)
+
+    def waive_gate(self, command: GateWaiverCommand) -> QAReport:
+        with self.lock:
+            snapshot, events = self._replay()
+            task = self._task(snapshot, command.task_id)
+            require(
+                command.gate_id in task.required_evaluations,
+                "gate_not_required",
+                command.gate_id,
+            )
+            event_id = f"evt-{command.request_id}-waiver"
+            previous = next((item for item in events if item.event_id == event_id), None)
+            if previous:
+                require(
+                    isinstance(previous, GateWaivedEvent)
+                    and previous.payload.task_id == command.task_id
+                    and previous.payload.gate_id == command.gate_id
+                    and previous.payload.reason == command.reason,
+                    "request_id_conflict",
+                    command.request_id,
+                )
+                return build_report(
+                    task,
+                    snapshot.evidence,
+                    snapshot.evaluations,
+                    snapshot.waivers,
+                    unresolved_change_ids=[
+                        item.change_id
+                        for item in snapshot.reconciliations
+                        if item.state == "unresolved"
+                    ],
+                    generated_at=timestamp(),
+                )
+            waiver = GateWaiver(
+                waiver_id=f"waiver-{command.request_id}",
+                project_id=task.project_id,
+                task_id=task.task_id,
+                gate_id=command.gate_id,
+                reason=command.reason,
+                waived_by="human",
+                waived_at=timestamp(),
+            )
+            append(
+                self.directory / "events",
+                GateWaivedEvent(
+                    event_id=event_id,
+                    project_id=task.project_id,
+                    timestamp=waiver.waived_at,
+                    actor_type="human",
+                    actor_id="local-director",
+                    correlation_id=command.gate_id,
+                    task_id=task.task_id,
+                    sequence=snapshot.cursor + 1,
+                    event_type="qa.gate_waived",
+                    payload=waiver,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+        return self.qa_report(command.task_id)
 
     def refresh_intelligence(self, command: IntelligenceRefreshCommand) -> ProjectIntelligence:
         with self.lock:

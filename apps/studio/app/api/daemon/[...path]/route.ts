@@ -28,6 +28,18 @@ const allowed = new Set([
   "worker-interrupt",
   "gm-objective",
   "agent-roster",
+  "agent-registry",
+  "recruitments",
+  "recruit",
+  "qa-gates",
+  "qa-report",
+  "qa-run",
+  "qa-human-review",
+  "qa-waive",
+  "model-environment",
+  "model-recommend",
+  "model-benchmark",
+  "model-route",
   "decision-resolve",
 ]);
 
@@ -79,7 +91,12 @@ async function proxy(
       ...body,
       cache: "no-store",
       signal: AbortSignal.timeout(
-        path[0] === "runtime-capture" ? 120000 : 10000,
+        path[0] === "runtime-capture" ||
+          path[0] === "recruit" ||
+          path[0] === "model-benchmark" ||
+          path[0] === "model-recommend"
+          ? 120000
+          : 10000,
       ),
     });
     return new Response(response.body, {

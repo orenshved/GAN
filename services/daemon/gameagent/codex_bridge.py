@@ -11,20 +11,26 @@ from openai_codex import ApprovalMode, AsyncCodex, AsyncTurnHandle, CodexConfig,
 
 from gameagent.constitution import require
 from gameagent.gm import make_plan
-from gameagent.models.api import ContextCommand, ObjectiveCommand, WorkerCommand
+from gameagent.models.api import ContextCommand, ObjectiveCommand, RecruitmentCommand, WorkerCommand
 from gameagent.models.contracts import (
     AgentDefinition,
+    AuditionReview,
+    AuditionSubmission,
     GMRecord,
     PlanDraft,
+    RecruitmentRecord,
+    TaskContract,
     WorkerRecord,
     WorkerResult,
 )
-from gameagent.projects import ProjectStore
+from gameagent.projects import ProjectStore, timestamp
+from gameagent.recruiter import Recruiter
 
 
 class CodexBridge:
-    def __init__(self, store: ProjectStore) -> None:
+    def __init__(self, store: ProjectStore, recruiter: Recruiter | None = None) -> None:
         self.store = store
+        self.recruiter = recruiter or Recruiter.from_environment()
         codex_bin = os.getenv("GAMEAGENT_CODEX_BIN") or shutil.which("codex")
         self.client = AsyncCodex(
             CodexConfig(
@@ -41,18 +47,11 @@ class CodexBridge:
         self.gm_job: asyncio.Task[None] | None = None
 
     def roster(self) -> list[AgentDefinition]:
-        path = Path(
-            os.getenv(
-                "GAMEAGENT_ROSTER_PATH",
-                str(Path(__file__).resolve().parents[3] / "agents/builtin/roster.json"),
-            )
-        )
-        definitions = [
-            AgentDefinition.model_validate(item)
-            for item in json.loads(path.read_text(encoding="utf-8"))
-        ]
+        definitions = self.recruiter.registry.roster()
         require(
-            len({a.agent_id for a in definitions}) == len(definitions), "duplicate_agent", str(path)
+            len({a.agent_id for a in definitions}) == len(definitions),
+            "duplicate_agent",
+            "Global agent registry",
         )
         return definitions
 
@@ -171,10 +170,21 @@ class CodexBridge:
             draft = PlanDraft.model_validate_json(result.final_response or "")
             plan = make_plan(record.request_id, record.objective, draft, snapshot.policy, roster)
             await asyncio.to_thread(self.store.record_plan, plan)
+            recruited = 0
+            for assignment in plan.assignments:
+                if assignment.agent is None:
+                    task = next(item for item in plan.tasks if item.task_id == assignment.task_id)
+                    outcome = await self._recruit_task(record.request_id, task)
+                    if outcome.state == "probation":
+                        recruited += 1
             record = record.model_copy(
                 update={
                     "state": "completed",
-                    "detail": "Production plan recorded; inspect dependencies and human decisions",
+                    "detail": (
+                        f"Production plan recorded; {recruited} capability gap(s) filled by probationary specialists"
+                        if recruited
+                        else "Production plan recorded; inspect dependencies and human decisions"
+                    ),
                 }
             )
         except asyncio.CancelledError:
@@ -194,6 +204,114 @@ class CodexBridge:
                 update={"state": "failed", "detail": str(error) or type(error).__name__}
             )
         await asyncio.to_thread(self.store.record_gm, record)
+
+    async def recruit(self, command: RecruitmentCommand) -> RecruitmentRecord:
+        async with self.lock:
+            require(
+                (await self.account())["state"] == "ready",
+                "chatgpt_login_required",
+                "Sign in with ChatGPT before auditioning a specialist",
+            )
+            snapshot = await asyncio.to_thread(self.store.snapshot)
+            task = next((item for item in snapshot.tasks if item.task_id == command.task_id), None)
+            require(task is not None, "task_not_found", command.task_id)
+            assert task is not None
+            previous = next(
+                (item for item in snapshot.recruitments if item.task_id == command.task_id), None
+            )
+            if previous is not None:
+                return previous
+            return await self._recruit_task(command.request_id, task)
+
+    async def _recruit_task(self, request_id: str, task: TaskContract) -> RecruitmentRecord:
+        now = timestamp()
+        record = self.recruiter.prepare(request_id, task, now)
+        await asyncio.to_thread(self.store.record_recruitment, record)
+        now = timestamp()
+        record = self.recruiter.begin_audition(record, now)
+        await asyncio.to_thread(self.store.record_recruitment, record)
+        submission, review = await self._run_audition(record)
+        now = timestamp()
+        record = self.recruiter.evaluate(record, submission, review, now)
+        await asyncio.to_thread(self.store.record_recruitment, record)
+        return record
+
+    async def _run_audition(
+        self, record: RecruitmentRecord
+    ) -> tuple[AuditionSubmission, AuditionReview]:
+        candidate_thread = await self.client.thread_start(
+            cwd=str(self.store.root),
+            sandbox=Sandbox.read_only,
+            approval_mode=ApprovalMode.deny_all,
+            model_provider="openai",
+            ephemeral=True,
+        )
+        candidate_prompt = (
+            "You are auditioning for a narrowly scoped production capability. Produce a representative, "
+            "evidence-aware test approach as AuditionSubmission. Do not modify files, use network services, "
+            "install software, claim that your own output is evidence, or request tools not explicitly trusted. "
+            "Cover every missing capability with concrete test cases and state risks.\n"
+            + json.dumps(
+                {
+                    "gap": record.gap.model_dump(),
+                    "candidate": record.candidate.model_dump(),
+                    "trusted_tools": [
+                        item.model_dump()
+                        for item in record.tool_discoveries
+                        if item.decision == "trusted"
+                    ],
+                }
+            )
+        )
+        candidate_turn = await candidate_thread.turn(
+            candidate_prompt,
+            cwd=str(self.store.root),
+            sandbox=Sandbox.read_only,
+            approval_mode=ApprovalMode.deny_all,
+            output_schema=AuditionSubmission.model_json_schema(),
+        )
+        candidate_result = await candidate_turn.run()
+        require(
+            candidate_result.status.value == "completed",
+            "audition_failed",
+            str(candidate_result.error or candidate_result.status.value),
+        )
+        submission = AuditionSubmission.model_validate_json(candidate_result.final_response or "")
+        evaluator_thread = await self.client.thread_start(
+            cwd=str(self.store.root),
+            sandbox=Sandbox.read_only,
+            approval_mode=ApprovalMode.deny_all,
+            model_provider="openai",
+            ephemeral=True,
+        )
+        evaluator_prompt = (
+            "Independently review this specialist audition. Return exactly one result for each of the seven "
+            "required rubric dimensions. Recommend probation only when the submission covers every required "
+            "capability, uses only trusted tools, distinguishes evidence classes, and is safe and testable. "
+            "This review is heuristic qualification for probation, not project QA evidence and not human approval.\n"
+            + json.dumps(
+                {
+                    "gap": record.gap.model_dump(),
+                    "tool_discoveries": [item.model_dump() for item in record.tool_discoveries],
+                    "submission": submission.model_dump(),
+                }
+            )
+        )
+        evaluator_turn = await evaluator_thread.turn(
+            evaluator_prompt,
+            cwd=str(self.store.root),
+            sandbox=Sandbox.read_only,
+            approval_mode=ApprovalMode.deny_all,
+            output_schema=AuditionReview.model_json_schema(),
+        )
+        evaluator_result = await evaluator_turn.run()
+        require(
+            evaluator_result.status.value == "completed",
+            "audition_review_failed",
+            str(evaluator_result.error or evaluator_result.status.value),
+        )
+        review = AuditionReview.model_validate_json(evaluator_result.final_response or "")
+        return submission, review
 
     async def account(self) -> dict[str, str]:
         account = await self.client.account()

@@ -3,7 +3,7 @@
 A local-first production orchestration foundation for turning human game direction
 into accountable tasks, specialist work and inspectable evidence.
 
-**Status: Phase 6 complete.** The persistent project GM turns objectives into
+**Status: Phases 7, 8 and 10 complete.** The persistent project GM turns objectives into
 typed multidisciplinary plans, while Project Intelligence indexes repository
 files, design documents, decisions, and asset references into bounded,
 provenance-aware worker context. The first Godot adapter now inspects nested Godot
@@ -13,7 +13,19 @@ the verified artifact in Studio. Direct agents can register meaningful work thro
 the CLI; each GAN-enabled repository receives managed `AGENTS.md` instructions.
 The daemon watches project files, Git status, and commits, records unregistered
 changes, and keeps Studio visibly unresolved until those changes are attributed
-through reconciliation. Phase 7 generalizes this vertical slice into the QA fabric.
+through reconciliation. The recruiter now detects missing capability contracts,
+searches the global roster and adjacent capabilities, filters tools through task
+permissions, runs separate read-only candidate and reviewer auditions, and admits
+passing specialists into globally reusable probation. The QA fabric now applies
+reusable UI and engineering gates across deterministic, measured, comparative,
+heuristic, and human evidence. It shows why each gate passed, failed, remains
+advisory, or was explicitly waived. Probationary QA advice requires independent
+verification, and Director rejection always wins.
+The Local Model Expert inventories actual workstation hardware and Ollama models,
+records content-addressed representative benchmarks, and compares deterministic,
+local, authenticated Codex, paid, and wait routes. Every recommendation preserves
+quality, confidence, measured runtime, external cost, and rationale; paid execution
+remains structurally unavailable until Phase 9 verifies provider-side hard caps.
 
 ## Architecture
 
@@ -24,12 +36,16 @@ flowchart TD
   Daemon --> GM[GM production authority: contracts only]
   Daemon --> Intelligence[Project Intelligence: indexed facts and references]
   Daemon --> Godot[Godot adapter: inspect, build, run, capture]
+  Daemon --> Router[Local Model Expert: inventory, benchmark, route]
+  Router --> Ollama[Ollama: local inference]
+  Router --> Workers
   GM --> Tasks[Capability-based task proposals]
   Intelligence --> Tasks
   Tasks --> Workers[Authenticated Codex read-only analysis]
   Workers --> Evidence[Artifacts and QA evidence]
   Godot --> Evidence
-  Evidence --> GM
+  Evidence --> QA[QA fabric: gates, reports and waivers]
+  QA --> GM
   Daemon --> History[Canonical project files and JSONL events]
   Daemon --> Watcher[Git and meaningful-file watcher]
   Watcher --> Reconcile[Visible reconciliation requirement]
@@ -41,15 +57,16 @@ flowchart TD
 Pydantic owns the contracts and generates JSON Schema and TypeScript. Project
 events are canonical; SQLite and Studio state are rebuildable views.
 
-| Principle                              | Foundation implementation                                        |
-| -------------------------------------- | ---------------------------------------------------------------- |
-| GM owns production authority           | Pure command/event admission and state-machine checks            |
-| Agents are capability packages         | Versioned schemas, separate tools and project assignments        |
-| Human judgment overrides scores        | Completion rejects human-rejected work                           |
-| QA needs evidence                      | Scoped provenance, independent capture and human-evidence checks |
-| No uncapped paid providers             | Fail-closed cap/budget admission rules                           |
-| Project identity stays isolated        | Global definitions exclude context; thread scope validation      |
-| Local project history remains portable | Durable rotated JSONL, replay and rebuildable SQLite             |
+| Principle                              | Foundation implementation                                   |
+| -------------------------------------- | ----------------------------------------------------------- |
+| GM owns production authority           | Pure command/event admission and state-machine checks       |
+| Agents are capability packages         | Versioned schemas, separate tools and project assignments   |
+| Human judgment overrides scores        | Canonical human review and rejection precedence             |
+| QA needs evidence                      | Typed gates, scoped evidence, rationale and audited waivers |
+| Model routing needs evidence           | Live inventory, representative benchmarks and route records |
+| No uncapped paid providers             | Fail-closed cap/budget admission rules                      |
+| Project identity stays isolated        | Global definitions exclude context; thread scope validation |
+| Local project history remains portable | Durable rotated JSONL, replay and rebuildable SQLite        |
 
 ## Local setup (PowerShell)
 
@@ -73,6 +90,9 @@ reuses the Codex ChatGPT login and clears API-key environment variables. Set
 `GAMEAGENT_CODEX_BIN` only when the current Codex executable is not on `PATH`.
 Python 3.12+ is discovered automatically; set `GAMEAGENT_PYTHON` only when an
 explicit interpreter path is required.
+Set `GAMEAGENT_OLLAMA_URL` to the local Ollama endpoint to enable inventory and
+benchmarks. `GAMEAGENT_OLLAMA_BENCHMARK_TIMEOUT_SECONDS` controls generation time;
+missing or unhealthy Ollama state fails closed and remains visible in Studio.
 
 `gameagent init` detects the repository and likely engine/rendering mode, records
 documents, assets and Git HEAD, and lists important unknowns without an intake
@@ -127,21 +147,26 @@ task in `REVIEW` and records Git context plus content-addressed surviving files.
 - [Phase 4 handoff](docs/development/PHASE_4_HANDOFF.md)
 - [Phase 5 handoff](docs/development/PHASE_5_HANDOFF.md)
 - [Phase 6 handoff](docs/development/PHASE_6_HANDOFF.md)
+- [Phase 7 handoff](docs/development/PHASE_7_HANDOFF.md)
+- [Phase 8 handoff](docs/development/PHASE_8_HANDOFF.md)
+- [Phase 10 handoff](docs/development/PHASE_10_HANDOFF.md)
 
 ## Roadmap
 
-| Phase  | Scope                                                            |
-| ------ | ---------------------------------------------------------------- |
-| -1 / 0 | Harvest, contracts, constitution, monorepo and CI                |
-| 1      | Complete: project protocol, persistence, daemon and Studio shell |
-| 2      | Complete: authenticated Codex worker bridge                      |
-| 3      | Complete: registration, change detection and reconciliation      |
-| 4      | Complete: GM planning, matching and decision inbox               |
-| 5      | Complete: project intelligence and targeted context assembly     |
-| 6      | Complete: Cosmic Meltdown Godot UI vertical slice                |
-| 7      | Evidence-backed QA fabric                                        |
-| 8–10   | Local model routing, real budget gateway, specialist recruitment |
-| 11–12  | Additional disciplines and desktop packaging                     |
+| Phase  | Scope                                                               |
+| ------ | ------------------------------------------------------------------- |
+| -1 / 0 | Harvest, contracts, constitution, monorepo and CI                   |
+| 1      | Complete: project protocol, persistence, daemon and Studio shell    |
+| 2      | Complete: authenticated Codex worker bridge                         |
+| 3      | Complete: registration, change detection and reconciliation         |
+| 4      | Complete: GM planning, matching and decision inbox                  |
+| 5      | Complete: project intelligence and targeted context assembly        |
+| 6      | Complete: Cosmic Meltdown Godot UI vertical slice                   |
+| 10     | Complete ahead of Phase 7: recruiter, auditions and global registry |
+| 7      | Complete: evidence-backed QA fabric                                 |
+| 8      | Complete: local model expert and explainable model router           |
+| 9      | Real provider budget gateway                                        |
+| 11–12  | Additional disciplines and desktop packaging                        |
 
 The eventual public portfolio can host the Studio presentation layer separately.
 The local daemon owns filesystem access and durable project state, so it is not a

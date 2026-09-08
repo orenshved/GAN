@@ -85,6 +85,70 @@
       "title": "AgentAssignment",
       "type": "object"
     },
+    "AgentAudition": {
+      "additionalProperties": false,
+      "properties": {
+        "audition_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Audition Id",
+          "type": "string"
+        },
+        "candidate_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "evaluated_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Evaluated At",
+          "type": "string"
+        },
+        "representative_objective": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Representative Objective",
+          "type": "string"
+        },
+        "result": {
+          "enum": [
+            "passed",
+            "failed"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "review": {
+          "$ref": "#/$defs/AuditionReview"
+        },
+        "sandbox": {
+          "const": "read_only",
+          "default": "read_only",
+          "title": "Sandbox",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "submission": {
+          "$ref": "#/$defs/AuditionSubmission"
+        }
+      },
+      "required": [
+        "audition_id",
+        "candidate_id",
+        "representative_objective",
+        "submission",
+        "review",
+        "result",
+        "evaluated_at"
+      ],
+      "title": "AgentAudition",
+      "type": "object"
+    },
     "AgentDefinition": {
       "additionalProperties": false,
       "properties": {
@@ -284,6 +348,92 @@
       "title": "AgentEvent",
       "type": "object"
     },
+    "AgentRegistryEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "$ref": "#/$defs/AgentDefinition"
+        },
+        "audition_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Audition Ids",
+          "type": "array"
+        },
+        "lifecycle": {
+          "enum": [
+            "builtin",
+            "probation",
+            "active",
+            "demoted",
+            "retired"
+          ],
+          "title": "Lifecycle",
+          "type": "string"
+        },
+        "performance": {
+          "items": {
+            "$ref": "#/$defs/CapabilityPerformance"
+          },
+          "title": "Performance",
+          "type": "array"
+        },
+        "qa_decision_role": {
+          "enum": [
+            "advisory",
+            "eligible"
+          ],
+          "title": "Qa Decision Role",
+          "type": "string"
+        },
+        "recruited_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recruited At"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "agent",
+        "lifecycle",
+        "qa_decision_role"
+      ],
+      "title": "AgentRegistryEntry",
+      "type": "object"
+    },
+    "AgentRegistrySnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "entries": {
+          "items": {
+            "$ref": "#/$defs/AgentRegistryEntry"
+          },
+          "title": "Entries",
+          "type": "array"
+        }
+      },
+      "required": [
+        "entries"
+      ],
+      "title": "AgentRegistrySnapshot",
+      "type": "object"
+    },
     "ArtifactEvent": {
       "additionalProperties": false,
       "properties": {
@@ -408,6 +558,165 @@
       "title": "AssignmentPayload",
       "type": "object"
     },
+    "AuditionDimension": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "dimension": {
+          "enum": [
+            "technical_correctness",
+            "output_compliance",
+            "quality",
+            "reliability",
+            "style_adherence",
+            "cost_latency",
+            "security_tool_behavior"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "result": {
+          "enum": [
+            "passed",
+            "failed"
+          ],
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension",
+        "result",
+        "detail"
+      ],
+      "title": "AuditionDimension",
+      "type": "object"
+    },
+    "AuditionReview": {
+      "additionalProperties": false,
+      "properties": {
+        "dimensions": {
+          "items": {
+            "$ref": "#/$defs/AuditionDimension"
+          },
+          "maxItems": 7,
+          "minItems": 7,
+          "title": "Dimensions",
+          "type": "array"
+        },
+        "rationale": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Rationale",
+          "type": "string"
+        },
+        "recommendation": {
+          "enum": [
+            "probation",
+            "reject"
+          ],
+          "title": "Recommendation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimensions",
+        "recommendation",
+        "rationale"
+      ],
+      "title": "AuditionReview",
+      "type": "object"
+    },
+    "AuditionSubmission": {
+      "additionalProperties": false,
+      "properties": {
+        "requested_tool_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Requested Tool Ids",
+          "type": "array"
+        },
+        "risks": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Risks",
+          "type": "array"
+        },
+        "summary": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Summary",
+          "type": "string"
+        },
+        "test_cases": {
+          "items": {
+            "$ref": "#/$defs/AuditionTestCase"
+          },
+          "minItems": 3,
+          "title": "Test Cases",
+          "type": "array"
+        }
+      },
+      "required": [
+        "summary",
+        "test_cases",
+        "risks"
+      ],
+      "title": "AuditionSubmission",
+      "type": "object"
+    },
+    "AuditionTestCase": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Capability Id",
+          "type": "string"
+        },
+        "evidence_class": {
+          "enum": [
+            "deterministic",
+            "measured",
+            "comparative",
+            "heuristic",
+            "human"
+          ],
+          "title": "Evidence Class",
+          "type": "string"
+        },
+        "expected_result": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Expected Result",
+          "type": "string"
+        },
+        "procedure": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Procedure",
+          "type": "string"
+        }
+      },
+      "required": [
+        "capability_id",
+        "procedure",
+        "expected_result",
+        "evidence_class"
+      ],
+      "title": "AuditionTestCase",
+      "type": "object"
+    },
     "Capability": {
       "additionalProperties": false,
       "properties": {
@@ -477,6 +786,121 @@
         "evaluation_requirements"
       ],
       "title": "Capability",
+      "type": "object"
+    },
+    "CapabilityGap": {
+      "additionalProperties": false,
+      "properties": {
+        "detected_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Detected At",
+          "type": "string"
+        },
+        "gap_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Gap Id",
+          "type": "string"
+        },
+        "missing_capabilities": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Missing Capabilities",
+          "type": "array"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "gap_id",
+        "project_id",
+        "task_id",
+        "missing_capabilities",
+        "reason",
+        "detected_at"
+      ],
+      "title": "CapabilityGap",
+      "type": "object"
+    },
+    "CapabilityPerformance": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Capability Id",
+          "type": "string"
+        },
+        "failed_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Failed Count",
+          "type": "integer"
+        },
+        "human_rejection_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Human Rejection Count",
+          "type": "integer"
+        },
+        "passed_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Passed Count",
+          "type": "integer"
+        },
+        "revision_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Revision Count",
+          "type": "integer"
+        },
+        "task_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Task Count",
+          "type": "integer"
+        },
+        "total_cost_cents": {
+          "default": 0,
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "title": "Total Cost Cents",
+          "type": "integer"
+        },
+        "total_latency_ms": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Total Latency Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "capability_id"
+      ],
+      "title": "CapabilityPerformance",
       "type": "object"
     },
     "CommitEvent": {
@@ -1229,6 +1653,16 @@
     "Evaluation": {
       "additionalProperties": false,
       "properties": {
+        "authority": {
+          "default": "eligible",
+          "enum": [
+            "advisory",
+            "eligible",
+            "human"
+          ],
+          "title": "Authority",
+          "type": "string"
+        },
         "claim": {
           "enum": [
             "technical",
@@ -1592,6 +2026,18 @@
               },
               {
                 "$ref": "#/$defs/EvaluationRecordedEvent"
+              },
+              {
+                "$ref": "#/$defs/RecruitmentEvent"
+              },
+              {
+                "$ref": "#/$defs/GateWaivedEvent"
+              },
+              {
+                "$ref": "#/$defs/ModelBenchmarkEvent"
+              },
+              {
+                "$ref": "#/$defs/ModelRoutingEvent"
               }
             ]
           },
@@ -2080,6 +2526,288 @@
         "detail"
       ],
       "title": "GMRecord",
+      "type": "object"
+    },
+    "GateWaivedEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "qa.gate_waived",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/GateWaiver"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "GateWaivedEvent",
+      "type": "object"
+    },
+    "GateWaiver": {
+      "additionalProperties": false,
+      "properties": {
+        "gate_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Gate Id",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "waived_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Waived At",
+          "type": "string"
+        },
+        "waived_by": {
+          "const": "human",
+          "title": "Waived By",
+          "type": "string"
+        },
+        "waiver_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Waiver Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "waiver_id",
+        "project_id",
+        "task_id",
+        "gate_id",
+        "reason",
+        "waived_by",
+        "waived_at"
+      ],
+      "title": "GateWaiver",
+      "type": "object"
+    },
+    "GateWaiverCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "gate_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Gate Id",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "task_id",
+        "gate_id",
+        "reason"
+      ],
+      "title": "GateWaiverCommand",
+      "type": "object"
+    },
+    "GraphicsDevice": {
+      "additionalProperties": false,
+      "properties": {
+        "driver_version": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Driver Version"
+        },
+        "memory_bytes": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Memory Bytes"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Name",
+          "type": "string"
+        },
+        "vendor": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Vendor",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "vendor"
+      ],
+      "title": "GraphicsDevice",
+      "type": "object"
+    },
+    "HumanReviewCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "gate_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Gate Id",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "summary": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Summary",
+          "type": "string"
+        },
+        "supporting_evidence_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Supporting Evidence Ids",
+          "type": "array"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "verdict": {
+          "enum": [
+            "approved",
+            "rejected",
+            "observation"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "task_id",
+        "gate_id",
+        "verdict",
+        "summary"
+      ],
+      "title": "HumanReviewCommand",
       "type": "object"
     },
     "InboxDecision": {
@@ -2697,6 +3425,780 @@
       "title": "KnowledgeEntry",
       "type": "object"
     },
+    "LocalHardwareInventory": {
+      "additionalProperties": false,
+      "properties": {
+        "captured_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Captured At",
+          "type": "string"
+        },
+        "cpu": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Cpu",
+          "type": "string"
+        },
+        "graphics": {
+          "items": {
+            "$ref": "#/$defs/GraphicsDevice"
+          },
+          "title": "Graphics",
+          "type": "array"
+        },
+        "logical_core_count": {
+          "minimum": 0,
+          "title": "Logical Core Count",
+          "type": "integer"
+        },
+        "machine_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Machine Id",
+          "type": "string"
+        },
+        "operating_system": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Operating System",
+          "type": "string"
+        },
+        "physical_core_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Physical Core Count"
+        },
+        "ram_bytes": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ram Bytes"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "machine_id",
+        "captured_at",
+        "operating_system",
+        "cpu",
+        "logical_core_count"
+      ],
+      "title": "LocalHardwareInventory",
+      "type": "object"
+    },
+    "LocalModel": {
+      "additionalProperties": false,
+      "properties": {
+        "context_limit": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Context Limit"
+        },
+        "digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "fits_memory": {
+          "title": "Fits Memory",
+          "type": "boolean"
+        },
+        "modalities": {
+          "items": {
+            "enum": [
+              "text",
+              "image",
+              "audio"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Modalities",
+          "type": "array"
+        },
+        "modified_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Modified At",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Name",
+          "type": "string"
+        },
+        "parameter_size": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parameter Size"
+        },
+        "quantization_level": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantization Level"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "tool_support": {
+          "default": false,
+          "title": "Tool Support",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "digest",
+        "size_bytes",
+        "modified_at",
+        "modalities",
+        "fits_memory"
+      ],
+      "title": "LocalModel",
+      "type": "object"
+    },
+    "LocalModelInventory": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "endpoint": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Endpoint",
+          "type": "string"
+        },
+        "inspected_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Inspected At",
+          "type": "string"
+        },
+        "models": {
+          "items": {
+            "$ref": "#/$defs/LocalModel"
+          },
+          "title": "Models",
+          "type": "array"
+        },
+        "runtime_id": {
+          "const": "ollama",
+          "default": "ollama",
+          "title": "Runtime Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "available",
+            "unavailable"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        }
+      },
+      "required": [
+        "state",
+        "endpoint",
+        "inspected_at",
+        "detail"
+      ],
+      "title": "LocalModelInventory",
+      "type": "object"
+    },
+    "LocalModelRecommendation": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "install",
+            "keep_installed",
+            "no_recommendation"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "alternatives": {
+          "items": {
+            "$ref": "#/$defs/ModelCatalogCandidate"
+          },
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "candidate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelCatalogCandidate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "catalog_checked_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Catalog Checked At",
+          "type": "string"
+        },
+        "catalog_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Catalog Sha256"
+        },
+        "catalog_state": {
+          "enum": [
+            "live",
+            "unavailable"
+          ],
+          "title": "Catalog State",
+          "type": "string"
+        },
+        "catalog_url": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Catalog Url",
+          "type": "string"
+        },
+        "install_command": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Install Command"
+        },
+        "installed": {
+          "default": false,
+          "title": "Installed",
+          "type": "boolean"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "recommendation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Recommendation Id",
+          "type": "string"
+        },
+        "recommended_model_name": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recommended Model Name"
+        },
+        "required_capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Capability Ids",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "recommendation_id",
+        "project_id",
+        "task_id",
+        "required_capability_ids",
+        "action",
+        "catalog_state",
+        "catalog_url",
+        "catalog_checked_at",
+        "reason"
+      ],
+      "title": "LocalModelRecommendation",
+      "type": "object"
+    },
+    "ModelBenchmark": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmark_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Benchmark Id",
+          "type": "string"
+        },
+        "benchmarked_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Benchmarked At",
+          "type": "string"
+        },
+        "completion_tokens": {
+          "minimum": 0,
+          "title": "Completion Tokens",
+          "type": "integer"
+        },
+        "contract_score": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Contract Score",
+          "type": "number"
+        },
+        "latency_ms": {
+          "minimum": 0,
+          "title": "Latency Ms",
+          "type": "integer"
+        },
+        "model_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Model Digest",
+          "type": "string"
+        },
+        "model_name": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Model Name",
+          "type": "string"
+        },
+        "output_channel": {
+          "default": "response",
+          "enum": [
+            "response",
+            "thinking"
+          ],
+          "title": "Output Channel",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "prompt_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Prompt Sha256",
+          "type": "string"
+        },
+        "prompt_tokens": {
+          "minimum": 0,
+          "title": "Prompt Tokens",
+          "type": "integer"
+        },
+        "required_capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Capability Ids",
+          "type": "array"
+        },
+        "response": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "result": {
+          "enum": [
+            "passed",
+            "failed",
+            "unavailable"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "summary": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Summary",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "benchmark_id",
+        "project_id",
+        "task_id",
+        "model_name",
+        "model_digest",
+        "required_capability_ids",
+        "prompt_sha256",
+        "result",
+        "contract_score",
+        "latency_ms",
+        "prompt_tokens",
+        "completion_tokens",
+        "summary",
+        "benchmarked_at"
+      ],
+      "title": "ModelBenchmark",
+      "type": "object"
+    },
+    "ModelBenchmarkCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "model_name": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Name"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "task_id"
+      ],
+      "title": "ModelBenchmarkCommand",
+      "type": "object"
+    },
+    "ModelBenchmarkEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "model.benchmark_recorded",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ModelBenchmark"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "ModelBenchmarkEvent",
+      "type": "object"
+    },
+    "ModelCatalogCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Description",
+          "type": "string"
+        },
+        "estimated_size_bytes": {
+          "minimum": 0,
+          "title": "Estimated Size Bytes",
+          "type": "integer"
+        },
+        "family": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Family",
+          "type": "string"
+        },
+        "installed": {
+          "title": "Installed",
+          "type": "boolean"
+        },
+        "memory_tier": {
+          "enum": [
+            "full_gpu",
+            "hybrid",
+            "system",
+            "unfit"
+          ],
+          "title": "Memory Tier",
+          "type": "string"
+        },
+        "modalities": {
+          "items": {
+            "enum": [
+              "text",
+              "image",
+              "audio"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Modalities",
+          "type": "array"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Name",
+          "type": "string"
+        },
+        "parameter_size": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Parameter Size",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "source_url": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Source Url",
+          "type": "string"
+        },
+        "suitability_score": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Suitability Score",
+          "type": "number"
+        },
+        "thinking_support": {
+          "title": "Thinking Support",
+          "type": "boolean"
+        },
+        "tool_support": {
+          "title": "Tool Support",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "family",
+        "parameter_size",
+        "estimated_size_bytes",
+        "modalities",
+        "tool_support",
+        "thinking_support",
+        "memory_tier",
+        "installed",
+        "suitability_score",
+        "source_url",
+        "description",
+        "reason"
+      ],
+      "title": "ModelCatalogCandidate",
+      "type": "object"
+    },
+    "ModelEnvironment": {
+      "additionalProperties": false,
+      "properties": {
+        "hardware": {
+          "$ref": "#/$defs/LocalHardwareInventory"
+        },
+        "models": {
+          "$ref": "#/$defs/LocalModelInventory"
+        }
+      },
+      "required": [
+        "hardware",
+        "models"
+      ],
+      "title": "ModelEnvironment",
+      "type": "object"
+    },
     "ModelPreferences": {
       "additionalProperties": false,
       "properties": {
@@ -2725,6 +4227,352 @@
         "alternatives"
       ],
       "title": "ModelPreferences",
+      "type": "object"
+    },
+    "ModelRecommendationCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "task_id"
+      ],
+      "title": "ModelRecommendationCommand",
+      "type": "object"
+    },
+    "ModelRouteCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "expected_external_cost_avoided_cents": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "title": "Expected External Cost Avoided Cents",
+          "type": "integer"
+        },
+        "expected_external_cost_cents": {
+          "anyOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected External Cost Cents"
+        },
+        "expected_quality": {
+          "enum": [
+            "unknown",
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Expected Quality",
+          "type": "string"
+        },
+        "expected_runtime_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Runtime Ms"
+        },
+        "model_name": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Name"
+        },
+        "provider_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider Id"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "route": {
+          "enum": [
+            "deterministic_tool",
+            "local_ollama",
+            "codex_authenticated",
+            "paid_provider",
+            "wait_for_codex"
+          ],
+          "title": "Route",
+          "type": "string"
+        },
+        "viable": {
+          "title": "Viable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "route",
+        "viable",
+        "expected_quality",
+        "confidence",
+        "expected_external_cost_avoided_cents",
+        "reason"
+      ],
+      "title": "ModelRouteCandidate",
+      "type": "object"
+    },
+    "ModelRouteCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "urgency": {
+          "default": "normal",
+          "enum": [
+            "low",
+            "normal",
+            "high"
+          ],
+          "title": "Urgency",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "task_id"
+      ],
+      "title": "ModelRouteCommand",
+      "type": "object"
+    },
+    "ModelRoutingEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "model.routing_recorded",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ModelRoutingRecord"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "ModelRoutingEvent",
+      "type": "object"
+    },
+    "ModelRoutingRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/ModelRouteCandidate"
+          },
+          "minItems": 3,
+          "title": "Candidates",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Created At",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "routing_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Routing Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "selected_model_name": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selected Model Name"
+        },
+        "selected_provider_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selected Provider Id"
+        },
+        "selected_route": {
+          "enum": [
+            "deterministic_tool",
+            "local_ollama",
+            "codex_authenticated",
+            "paid_provider",
+            "wait_for_codex"
+          ],
+          "title": "Selected Route",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "routing_id",
+        "project_id",
+        "task_id",
+        "selected_route",
+        "candidates",
+        "reason",
+        "created_at"
+      ],
+      "title": "ModelRoutingRecord",
       "type": "object"
     },
     "Multiplayer": {
@@ -3978,6 +5826,20 @@
           ],
           "default": null
         },
+        "model_benchmarks": {
+          "items": {
+            "$ref": "#/$defs/ModelBenchmark"
+          },
+          "title": "Model Benchmarks",
+          "type": "array"
+        },
+        "model_routing_records": {
+          "items": {
+            "$ref": "#/$defs/ModelRoutingRecord"
+          },
+          "title": "Model Routing Records",
+          "type": "array"
+        },
         "plans": {
           "items": {
             "$ref": "#/$defs/ProductionPlan"
@@ -3998,6 +5860,13 @@
           "title": "Reconciliations",
           "type": "array"
         },
+        "recruitments": {
+          "items": {
+            "$ref": "#/$defs/RecruitmentRecord"
+          },
+          "title": "Recruitments",
+          "type": "array"
+        },
         "requires_reconciliation": {
           "default": false,
           "title": "Requires Reconciliation",
@@ -4008,6 +5877,13 @@
             "$ref": "#/$defs/TaskContract"
           },
           "title": "Tasks",
+          "type": "array"
+        },
+        "waivers": {
+          "items": {
+            "$ref": "#/$defs/GateWaiver"
+          },
+          "title": "Waivers",
           "type": "array"
         },
         "workers": {
@@ -4257,6 +6133,284 @@
       "title": "ProviderPayload",
       "type": "object"
     },
+    "QAGateDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_producer_types": {
+          "items": {
+            "enum": [
+              "tool",
+              "model",
+              "human"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Allowed Producer Types",
+          "type": "array"
+        },
+        "claim": {
+          "enum": [
+            "technical",
+            "visual",
+            "subjective",
+            "fun"
+          ],
+          "title": "Claim",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Description",
+          "type": "string"
+        },
+        "discipline": {
+          "enum": [
+            "ui",
+            "engineering"
+          ],
+          "title": "Discipline",
+          "type": "string"
+        },
+        "gate_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Gate Id",
+          "type": "string"
+        },
+        "required_evidence_classes": {
+          "items": {
+            "enum": [
+              "deterministic",
+              "measured",
+              "comparative",
+              "heuristic",
+              "human"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Evidence Classes",
+          "type": "array"
+        },
+        "requires_independent_verification": {
+          "default": false,
+          "title": "Requires Independent Verification",
+          "type": "boolean"
+        },
+        "requires_runtime_capture": {
+          "default": false,
+          "title": "Requires Runtime Capture",
+          "type": "boolean"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "title": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "gate_id",
+        "version",
+        "discipline",
+        "title",
+        "description",
+        "claim",
+        "required_evidence_classes",
+        "allowed_producer_types"
+      ],
+      "title": "QAGateDefinition",
+      "type": "object"
+    },
+    "QAGateStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "explanation": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Explanation",
+          "type": "string"
+        },
+        "gate": {
+          "$ref": "#/$defs/QAGateDefinition"
+        },
+        "latest_evaluation_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latest Evaluation Id"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        },
+        "state": {
+          "enum": [
+            "missing",
+            "passed",
+            "failed",
+            "inconclusive",
+            "advisory",
+            "waived"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "waiver_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Waiver Id"
+        }
+      },
+      "required": [
+        "gate",
+        "required",
+        "state",
+        "explanation"
+      ],
+      "title": "QAGateStatus",
+      "type": "object"
+    },
+    "QAReport": {
+      "additionalProperties": false,
+      "properties": {
+        "completion_state": {
+          "enum": [
+            "passed",
+            "blocked",
+            "human_rejected"
+          ],
+          "title": "Completion State",
+          "type": "string"
+        },
+        "explanation": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Explanation",
+          "type": "string"
+        },
+        "gates": {
+          "items": {
+            "$ref": "#/$defs/QAGateStatus"
+          },
+          "minItems": 1,
+          "title": "Gates",
+          "type": "array"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "passed_gate_count": {
+          "minimum": 0,
+          "title": "Passed Gate Count",
+          "type": "integer"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "report_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Report Id",
+          "type": "string"
+        },
+        "required_gate_count": {
+          "minimum": 0,
+          "title": "Required Gate Count",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "waived_gate_count": {
+          "minimum": 0,
+          "title": "Waived Gate Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "report_id",
+        "project_id",
+        "task_id",
+        "generated_at",
+        "completion_state",
+        "required_gate_count",
+        "passed_gate_count",
+        "waived_gate_count",
+        "gates",
+        "explanation"
+      ],
+      "title": "QAReport",
+      "type": "object"
+    },
+    "QARunCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "task_id"
+      ],
+      "title": "QARunCommand",
+      "type": "object"
+    },
     "ReconcileCommand": {
       "additionalProperties": false,
       "properties": {
@@ -4481,6 +6635,208 @@
         "observed"
       ],
       "title": "ReconciliationRecord",
+      "type": "object"
+    },
+    "RecruitmentCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "task_id"
+      ],
+      "title": "RecruitmentCommand",
+      "type": "object"
+    },
+    "RecruitmentEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "recruitment.updated",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/RecruitmentRecord"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "RecruitmentEvent",
+      "type": "object"
+    },
+    "RecruitmentRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "adjacent_agent_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Adjacent Agent Ids",
+          "type": "array"
+        },
+        "audition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AgentAudition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "candidate": {
+          "$ref": "#/$defs/AgentDefinition"
+        },
+        "created_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Created At",
+          "type": "string"
+        },
+        "gap": {
+          "$ref": "#/$defs/CapabilityGap"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "recruitment_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Recruitment Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "candidate_composed",
+            "auditioning",
+            "probation",
+            "rejected"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "tool_discoveries": {
+          "items": {
+            "$ref": "#/$defs/ToolDiscovery"
+          },
+          "title": "Tool Discoveries",
+          "type": "array"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Updated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "recruitment_id",
+        "project_id",
+        "task_id",
+        "gap",
+        "candidate",
+        "adjacent_agent_ids",
+        "tool_discoveries",
+        "state",
+        "created_at",
+        "updated_at"
+      ],
+      "title": "RecruitmentRecord",
       "type": "object"
     },
     "Requirements": {
@@ -4845,6 +7201,18 @@
               },
               {
                 "$ref": "#/$defs/EvaluationRecordedEvent"
+              },
+              {
+                "$ref": "#/$defs/RecruitmentEvent"
+              },
+              {
+                "$ref": "#/$defs/GateWaivedEvent"
+              },
+              {
+                "$ref": "#/$defs/ModelBenchmarkEvent"
+              },
+              {
+                "$ref": "#/$defs/ModelRoutingEvent"
               }
             ]
           },
@@ -5496,6 +7864,48 @@
       "title": "ToolDefinition",
       "type": "object"
     },
+    "ToolDiscovery": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Capability Ids",
+          "type": "array"
+        },
+        "decision": {
+          "enum": [
+            "trusted",
+            "needs_approval",
+            "forbidden",
+            "unavailable"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "tool_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Tool Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool_id",
+        "capability_ids",
+        "decision",
+        "detail"
+      ],
+      "title": "ToolDiscovery",
+      "type": "object"
+    },
     "UnverifiedCap": {
       "additionalProperties": false,
       "properties": {
@@ -5999,6 +8409,17 @@
       ],
       "default": null
     },
+    "agent_registry_entry": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AgentRegistryEntry"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "assignment": {
       "anyOf": [
         {
@@ -6014,6 +8435,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/Capability"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "capability_gap": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CapabilityGap"
         },
         {
           "type": "null"
@@ -6131,6 +8563,18 @@
             },
             {
               "$ref": "#/$defs/EvaluationRecordedEvent"
+            },
+            {
+              "$ref": "#/$defs/RecruitmentEvent"
+            },
+            {
+              "$ref": "#/$defs/GateWaivedEvent"
+            },
+            {
+              "$ref": "#/$defs/ModelBenchmarkEvent"
+            },
+            {
+              "$ref": "#/$defs/ModelRoutingEvent"
             }
           ]
         },
@@ -6152,10 +8596,76 @@
       ],
       "default": null
     },
+    "gate_waiver": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GateWaiver"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "hardware_inventory": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LocalHardwareInventory"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "knowledge": {
       "anyOf": [
         {
           "$ref": "#/$defs/KnowledgeEntry"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "local_model_inventory": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LocalModelInventory"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "local_model_recommendation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LocalModelRecommendation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "model_benchmark": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ModelBenchmark"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "model_routing": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ModelRoutingRecord"
         },
         {
           "type": "null"
@@ -6200,6 +8710,39 @@
       "anyOf": [
         {
           "$ref": "#/$defs/Provider"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "qa_gate": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/QAGateDefinition"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "qa_report": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/QAReport"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "recruitment": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RecruitmentRecord"
         },
         {
           "type": "null"

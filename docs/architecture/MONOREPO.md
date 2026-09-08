@@ -1,4 +1,4 @@
-# Monorepo structure (Phase 6)
+# Monorepo structure (Phases 7, 8 and 10)
 
 ```text
 apps/studio/                    Next 16 / React 19 local production Studio
@@ -9,6 +9,9 @@ services/daemon/
   gameagent/constitution.py    Pure state/authority admission rules
   gameagent/intake.py          Repository and engine inspection
   gameagent/intelligence.py    Bounded indexing, provenance and context retrieval
+  gameagent/qa.py              Reusable gate policies and derived QA reports
+  gameagent/local_models.py    Hardware/Ollama inventory, benchmarks and routing
+  gameagent/recruiter.py       Capability gaps, auditions and global admission
   gameagent/adapters/godot.py  Godot inspection, build and runtime capture
   gameagent/projects.py        Registration, watcher, reconciliation and replay
   gameagent/api.py             Authenticated REST/WebSocket service
@@ -26,7 +29,7 @@ packages/
   agent-schema/                Global definition and project assignment facade
   tool-schema/                 Tool and permission facade
   engine-adapters/             Engine-neutral adapter contract facade
-  qa-schema/                   Evidence and evaluation facade
+  qa-schema/                   Evidence, evaluation, gate, waiver and report facade
 adapters/
   engines/godot/               Adapter documentation boundary
   generation/comfyui/          Reserved implementation boundary
@@ -37,7 +40,7 @@ capabilities/ontology/         PRD section 15 capability catalog
 docs/
   GREENLIGHT_HARVEST.md
   architecture/               Structure, vocabulary, invariant coverage
-  decisions/                  Eight architectural decisions
+  decisions/                  Accepted architectural decisions
   development/                Setup, checks, phase handoff
 examples/                     Links to executable protocol fixtures
 scripts/                      Windows-compatible dev, schema and E2E entry points
@@ -63,7 +66,7 @@ selection only. It does not contain project history, conversation context or
 creative identity. Each listed repository remains authoritative through its own
 `.gameagent` history and projection.
 
-## Phase 6 runtime
+## Production runtime
 
 The daemon owns the official `openai-codex` SDK adapter. It selects the current
 Codex executable when available, falls back to the SDK runtime, clears API-key
@@ -104,9 +107,19 @@ canonical history records their digest, dimensions, scope, capture origin and th
 resulting evaluation. Studio serves only recorded evidence whose current bytes match
 the canonical digest.
 
-Phase 7 generalizes the first runtime gate into a reusable QA fabric. Provider,
-model-router and recruiter execution paths remain absent; no paid-provider call path
-exists in Phase 6.
+Phase 7 generalizes the first runtime capture into a reusable UI/engineering gate
+catalog covering all five evidence classes. It records deterministic contract
+checks and human reviews as content-addressed evidence, persists explicit human
+waivers, and derives reports from canonical history. Advisory probation passes
+remain visible but cannot satisfy a required gate. The Phase 10 recruiter can
+expand evaluator availability without changing evidence truth.
+
+Phase 8 adds a first-class Local Model Expert. Machine hardware and installed
+Ollama models are inspected live, while task-specific benchmark and routing records
+remain canonical project events. Local qualification pins the current model digest,
+memory fit and a passing representative contract benchmark. Studio compares local,
+authenticated Codex, deterministic, paid and wait paths with explicit quality,
+confidence, runtime and cost rationale. Paid-provider invocation remains absent.
 
 ## Wire conventions
 

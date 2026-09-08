@@ -302,6 +302,206 @@
       "provider_side": true
     }
   },
+  "AgentRegistryEntry": {
+    "agent": {
+      "agent_id": "compatibility-specialist",
+      "name": "Compatibility Specialist",
+      "version": "1.0.0",
+      "description": "Auditioned compatibility test capability",
+      "capabilities": ["compatibility_testing"],
+      "instructions": {
+        "base": "Execute the supplied task contract",
+        "constraints": [
+          "Probationary QA recommendations require independent verification"
+        ]
+      },
+      "models": {
+        "preferred": ["codex_authenticated"],
+        "alternatives": []
+      },
+      "allowed_tool_ids": ["test-tool"],
+      "permissions": {
+        "read_project": true
+      },
+      "required_inputs": ["task_contract"],
+      "output_contract": "WorkerResult",
+      "required_gates": ["contract_compliance"],
+      "resource_policy": {
+        "local_preferred": true,
+        "max_external_cost_cents": 0
+      },
+      "probationary": true
+    },
+    "lifecycle": "probation",
+    "qa_decision_role": "advisory",
+    "audition_ids": ["audition-a"],
+    "recruited_at": "2026-09-08T12:00:00Z",
+    "performance": []
+  },
+  "QAGateDefinition": {
+    "gate_id": "contract_compliance",
+    "version": "1.0.0",
+    "discipline": "engineering",
+    "title": "Contract compliance",
+    "description": "Validates task contract and project scope",
+    "claim": "technical",
+    "required_evidence_classes": ["deterministic"],
+    "allowed_producer_types": ["tool"],
+    "requires_runtime_capture": false,
+    "requires_independent_verification": false
+  },
+  "GateWaiver": {
+    "waiver_id": "waiver-a",
+    "project_id": "project-a",
+    "task_id": "task-a",
+    "gate_id": "contract_compliance",
+    "reason": "Director accepts the prototype without this automated check",
+    "waived_by": "human",
+    "waived_at": "2026-09-08T12:00:00Z"
+  },
+  "QAReport": {
+    "report_id": "qa-report-task-a",
+    "project_id": "project-a",
+    "task_id": "task-a",
+    "generated_at": "2026-09-08T12:00:00Z",
+    "completion_state": "passed",
+    "required_gate_count": 1,
+    "passed_gate_count": 1,
+    "waived_gate_count": 0,
+    "gates": [
+      {
+        "gate": {
+          "gate_id": "contract_compliance",
+          "version": "1.0.0",
+          "discipline": "engineering",
+          "title": "Contract compliance",
+          "description": "Validates task contract and project scope",
+          "claim": "technical",
+          "required_evidence_classes": ["deterministic"],
+          "allowed_producer_types": ["tool"],
+          "requires_runtime_capture": false,
+          "requires_independent_verification": false
+        },
+        "required": true,
+        "state": "passed",
+        "latest_evaluation_id": "evaluation-a",
+        "evidence_ids": ["evidence-a"],
+        "waiver_id": null,
+        "explanation": "The deterministic contract check passed"
+      }
+    ],
+    "explanation": "Every required gate passed"
+  },
+  "LocalHardwareInventory": {
+    "machine_id": "local-workstation",
+    "captured_at": "2026-09-08T12:00:00Z",
+    "operating_system": "Windows 11",
+    "cpu": "AMD Ryzen 7 7700",
+    "physical_core_count": 8,
+    "logical_core_count": 16,
+    "ram_bytes": 34359738368,
+    "graphics": [
+      {
+        "name": "NVIDIA GeForce RTX 4070 SUPER",
+        "vendor": "nvidia",
+        "memory_bytes": 12884901888,
+        "driver_version": "596.21"
+      }
+    ]
+  },
+  "LocalModelInventory": {
+    "runtime_id": "ollama",
+    "state": "available",
+    "version": "0.32.14",
+    "endpoint": "http://localhost:11434",
+    "inspected_at": "2026-09-08T12:00:00Z",
+    "models": [
+      {
+        "name": "qwen3-vl:8b",
+        "digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "size_bytes": 6100000000,
+        "modified_at": "2026-08-18T12:00:00Z",
+        "parameter_size": "8B",
+        "quantization_level": "Q4_K_M",
+        "context_limit": 262144,
+        "modalities": ["text", "image"],
+        "tool_support": true,
+        "fits_memory": true
+      }
+    ],
+    "detail": "Ollama responded with 1 installed model"
+  },
+  "ModelBenchmark": {
+    "benchmark_id": "benchmark-a",
+    "project_id": "project-a",
+    "task_id": "task-a",
+    "model_name": "qwen3-vl:8b",
+    "model_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "required_capability_ids": ["project_analysis"],
+    "prompt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "response": {
+      "uri": ".gameagent/evidence/model-router/result.json",
+      "media_type": "application/json",
+      "locator": "Representative task contract response",
+      "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    "output_channel": "response",
+    "result": "passed",
+    "contract_score": 1,
+    "latency_ms": 4200,
+    "prompt_tokens": 86,
+    "completion_tokens": 112,
+    "summary": "Local model satisfied the representative output contract",
+    "benchmarked_at": "2026-09-08T12:00:00Z"
+  },
+  "ModelRoutingRecord": {
+    "routing_id": "routing-a",
+    "project_id": "project-a",
+    "task_id": "task-a",
+    "selected_route": "local_ollama",
+    "selected_provider_id": "ollama",
+    "selected_model_name": "qwen3-vl:8b",
+    "candidates": [
+      {
+        "route": "local_ollama",
+        "provider_id": "ollama",
+        "model_name": "qwen3-vl:8b",
+        "viable": true,
+        "expected_quality": "high",
+        "confidence": 1,
+        "expected_runtime_ms": 4200,
+        "expected_external_cost_cents": 0,
+        "expected_external_cost_avoided_cents": 0,
+        "reason": "Task-specific benchmark passed and the model fits memory"
+      },
+      {
+        "route": "codex_authenticated",
+        "provider_id": "codex",
+        "model_name": null,
+        "viable": true,
+        "expected_quality": "high",
+        "confidence": 0.85,
+        "expected_runtime_ms": null,
+        "expected_external_cost_cents": 0,
+        "expected_external_cost_avoided_cents": 0,
+        "reason": "Authenticated Codex is ready"
+      },
+      {
+        "route": "paid_provider",
+        "provider_id": null,
+        "model_name": null,
+        "viable": false,
+        "expected_quality": "unknown",
+        "confidence": 0,
+        "expected_runtime_ms": null,
+        "expected_external_cost_cents": null,
+        "expected_external_cost_avoided_cents": 0,
+        "reason": "Paid execution awaits Phase 9 hard-cap verification"
+      }
+    ],
+    "reason": "Local execution has task-specific benchmark evidence",
+    "created_at": "2026-09-08T12:00:00Z"
+  },
   "TaskEvent": {
     "event_id": "evt-a",
     "project_id": "project-a",

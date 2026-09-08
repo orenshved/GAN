@@ -1,1 +1,1 @@
-export type { Capability } from "@gameagent/protocol";
+export type { Capability, CapabilityGap } from "@gameagent/protocol";
