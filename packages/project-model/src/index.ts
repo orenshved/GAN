@@ -5,4 +5,9 @@ export type {
   EntityRef,
   Decision,
   ContextPackage,
+  ExpertisePack,
+  ExperienceObservation,
+  KnowledgeMethod,
+  KnowledgePacket,
+  KnowledgeSource,
 } from "@gameagent/protocol";

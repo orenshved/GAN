@@ -18,23 +18,32 @@ from gameagent.cli import main as cli_main
 from gameagent.codex_bridge import CodexBridge
 from gameagent.constitution import ConstitutionError
 from gameagent.gm import make_plan
-from gameagent.intake import inspect
+from gameagent.intake import assess_project_domains, inspect
+from gameagent.intelligence import index_repository
+from gameagent.knowledge import KnowledgeFabric, fetch_primary_source, research_source
 from gameagent.models.api import (
     ContextCommand,
     DecisionCommand,
     IntelligenceRefreshCommand,
     ObjectiveCommand,
+    PackAuditionCommand,
+    PackBuildCommand,
+    PackLifecycleCommand,
+    PackReviewCommand,
     PolicyCommand,
     ProjectRemoval,
     ReconcileCommand,
+    ResearchCommand,
     TaskProgressCommand,
     TaskProposal,
     TaskStartCommand,
     WorkerCommand,
 )
 from gameagent.models.contracts import (
+    AgentDefinition,
     Evaluation,
     Evidence,
+    ExpertisePackRef,
     GMRecord,
     PlanDraft,
     Project,
@@ -396,6 +405,12 @@ def test_intake_detects_repository_without_questionnaire(tmp_path):
         "platforms",
         "input_methods",
     }
+    onboarding = assess_project_domains(tmp_path, project, report, "2026-09-09T00:00:00Z")
+    domains = {assessment.domain for assessment in onboarding.assessments}
+    assert {"engineering", "game_design", "art", "qa", "production"} <= domains
+    assert "narrative" not in domains
+    assert onboarding.state == "ACTIVE"
+    assert onboarding.deferred_questions
 
 
 def test_intake_detects_nested_godot_project(tmp_path):
@@ -412,6 +427,553 @@ def test_intake_detects_nested_godot_project(tmp_path):
     assert next(finding for finding in report.findings if finding.field == "engine").source == (
         "game/project.godot"
     )
+
+
+def test_domain_onboarding_escalates_only_a_real_engine_conflict(tmp_path):
+    (tmp_path / "project.godot").write_text("[application]\n", encoding="utf-8")
+    (tmp_path / "alternate.uproject").write_text("{}\n", encoding="utf-8")
+    project, report = inspect(tmp_path)
+    onboarding = assess_project_domains(tmp_path, project, report, "2026-09-09T00:00:00Z")
+    assert onboarding.state == "NEEDS_HUMAN_INPUT"
+    assert onboarding.blocking_questions == [
+        "Which engine project is the active production target?"
+    ]
+
+
+def test_knowledge_fabric_routes_distinct_lead_expertise_without_global_project_leak(
+    tmp_path,
+):
+    project_root = tmp_path / "game"
+    project_root.mkdir()
+    (project_root / "project.godot").write_text(
+        '[application]\nconfig/features=PackedStringArray("4.6")\n',
+        encoding="utf-8",
+    )
+    (project_root / "menu.tscn").write_text(
+        '[node name="Menu" type="Control"]\n[node name="Play" type="Button" parent="."]\n',
+        encoding="utf-8",
+    )
+    (project_root / "menu.gd").write_text("extends Control\n", encoding="utf-8")
+    project, report = inspect(project_root)
+    initialize(project_root, project, report)
+    intelligence = index_repository(
+        project_root,
+        project,
+        report,
+        [],
+        "2026-09-09T00:00:00Z",
+    )
+    knowledge_root = tmp_path / "global-knowledge"
+    fabric = KnowledgeFabric.from_environment(knowledge_root)
+    agents = [
+        AgentDefinition.model_validate(item)
+        for item in json.loads((ROOT / "agents/builtin/roster.json").read_text(encoding="utf-8"))
+    ]
+    canonical_before = {
+        path.relative_to(knowledge_root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in knowledge_root.rglob("*")
+        if path.is_file()
+    }
+
+    onboarding = assess_project_domains(
+        project_root,
+        project,
+        report,
+        "2026-09-09T00:00:00Z",
+        fabric.router,
+        agents,
+        intelligence,
+    )
+    assert {item.agent_id for item in onboarding.assessments} <= {
+        agent.agent_id for agent in agents
+    }
+    engineering = next(item for item in onboarding.assessments if item.domain == "engineering")
+    ux = next(item for item in onboarding.assessments if item.domain == "ux")
+    assert engineering.knowledge_packet is not None
+    assert ux.knowledge_packet is not None
+    assert {item.pack_id for item in engineering.expertise_packs} == {
+        "game-engineering-core",
+        "godot-ui-engineering",
+    }
+    assert {item.pack_id for item in ux.expertise_packs} == {
+        "game-ux-core",
+        "godot-ui-engineering",
+    }
+    assert {
+        item.statement for item in engineering.knowledge_packet.items if item.plane == "discipline"
+    } != {item.statement for item in ux.knowledge_packet.items if item.plane == "discipline"}
+    assert any(item.plane == "project" for item in engineering.knowledge_packet.items)
+    unqualified_agents = [
+        agent.model_copy(update={"required_expertise_pack_ids": ["unavailable-pack"]})
+        if agent.agent_id == "ux-specialist"
+        else agent
+        for agent in agents
+    ]
+    blocked_onboarding = assess_project_domains(
+        project_root,
+        project,
+        report,
+        "2026-09-09T00:00:00Z",
+        fabric.router,
+        unqualified_agents,
+        intelligence,
+    )
+    blocked_ux = next(item for item in blocked_onboarding.assessments if item.domain == "ux")
+    assert blocked_onboarding.state == "BLOCKED_KNOWLEDGE"
+    assert blocked_ux.readiness.status == "BLOCKED_KNOWLEDGE"
+    assert not blocked_ux.recommendations
+    engineering_agent = next(agent for agent in agents if agent.agent_id == "implementation")
+    stale_packet = fabric.router.assemble(
+        project_id=project.project.id,
+        task_id="freshness-check",
+        task_text="Godot UI engineering and controller navigation",
+        capability_ids=["ui_engineering", "controller_navigation"],
+        agent=engineering_agent,
+        intelligence=intelligence,
+        project_engine="godot",
+        assembled_at="2028-09-09T00:00:00Z",
+    )
+    assert stale_packet.stale_knowledge_flags
+    assert "game-ux-core-1.0.0-wcag-2-2" not in {
+        source.source_id for source in stale_packet.sources
+    }
+    non_godot = fabric.router.assemble(
+        project_id=project.project.id,
+        task_id="web-ui",
+        task_text="UI engineering",
+        capability_ids=["ui_engineering"],
+        agent=engineering_agent,
+        intelligence=intelligence,
+        project_engine=None,
+    )
+    assert {pack.pack_id for pack in non_godot.expertise_packs} == {"game-engineering-core"}
+    base_entry = intelligence.knowledge[0]
+    oversized_intelligence = intelligence.model_copy(
+        update={
+            "knowledge": [
+                base_entry.model_copy(
+                    update={
+                        "knowledge_id": f"oversized-{index}",
+                        "statement": ("focus guidance " * 1800) + str(index),
+                    }
+                )
+                for index in range(8)
+            ]
+        }
+    )
+    bounded = fabric.router.assemble(
+        project_id=project.project.id,
+        task_id="bounded-packet",
+        task_text="focus guidance",
+        capability_ids=["ui_engineering"],
+        agent=engineering_agent,
+        intelligence=oversized_intelligence,
+        project_engine="godot",
+    )
+    assert any("packet below" in flag for flag in bounded.missing_knowledge_flags)
+    assert len(bounded.model_dump_json().encode("utf-8")) < 60_000
+    with pytest.raises(ConstitutionError, match="other-project"):
+        fabric.router.assemble(
+            project_id="other-project",
+            task_id="foreign-context",
+            task_text="Inspect UI",
+            capability_ids=["ui_engineering"],
+            agent=engineering_agent,
+            intelligence=intelligence,
+            project_engine="godot",
+        )
+    assert fabric.registry.search("game-ui engineering")
+
+    canonical_after = {
+        path.relative_to(knowledge_root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in knowledge_root.rglob("*")
+        if path.is_file()
+    }
+    assert canonical_after == canonical_before
+    assert fabric.registry.search("ui accessibility")
+
+
+def test_knowledge_maintenance_rebuilds_derived_index_and_records_report(tmp_path):
+    fabric = KnowledgeFabric.from_environment(tmp_path / "knowledge")
+    fabric.directory.index_path.unlink()
+    report = fabric.maintain()
+    assert report.rebuilt_full_text_index
+    assert report.state == "passed"
+    assert fabric.directory.index_path.is_file()
+    saved = json.loads(
+        (fabric.directory.root / "maintenance" / "latest.json").read_text(encoding="utf-8")
+    )
+    assert saved["run_id"] == report.run_id
+
+
+def test_agent_knowledge_api_exposes_pack_versions_and_retrieved_context(store, tmp_path):
+    store.refresh_intelligence(IntelligenceRefreshCommand(request_id="knowledge-index"))
+    app = create_app(
+        store,
+        TOKEN,
+        ORIGIN,
+        registry_path=tmp_path / "registry" / "projects.json",
+        knowledge_root=tmp_path / "knowledge",
+    )
+    fabric = KnowledgeFabric.from_environment(tmp_path / "knowledge")
+    agents = [
+        AgentDefinition.model_validate(item)
+        for item in json.loads((ROOT / "agents/builtin/roster.json").read_text(encoding="utf-8"))
+    ]
+    onboarding = store.ensure_onboarding(fabric.router, agents)
+    with TestClient(app) as client:
+        response = client.get(
+            "/agent-knowledge",
+            headers={"Authorization": f"Bearer {TOKEN}"},
+        )
+    assert response.status_code == 200
+    profiles = {item["agent_id"]: item for item in response.json()["profiles"]}
+    assert profiles["ux-specialist"]["qualification_state"] == "expertise_available"
+    assert profiles["ux-specialist"]["resolved_packs"]
+    assert profiles["ux-specialist"]["packet"]["items"]
+    for assessment in onboarding.assessments:
+        if assessment.knowledge_packet is not None:
+            packet = assessment.knowledge_packet
+            assert profiles[packet.agent_id]["recorded_packets"] == [packet.model_dump(mode="json")]
+    assert (
+        profiles["implementation"]["resolved_packs"] != profiles["ux-specialist"]["resolved_packs"]
+    )
+
+
+def test_pack_promotion_requires_audit_and_nonregressing_benchmark(tmp_path):
+    fabric = KnowledgeFabric.from_environment(tmp_path / "global")
+    baseline = {item.pack_id: item.state for item in fabric.catalog().baseline}
+    assert len(baseline) == 14
+    assert baseline["game-ux-core"] == "trusted"
+    assert baseline["game-production-core"] == "missing"
+    original = fabric.registry.latest("game-ux-core")
+    assert original is not None
+    candidate = original.model_copy(
+        update={
+            "version": "1.1.0",
+            "state": "draft",
+            "reviewed_at": None,
+            "sources": [
+                source.model_copy(update={"license": "Test fixture license"})
+                for source in original.sources
+            ],
+        }
+    )
+    fabric.propose_pack(candidate)
+    assert fabric.registry.latest(candidate.pack_id).version == "1.0.0"
+    ref = ExpertisePackRef(pack_id=candidate.pack_id, version=candidate.version)
+    review = PackReviewCommand(
+        pack=ref,
+        decision="approved",
+        provenance_checked=True,
+        privacy_checked=True,
+        licensing_checked=True,
+        contradictions_checked=True,
+        detail="Independent synthetic fixture audit",
+    )
+    with pytest.raises(ConstitutionError):
+        fabric.review_pack(review)
+    for benchmark in candidate.evaluation_ids:
+        fabric.record_audition(
+            PackAuditionCommand(
+                pack=ref,
+                benchmark_id=benchmark,
+                baseline_score=0.6,
+                candidate_score=0.9,
+                evidence_text="Synthetic benchmark fixture result: 9 of 10 versus 6 of 10.",
+                detail="Fixture only",
+            )
+        )
+    receipt = fabric.review_pack(review)
+    assert fabric.review_pack(review) == receipt
+    assert fabric.registry.latest(candidate.pack_id).version == "1.1.0"
+    assert (
+        KnowledgeFabric.from_environment(tmp_path / "global")
+        .registry.latest(candidate.pack_id)
+        .version
+        == "1.1.0"
+    )
+    with pytest.raises(ConstitutionError):
+        fabric.propose_pack(candidate)
+    regressing = candidate.model_copy(update={"version": "1.2.0"})
+    fabric.propose_pack(regressing)
+    bad_ref = ExpertisePackRef(pack_id=candidate.pack_id, version="1.2.0")
+    for benchmark in candidate.evaluation_ids:
+        fabric.record_audition(
+            PackAuditionCommand(
+                pack=bad_ref,
+                benchmark_id=benchmark,
+                baseline_score=0.95,
+                candidate_score=0.9,
+                evidence_text="Synthetic regression fixture; score decreased.",
+                detail="Fixture only",
+            )
+        )
+    with pytest.raises(ConstitutionError):
+        fabric.review_pack(review.model_copy(update={"pack": bad_ref}))
+    assert fabric.registry.latest(candidate.pack_id).version == "1.1.0"
+
+
+@pytest.mark.parametrize("invented_source", [False, True])
+def test_automated_pack_audition_is_isolated_and_does_not_promote(store, tmp_path, invented_source):
+    from gameagent.models.api import PackAutomatedAuditionCommand
+
+    fabric = KnowledgeFabric.from_environment(tmp_path / "global")
+    original = fabric.registry.latest("game-ux-core")
+    candidate = original.model_copy(
+        update={"version": "1.1.0", "state": "draft", "reviewed_at": None}
+    )
+    fabric.propose_pack(candidate)
+    workspaces = []
+
+    class FakeTurn:
+        def __init__(self, response):
+            self.response = response
+
+        async def run(self):
+            return SimpleNamespace(
+                status=SimpleNamespace(value="completed"),
+                error=None,
+                final_response=json.dumps(self.response),
+            )
+
+    class FakeThread:
+        async def turn(self, prompt, **kwargs):
+            assert kwargs["sandbox"].value == "read-only"
+            if "Independently evaluate" in prompt:
+                return FakeTurn(
+                    {
+                        "baseline_score": 0.5,
+                        "candidate_score": 0.9,
+                        "rationale": "Synthetic fixture comparison",
+                        "critical_issues": [],
+                    }
+                )
+            return FakeTurn(
+                {
+                    "findings": ["Check keyboard navigation"],
+                    "uncertainty": [],
+                    "source_ids": ["invented"] if invented_source else [],
+                }
+            )
+
+    class FakeClient:
+        async def account(self):
+            return SimpleNamespace(account=SimpleNamespace(root=SimpleNamespace(type="chatgpt")))
+
+        async def thread_start(self, **kwargs):
+            assert kwargs["ephemeral"] is True
+            assert kwargs["cwd"] != str(store.root)
+            workspaces.append(kwargs["cwd"])
+            return FakeThread()
+
+        async def close(self):
+            pass
+
+    async def scenario():
+        bridge = CodexBridge(store)
+        bridge.client = FakeClient()
+        receipt = await bridge.audition_expertise(
+            PackAutomatedAuditionCommand(
+                pack=ExpertisePackRef(pack_id=candidate.pack_id, version=candidate.version),
+                benchmark_id=candidate.evaluation_ids[0],
+                scenario="A synthetic menu cannot be navigated using a keyboard.",
+                expected_findings=["Keyboard navigation is missing"],
+            ),
+            fabric,
+        )
+        assert receipt.evidence_class == "heuristic"
+        assert receipt.reviewer_id == "expertise-curator"
+        assert receipt.candidate_score == (0 if invented_source else 0.9)
+        assert len(set(workspaces)) == 3
+        assert fabric.registry.latest(candidate.pack_id).version == "1.0.0"
+        await bridge.close()
+
+    asyncio.run(scenario())
+
+
+def test_pack_builder_uses_public_sources_and_cannot_self_promote(store, tmp_path):
+    fabric = KnowledgeFabric.from_environment(tmp_path / "knowledge")
+    original = fabric.registry.latest("game-ux-core")
+    task = store.propose(
+        proposal().model_copy(update={"required_capabilities": original.capability_ids})
+    )
+    candidate = original.model_copy(
+        update={"pack_id": "fixture-ux", "version": "0.1.0", "state": "draft", "reviewed_at": None}
+    )
+
+    class FakeTurn:
+        def __init__(self, response):
+            self.response = response
+
+        async def run(self):
+            return SimpleNamespace(
+                status=SimpleNamespace(value="completed"),
+                error=None,
+                final_response=self.response,
+            )
+
+    class FakeThread:
+        async def turn(self, prompt, **kwargs):
+            assert store.snapshot().project.project.id not in prompt
+            assert task.objective not in prompt
+            assert "not its curator" in prompt
+            payload = json.loads(prompt.rsplit("\n", 1)[1])
+            supplied_sources = payload["sources"]
+            supplied_ids = [source["source_id"] for source in supplied_sources]
+            assert len(supplied_ids) == len(set(supplied_ids))
+            assert all(
+                source_id.startswith(("game-ux-core-1.0.0-", "godot-ui-engineering-1.0.0-"))
+                for source_id in supplied_ids
+            )
+            response = type(candidate).model_validate(
+                candidate.model_dump()
+                | {
+                    "sources": supplied_sources,
+                    "methods": [
+                        method.model_copy(update={"source_ids": supplied_ids[:1]})
+                        for method in candidate.methods
+                    ],
+                    "items": [
+                        item.model_copy(update={"source_ids": supplied_ids[:1]})
+                        for item in candidate.items
+                    ],
+                }
+            )
+            return FakeTurn(response.model_dump_json())
+
+    class FakeClient:
+        async def thread_start(self, **kwargs):
+            assert Path(kwargs["cwd"]) != store.root
+            assert kwargs["sandbox"].value == "read-only"
+            return FakeThread()
+
+        async def close(self):
+            pass
+
+    async def scenario():
+        bridge = CodexBridge(store, knowledge_router=fabric.router)
+
+        async def account():
+            return {"state": "ready"}
+
+        bridge.account = account
+        bridge.client = FakeClient()
+        draft = await bridge.build_expertise(
+            PackBuildCommand(task_id=task.task_id, pack_id="fixture-ux", version="0.1.0"), fabric
+        )
+        assert draft.state == "draft"
+        assert fabric.registry.latest("fixture-ux") is None
+        assert fabric.catalog().candidates == [draft]
+        await bridge.close()
+
+    asyncio.run(scenario())
+
+
+def test_research_denies_network_and_private_hosts(store, monkeypatch):
+    task = store.propose(proposal())
+    command = ResearchCommand(
+        task_id=task.task_id,
+        requirement="Current platform guidance",
+        url="https://docs.example.test/current",
+    )
+
+    def forbidden_fetch(url):
+        raise AssertionError("Network must not run")
+
+    monkeypatch.setattr("gameagent.knowledge.fetch_primary_source", forbidden_fetch)
+    record = research_source(command, task, store.root)
+    assert record.state == "blocked"
+    assert store.record_research(record) == record
+    assert store.rebuild().research_records == [record]
+    monkeypatch.setenv("GAMEAGENT_RESEARCH_HOSTS", "docs.example.test")
+    monkeypatch.setattr(
+        "gameagent.knowledge.socket.getaddrinfo",
+        lambda *args, **kwargs: [(2, 1, 6, "", ("127.0.0.1", 443))],
+    )
+    with pytest.raises(ConstitutionError):
+        fetch_primary_source(command.url)
+
+
+def test_pack_lifecycle_changes_selection_without_rewriting_canonical_pack(tmp_path):
+    fabric = KnowledgeFabric.from_environment(tmp_path / "global")
+    pack = fabric.registry.latest("game-ux-core")
+    ref = ExpertisePackRef(pack_id=pack.pack_id, version=pack.version)
+    path = fabric.directory.packs_root / pack.pack_id / pack.version / "pack.yaml"
+    original = path.read_bytes()
+    fabric.set_lifecycle(
+        PackLifecycleCommand(
+            pack=ref, state="disputed", reason="Conflicting evidence requires review"
+        )
+    )
+    assert fabric.registry.latest(pack.pack_id) is None
+    assert path.read_bytes() == original
+    assert (
+        KnowledgeFabric.from_environment(tmp_path / "global").registry.latest(pack.pack_id) is None
+    )
+    fabric.set_lifecycle(
+        PackLifecycleCommand(
+            pack=ref, state="active", reason="Independent review resolved the conflict"
+        )
+    )
+    assert fabric.registry.latest(pack.pack_id) == pack
+    assert path.read_bytes() == original
+
+
+def test_research_is_project_local_and_expired_results_are_not_retrieved(
+    store, tmp_path, monkeypatch
+):
+    task = store.propose(proposal())
+    permitted = task.model_copy(
+        update={"permissions": task.permissions.model_copy(update={"network": True})}
+    )
+    monkeypatch.setattr(
+        "gameagent.knowledge.fetch_primary_source",
+        lambda url: b"<html><p>Visible focus is required.</p></html>",
+    )
+    record = research_source(
+        ResearchCommand(
+            task_id=task.task_id,
+            requirement="Focus guidance",
+            url="https://docs.example.test/focus",
+            freshness_class="live",
+        ),
+        permitted,
+        store.root,
+    )
+    assert record.state == "available"
+    assert record.artifact is not None and (store.root / record.artifact.uri).is_file()
+    fabric = KnowledgeFabric.from_environment(tmp_path / "global")
+    agents = [
+        AgentDefinition.model_validate(item)
+        for item in json.loads((ROOT / "agents/builtin/roster.json").read_text())
+    ]
+    agent = next(item for item in agents if item.agent_id == "ux-specialist")
+    packet = fabric.router.assemble(
+        project_id=task.project_id,
+        task_id=task.task_id,
+        task_text="focus",
+        capability_ids=task.required_capabilities,
+        agent=agent,
+        intelligence=None,
+        project_engine=None,
+        research=[record],
+        assembled_at=record.researched_at,
+    )
+    assert any(item.plane == "world" for item in packet.items)
+    expired = fabric.router.assemble(
+        project_id=task.project_id,
+        task_id=task.task_id,
+        task_text="focus",
+        capability_ids=task.required_capabilities,
+        agent=agent,
+        intelligence=None,
+        project_engine=None,
+        research=[record],
+        assembled_at="2099-01-01T00:00:00Z",
+    )
+    assert not any(item.plane == "world" for item in expired.items)
+    assert any("expired" in flag for flag in expired.stale_knowledge_flags)
 
 
 def test_init_preserves_existing_agents_instructions_and_records_workspace(tmp_path):
@@ -763,6 +1325,18 @@ def test_project_registry_import_switch_and_restart(store):
     assert imported.active_project_id != store.snapshot().project.project.id
     assert (second / ".gameagent" / "project.yaml").is_file()
     assert registry.current.root == second
+    assert registry.current.snapshot().onboarding is not None
+    event_types = {event.event_type for event in registry.current.events().events}
+    assert {
+        "project.reconnaissance_started",
+        "domain.assessment_completed",
+        "project.reconciliation_completed",
+        "project.onboarding_completed",
+    } <= event_types
+    imported_summary = next(
+        item for item in imported.projects if item.project_id == imported.active_project_id
+    )
+    assert imported_summary.onboarding is not None
 
     restarted = ProjectRegistry(store, registry_path)
     assert restarted.active_project_id == imported.active_project_id
@@ -998,18 +1572,106 @@ def test_worker_bridge_persists_resumes_and_rejects_foreign_worker(store):
             pass
 
     async def scenario():
-        bridge = CodexBridge(store)
+        fabric = KnowledgeFabric.from_environment(store.root / "test-global-knowledge")
+        bridge = CodexBridge(store, knowledge_router=fabric.router)
         fake = FakeClient()
         bridge.client = fake
         record = await bridge.start(WorkerCommand(task_id=task.task_id))
         await bridge.jobs[record.worker_id]
         assert store.rebuild().workers[0].state == "completed"
+        assert record.knowledge_packet is not None
+        original_packet = record.knowledge_packet
+        original_specialist = record.specialist
+        original_context = record.context_package
+
+        def fail_retrieval(**kwargs):
+            raise AssertionError("A resumed worker must not reroute knowledge")
+
+        fabric.router.assemble = fail_retrieval
         with pytest.raises(ConstitutionError):
             await bridge.start(WorkerCommand(task_id=task.task_id, worker_id="worker-foreign"))
-        await bridge.start(WorkerCommand(task_id=task.task_id, worker_id=record.worker_id))
+        resumed = await bridge.start(
+            WorkerCommand(task_id=task.task_id, worker_id=record.worker_id)
+        )
+        assert resumed.knowledge_packet == original_packet
+        assert resumed.specialist == original_specialist
+        assert resumed.context_package == original_context
         await bridge.jobs[record.worker_id]
         assert fake.resumed
         assert store.snapshot().tasks[0].state == "PROPOSED"
+        await bridge.close()
+
+    asyncio.run(scenario())
+
+
+def test_worker_bridge_records_and_resolves_knowledge_block(store):
+    plan = save_plan(store, production_draft().model_copy(update={"questions": []}))
+    task = plan.tasks[0]
+    fabric = KnowledgeFabric.from_environment(store.root / "test-global-knowledge")
+    original_assemble = fabric.router.assemble
+    blocked = True
+
+    def conditional_assemble(**kwargs):
+        packet = original_assemble(**kwargs)
+        return packet.model_copy(
+            update={
+                "missing_knowledge_flags": ["Required expertise pack fixture is unavailable."]
+                if blocked
+                else []
+            }
+        )
+
+    fabric.router.assemble = conditional_assemble
+
+    class FakeTurn:
+        id = "turn-knowledge"
+
+        async def run(self):
+            return SimpleNamespace(
+                status=SimpleNamespace(value="completed"),
+                error=None,
+                final_response=json.dumps(
+                    {"summary": "Inspected", "findings": [], "next_steps": []}
+                ),
+            )
+
+        async def interrupt(self):
+            pass
+
+    class FakeThread:
+        id = "thread-knowledge"
+
+        async def turn(self, _prompt, **_kwargs):
+            return FakeTurn()
+
+    class FakeClient:
+        async def account(self):
+            return SimpleNamespace(account=SimpleNamespace(root=SimpleNamespace(type="chatgpt")))
+
+        async def thread_start(self, **_kwargs):
+            return FakeThread()
+
+        async def close(self):
+            pass
+
+    async def scenario():
+        nonlocal blocked
+        bridge = CodexBridge(store, knowledge_router=fabric.router)
+        bridge.client = FakeClient()
+        with pytest.raises(ConstitutionError) as error:
+            await bridge.start(WorkerCommand(task_id=task.task_id))
+        assert error.value.error == "blocked_knowledge", error.value.detail
+        assert (
+            next(item for item in store.snapshot().tasks if item.task_id == task.task_id).state
+            == "BLOCKED_KNOWLEDGE"
+        )
+        blocked = False
+        record = await bridge.start(WorkerCommand(task_id=task.task_id))
+        assert (
+            next(item for item in store.snapshot().tasks if item.task_id == task.task_id).state
+            == "READY"
+        )
+        await bridge.jobs[record.worker_id]
         await bridge.close()
 
     asyncio.run(scenario())

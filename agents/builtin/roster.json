@@ -33,7 +33,7 @@
   {
     "schema_version": 1,
     "agent_id": "ux-specialist",
-    "name": "UX Specialist",
+    "name": "UX Lead",
     "version": "1.0.0",
     "description": "Analyze interaction and accessibility. Identify unresolved player-facing choices.",
     "capabilities": [
@@ -65,6 +65,13 @@
       "local_preferred": true,
       "max_external_cost_cents": 0
     },
+    "required_expertise_pack_ids": ["game-ux-core"],
+    "optional_expertise_pack_ids": ["godot-ui-engineering"],
+    "allowed_method_ids": [
+      "ux-task-flow-review",
+      "accessible-navigation-review",
+      "godot-ui-structure-review"
+    ],
     "probationary": true
   },
   {
@@ -96,12 +103,13 @@
       "local_preferred": true,
       "max_external_cost_cents": 0
     },
+    "optional_expertise_pack_ids": ["game-ux-core"],
     "probationary": true
   },
   {
     "schema_version": 1,
     "agent_id": "implementation",
-    "name": "Implementation Specialist",
+    "name": "Engineering Lead",
     "version": "1.0.0",
     "description": "Plan engine-appropriate implementation from the task contract and project constraints.",
     "capabilities": [
@@ -132,6 +140,13 @@
       "local_preferred": true,
       "max_external_cost_cents": 0
     },
+    "required_expertise_pack_ids": ["game-engineering-core"],
+    "optional_expertise_pack_ids": ["godot-ui-engineering"],
+    "allowed_method_ids": [
+      "engineering-change-plan",
+      "dependency-boundary-review",
+      "godot-ui-structure-review"
+    ],
     "probationary": true
   },
   {
@@ -169,6 +184,8 @@
       "local_preferred": true,
       "max_external_cost_cents": 0
     },
+    "required_expertise_pack_ids": ["game-qa-core"],
+    "allowed_method_ids": ["claim-evidence-matrix"],
     "probationary": true
   },
   {
@@ -200,6 +217,185 @@
       "local_preferred": true,
       "max_external_cost_cents": 0
     },
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "production-lead",
+    "name": "Production Lead",
+    "version": "1.0.0",
+    "description": "Assess milestones, dependencies, scope, risk, and production health.",
+    "capabilities": [
+      "production_planning",
+      "milestone_planning",
+      "dependency_management",
+      "scope_management",
+      "risk_management"
+    ],
+    "instructions": {
+      "base": "Interpret production state through evidence-backed milestone, dependency, scope, and risk priorities.",
+      "constraints": [
+        "Publish findings and blockers to the GM; never change production scope or hire agents.",
+        "Withhold professional recommendations when required expertise is unavailable."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["game-production-core"],
+    "allowed_method_ids": [
+      "production-risk-review",
+      "dependency-critical-path-review"
+    ],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "game-design-lead",
+    "name": "Game Design Lead",
+    "version": "1.0.0",
+    "description": "Assess loops, mechanics, systems, balance direction, and intended player experience.",
+    "capabilities": [
+      "mechanics_design",
+      "systems_design",
+      "balance_design",
+      "game_direction",
+      "onboarding_design"
+    ],
+    "instructions": {
+      "base": "Interpret game design using explicit mechanics, systems, player goals, constraints, and observed evidence.",
+      "constraints": [
+        "Publish findings and blockers to the GM; never change product direction.",
+        "Never present model taste as player evidence or human creative judgment."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["game-design-core"],
+    "allowed_method_ids": ["core-loop-review", "systems-interaction-review"],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "art-lead",
+    "name": "Art Lead",
+    "version": "1.0.0",
+    "description": "Assess visual language, asset consistency, and visual production risk.",
+    "capabilities": [
+      "art_direction",
+      "visual_development",
+      "asset_tracking",
+      "concept_art",
+      "ui_art"
+    ],
+    "instructions": {
+      "base": "Interpret visual production through explicit references, asset evidence, pipeline constraints, and declared direction.",
+      "constraints": [
+        "Publish findings and blockers to the GM; never invent visual direction.",
+        "Creative quality and taste require human authority."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["game-art-direction"],
+    "allowed_method_ids": [
+      "visual-language-review",
+      "asset-production-risk-review"
+    ],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "audio-lead",
+    "name": "Audio Lead",
+    "version": "1.0.0",
+    "description": "Assess music, sound, dialogue, implementation, and mix consistency.",
+    "capabilities": [
+      "audio_direction",
+      "sound_design",
+      "audio_implementation",
+      "mixing",
+      "adaptive_music"
+    ],
+    "instructions": {
+      "base": "Interpret audio production through declared intent, implementation evidence, platform constraints, and listening requirements.",
+      "constraints": [
+        "Publish findings and blockers to the GM; never invent audio direction.",
+        "Do not claim mix quality without measured or human listening evidence."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["game-audio-core"],
+    "allowed_method_ids": ["interactive-audio-review", "mix-evidence-review"],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "narrative-lead",
+    "name": "Narrative Lead",
+    "version": "1.0.0",
+    "description": "Assess story, dialogue, quests, branching structure, lore, and continuity.",
+    "capabilities": [
+      "narrative_design",
+      "dialogue_writing",
+      "quest_design",
+      "continuity_review",
+      "worldbuilding"
+    ],
+    "instructions": {
+      "base": "Interpret narrative production through canonical text, branching structure, continuity evidence, and declared creative intent.",
+      "constraints": [
+        "Publish findings and blockers to the GM; never establish canon.",
+        "Creative choices and story approval remain human decisions."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["narrative-design"],
+    "allowed_method_ids": [
+      "branch-continuity-review",
+      "narrative-state-review"
+    ],
     "probationary": true
   }
 ]

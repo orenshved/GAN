@@ -3,7 +3,9 @@
 import hashlib
 import json
 import os
+from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from filelock import FileLock
 
@@ -17,15 +19,21 @@ from gameagent.models.contracts import (
     AuditionSubmission,
     Capability,
     CapabilityGap,
+    ExpertisePackRef,
     Instructions,
     ModelPreferences,
     Permissions,
+    RecruitmentDiagnosis,
     RecruitmentRecord,
     ResourcePolicy,
     TaskContract,
     ToolDefinition,
     ToolDiscovery,
 )
+from gameagent.production_domains import tool_catalog as production_domain_tools
+
+if TYPE_CHECKING:
+    from gameagent.knowledge import ExpertisePackRegistry
 
 AUDITION_DIMENSIONS = {
     "technical_correctness",
@@ -142,6 +150,7 @@ class Recruiter:
         self.registry = registry
         self.capabilities = {item.capability_id: item for item in capabilities}
         self.tools = tools
+        self.knowledge_registry: ExpertisePackRegistry | None = None
 
     @classmethod
     def from_environment(
@@ -177,25 +186,35 @@ class Recruiter:
             if tools_path.is_file()
             else []
         )
+        tools_by_id = {item.tool_id: item for item in [*tools, *production_domain_tools()]}
         return cls(
             GlobalAgentRegistry(builtin_path, global_path),
             [
                 Capability.model_validate(item)
                 for item in json.loads(ontology_path.read_text(encoding="utf-8"))
             ],
-            tools,
+            list(tools_by_id.values()),
         )
 
-    def prepare(self, request_id: str, task: TaskContract, now: str) -> RecruitmentRecord:
+    def prepare(
+        self,
+        request_id: str,
+        task: TaskContract,
+        now: str,
+        *,
+        performance_failures: int = 0,
+        model_insufficient: bool = False,
+    ) -> RecruitmentRecord:
         roster = self.registry.roster()
         required = set(task.required_capabilities)
-        require(
-            not any(required <= set(agent.capabilities) for agent in roster),
-            "capability_already_available",
-            task.task_id,
-        )
         unknown = sorted(required - self.capabilities.keys())
         require(not unknown, "unknown_capability", ", ".join(unknown))
+        capable = [agent for agent in roster if required <= set(agent.capabilities)]
+        existing = (
+            min(capable, key=lambda agent: (len(agent.capabilities), agent.agent_id))
+            if capable
+            else None
+        )
         families = {self.capabilities[item].family for item in required}
         adjacent = sorted(
             agent.agent_id
@@ -221,7 +240,7 @@ class Recruiter:
                 for gate in self.capabilities[capability_id].evaluation_requirements
             }
         )
-        candidate = AgentDefinition(
+        candidate = existing or AgentDefinition(
             agent_id=f"recruited-{digest}",
             name=f"{' + '.join(label.title() for label in labels)} Specialist",
             version="1.0.0",
@@ -249,9 +268,128 @@ class Recruiter:
             project_id=task.project_id,
             task_id=task.task_id,
             missing_capabilities=sorted(required),
-            reason="No registered agent satisfies the complete task capability contract",
+            reason=(
+                "No registered agent satisfies the complete task capability contract"
+                if existing is None
+                else "An existing agent satisfies the capability contract; Recruiter is diagnosing specialist composition"
+            ),
             detected_at=now,
         )
+        packs = []
+        missing_pack_ids: list[str] = []
+        stale_pack_ids: list[str] = []
+        if self.knowledge_registry is not None:
+            pack_ids = (
+                candidate.required_expertise_pack_ids
+                if existing is not None
+                else sorted({pack.pack_id for pack in self.knowledge_registry.packs()})
+            )
+            for pack_id in pack_ids:
+                versions = [
+                    pack for pack in self.knowledge_registry.packs() if pack.pack_id == pack_id
+                ]
+                pack = self.knowledge_registry.latest(pack_id)
+                if pack is None:
+                    if versions:
+                        stale_pack_ids.append(pack_id)
+                    else:
+                        missing_pack_ids.append(pack_id)
+                    continue
+                expired = any(
+                    source.fresh_until is not None
+                    and datetime.fromisoformat(source.fresh_until.replace("Z", "+00:00"))
+                    < datetime.fromisoformat(now.replace("Z", "+00:00"))
+                    for source in pack.sources
+                )
+                if expired:
+                    stale_pack_ids.append(pack_id)
+                    continue
+                if existing is not None or required & set(pack.capability_ids):
+                    packs.append(pack)
+            if existing is None:
+                candidate = candidate.model_copy(
+                    update={
+                        "required_expertise_pack_ids": [pack.pack_id for pack in packs],
+                        "allowed_method_ids": sorted(
+                            {method.method_id for pack in packs for method in pack.methods}
+                        ),
+                    }
+                )
+        required_tool_ids = sorted(
+            {
+                *candidate.allowed_tool_ids,
+                *(tool_id for pack in packs for tool_id in pack.required_tool_ids),
+            }
+        )
+        tool_by_id = {item.tool_id: item for item in self.tools}
+        missing_tool_ids = [
+            tool_id
+            for tool_id in required_tool_ids
+            if tool_id not in tool_by_id
+            or _permission_decision(tool_by_id[tool_id], task).decision != "trusted"
+        ]
+        covered_expertise = {cap for pack in packs for cap in pack.capability_ids}
+        if existing is None:
+            diagnosis = RecruitmentDiagnosis(
+                problem="no_agent",
+                action="create_agent",
+                required_pack_ids=candidate.required_expertise_pack_ids,
+                missing_pack_ids=missing_pack_ids,
+                stale_pack_ids=stale_pack_ids,
+                missing_tool_ids=missing_tool_ids,
+                detail="No registered agent covers the full capability contract; compose and audition a new specialist only after its expertise and tools are ready.",
+            )
+        elif missing_pack_ids:
+            diagnosis = RecruitmentDiagnosis(
+                problem="missing_expertise_pack",
+                action="attach_or_build_pack",
+                agent_id=existing.agent_id,
+                required_pack_ids=existing.required_expertise_pack_ids,
+                missing_pack_ids=missing_pack_ids,
+                detail="Reuse the existing capable agent and build or attach its missing reviewed expertise; do not hire a duplicate.",
+            )
+        elif stale_pack_ids:
+            diagnosis = RecruitmentDiagnosis(
+                problem="stale_knowledge",
+                action="refresh_knowledge",
+                agent_id=existing.agent_id,
+                required_pack_ids=existing.required_expertise_pack_ids,
+                stale_pack_ids=stale_pack_ids,
+                detail="Reuse the existing agent after its version-sensitive expertise has been refreshed and re-reviewed.",
+            )
+        elif missing_tool_ids:
+            diagnosis = RecruitmentDiagnosis(
+                problem="missing_tool",
+                action="install_or_authorize_tool",
+                agent_id=existing.agent_id,
+                required_pack_ids=existing.required_expertise_pack_ids,
+                missing_tool_ids=missing_tool_ids,
+                detail="Reuse the existing agent after the required tool is installed, healthy, and permitted for this task.",
+            )
+        elif model_insufficient:
+            diagnosis = RecruitmentDiagnosis(
+                problem="model_insufficient",
+                action="change_model",
+                agent_id=existing.agent_id,
+                required_pack_ids=existing.required_expertise_pack_ids,
+                detail="The capability and expertise exist, but recorded benchmarks show the current model is insufficient; benchmark a stronger route before creating an agent.",
+            )
+        elif performance_failures >= 3:
+            diagnosis = RecruitmentDiagnosis(
+                problem="performance_failure",
+                action="requalify_agent",
+                agent_id=existing.agent_id,
+                required_pack_ids=existing.required_expertise_pack_ids,
+                detail="Repeated recorded failures require requalification of the existing specialist composition before any new hire.",
+            )
+        else:
+            diagnosis = RecruitmentDiagnosis(
+                problem="none",
+                action="reuse_agent",
+                agent_id=existing.agent_id,
+                required_pack_ids=existing.required_expertise_pack_ids,
+                detail="The existing agent, reviewed expertise, tools, and model evidence are sufficient; no new agent should be created.",
+            )
         return RecruitmentRecord(
             recruitment_id=f"recruitment-{request_id}-{task.task_id}",
             project_id=task.project_id,
@@ -260,13 +398,31 @@ class Recruiter:
             candidate=candidate,
             adjacent_agent_ids=adjacent,
             tool_discoveries=discoveries,
-            state="candidate_composed",
+            state="candidate_composed" if existing is None else "remediation_required",
+            diagnosis=diagnosis,
             created_at=now,
             updated_at=now,
+            expertise_packs=[
+                ExpertisePackRef(pack_id=pack.pack_id, version=pack.version) for pack in packs
+            ],
+            expertise_snapshot=packs,
+            missing_expertise_capabilities=(
+                sorted(required - covered_expertise)
+                if self.knowledge_registry is not None and existing is None
+                else sorted(required)
+                if missing_pack_ids or stale_pack_ids
+                else []
+            ),
         )
 
     def begin_audition(self, record: RecruitmentRecord, now: str) -> RecruitmentRecord:
         require(record.state == "candidate_composed", "invalid_recruitment_state", record.state)
+        require(
+            not record.missing_expertise_capabilities,
+            "blocked_knowledge",
+            "Build and independently approve expertise for: "
+            + ", ".join(record.missing_expertise_capabilities),
+        )
         return record.model_copy(update={"state": "auditioning", "updated_at": now})
 
     def evaluate(

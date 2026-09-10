@@ -1,0 +1,87 @@
+# Repomix ignore file
+# Also used by ai-audit.js for bloat detection
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.svelte-kit/
+coverage/
+storybook-static/
+.turbo/
+
+# Dependencies
+node_modules/
+vendor/
+Pods/
+DerivedData/
+venv/
+.venv/
+__pycache__/
+.pytest_cache/
+target/
+.gradle/
+elm-stuff/
+
+# Generated code
+*.min.js
+*.min.css
+*.map
+*.d.ts
+*.generated.*
+**/generated/
+**/gen/
+**/auto-generated/
+
+# Lock files (too large, never useful in context)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+composer.lock
+Gemfile.lock
+Cargo.lock
+poetry.lock
+go.sum
+
+# Binary / media assets
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.avif
+*.ico
+*.svg
+*.mp4
+*.mov
+*.webm
+*.mp3
+*.wav
+*.woff
+*.woff2
+*.ttf
+*.eot
+*.otf
+*.pdf
+*.zip
+*.tar
+*.gz
+*.exe
+*.dll
+*.so
+
+# IDE and OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# AI reports (generated, read only *-latest.md)
+.ai/reports/
+
+# Test snapshots (rarely useful in context)
+**/__snapshots__/

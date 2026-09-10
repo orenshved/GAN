@@ -1,6 +1,6 @@
 # ADR 0008: Provider-side hard caps plus application budget
 
-Status: accepted for foundation. Real provider execution: Phase 9.
+Status: accepted and implemented in Phase 9.
 
 ## Context
 
@@ -23,7 +23,7 @@ Approval cannot bypass provider caps or the configured monthly budget. Unknown,
 negative or fractional-cent estimates are refused. Local and authenticated Codex
 subscription paths must have zero external transaction cost.
 
-Phase 9 requires one unavoidable execution gateway: validate current proof,
+The Phase 9 implementation uses one unavoidable execution gateway: validate current proof,
 atomically reserve against the aggregate ledger, invoke, reconcile actual spend,
 record events, and release/retain reservations conservatively on timeout. Restart
 must preserve reservations; retries use idempotency keys. Month rollover and
@@ -39,6 +39,15 @@ proof expiry policy is adapter-specific and must be documented when implemented.
 
 ## Validation
 
-Pure tests cover uncapped/disabled/expired/future verification, invalid costs,
-99/100-cent boundary, exhausted aggregate budget, outstanding reservations and
-approval non-bypass. There is no paid invocation path or atomic ledger in Phase 0.
+Pure and integration tests cover uncapped/disabled/expired/future verification,
+invalid costs, the 99/100-cent boundary, exact scoped approval, exhausted aggregate
+budget, concurrent reservation attempts, month rollover, restart recovery,
+idempotent retries and conservative ambiguous outcomes. Uncapped admission is
+tested against an instrumented adapter and proves that no provider call occurs.
+
+Provider and cap records, approvals, reservations and invocation summaries are
+canonical JSONL events. SQLite remains a rebuildable projection. Credential values
+are write-only API inputs stored in Windows Credential Manager and never enter
+contracts, events, logs, responses or projections. A generic OpenAI-compatible
+adapter can be configured through non-secret dotenv metadata; its credential is
+resolved only at the gateway boundary.

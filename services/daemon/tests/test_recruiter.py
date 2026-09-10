@@ -3,8 +3,12 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from gameagent.codex_bridge import CodexBridge
+from gameagent.constitution import ConstitutionError
 from gameagent.gm import make_plan
+from gameagent.knowledge import KnowledgeFabric
 from gameagent.models.api import ObjectiveCommand
 from gameagent.models.contracts import (
     AuditionReview,
@@ -51,6 +55,27 @@ def missing_test_draft() -> PlanDraft:
                     "objective": "Verify the build behaves consistently on supported platforms",
                     "required_capabilities": ["compatibility_testing"],
                     "deliverables": ["Compatibility test matrix"],
+                    "dependency_keys": [],
+                    "constraints": [],
+                    "required_evaluations": ["contract_compliance"],
+                }
+            ],
+            "questions": [],
+        }
+    )
+
+
+def ux_draft() -> PlanDraft:
+    return PlanDraft.model_validate(
+        {
+            "summary": "Review the player flow",
+            "steps": [
+                {
+                    "key": "ux",
+                    "title": "Review player flow",
+                    "objective": "Find evidence-backed usability risks",
+                    "required_capabilities": ["usability_analysis"],
+                    "deliverables": ["UX findings"],
                     "dependency_keys": [],
                     "constraints": [],
                     "required_evaluations": ["contract_compliance"],
@@ -140,6 +165,113 @@ def _policy():
     from gameagent.models.contracts import Policy
 
     return Policy(project_id="project-a")
+
+
+def test_recruiter_blocks_unqualified_expertise_before_audition(tmp_path):
+    service = recruiter(tmp_path)
+    service.knowledge_registry = KnowledgeFabric.from_environment(tmp_path / "knowledge").registry
+    task = make_plan(
+        "knowledge-gap",
+        "Check compatibility",
+        missing_test_draft(),
+        _policy(),
+        service.registry.roster(),
+    ).tasks[0]
+    record = service.prepare("knowledge-gap", task, "2026-09-09T12:00:00Z")
+    assert record.missing_expertise_capabilities == ["compatibility_testing"]
+    with pytest.raises(ConstitutionError):
+        service.begin_audition(record, "2026-09-09T12:01:00Z")
+
+    pack = service.knowledge_registry.latest("game-ux-core").model_copy(
+        update={"capability_ids": ["compatibility_testing"]}
+    )
+
+    class FixtureRegistry:
+        def packs(self):
+            return [pack]
+
+        def latest(self, pack_id):
+            return pack if pack_id == pack.pack_id else None
+
+    service.knowledge_registry = FixtureRegistry()
+    covered = service.prepare("covered", task, "2026-09-09T12:02:00Z")
+    assert not covered.missing_expertise_capabilities
+    assert covered.expertise_snapshot
+    assert {(item.pack_id, item.version) for item in covered.expertise_snapshot} == {
+        (item.pack_id, item.version) for item in covered.expertise_packs
+    }
+    assert (
+        service.begin_audition(covered, "2026-09-09T12:03:00Z").expertise_snapshot
+        == covered.expertise_snapshot
+    )
+
+
+def test_recruiter_reuses_existing_agent_and_diagnoses_composition(tmp_path):
+    service = recruiter(tmp_path)
+    fabric = KnowledgeFabric.from_environment(tmp_path / "knowledge")
+    service.knowledge_registry = fabric.registry
+    task = make_plan(
+        "existing-ux", "Review player flow", ux_draft(), _policy(), service.registry.roster()
+    ).tasks[0]
+
+    ready = service.prepare("reuse", task, "2026-09-10T08:00:00Z")
+    assert ready.state == "remediation_required"
+    assert ready.candidate.agent_id == "ux-specialist"
+    assert ready.diagnosis.problem == "none"
+    assert ready.diagnosis.action == "reuse_agent"
+
+    ux_pack = fabric.registry.latest("game-ux-core")
+    assert ux_pack is not None
+
+    class MissingPackRegistry:
+        def packs(self):
+            return []
+
+        def latest(self, _pack_id):
+            return None
+
+    service.knowledge_registry = MissingPackRegistry()
+    missing = service.prepare("missing-pack", task, "2026-09-10T08:01:00Z")
+    assert missing.diagnosis.problem == "missing_expertise_pack"
+    assert missing.diagnosis.action == "attach_or_build_pack"
+    assert missing.diagnosis.missing_pack_ids == ["game-ux-core"]
+
+    class OnePackRegistry:
+        def __init__(self, pack):
+            self.pack = pack
+
+        def packs(self):
+            return [self.pack]
+
+        def latest(self, pack_id):
+            return self.pack if pack_id == self.pack.pack_id else None
+
+    stale_pack = ux_pack.model_copy(
+        update={
+            "sources": [
+                source.model_copy(update={"fresh_until": "2026-01-01T00:00:00Z"})
+                for source in ux_pack.sources
+            ]
+        }
+    )
+    service.knowledge_registry = OnePackRegistry(stale_pack)
+    stale = service.prepare("stale-pack", task, "2026-09-10T08:02:00Z")
+    assert stale.diagnosis.problem == "stale_knowledge"
+    assert stale.diagnosis.action == "refresh_knowledge"
+
+    tool_pack = ux_pack.model_copy(update={"required_tool_ids": ["missing-ux-probe"]})
+    service.knowledge_registry = OnePackRegistry(tool_pack)
+    tool = service.prepare("missing-tool", task, "2026-09-10T08:03:00Z")
+    assert tool.diagnosis.problem == "missing_tool"
+    assert tool.diagnosis.missing_tool_ids == ["missing-ux-probe"]
+
+    service.knowledge_registry = OnePackRegistry(ux_pack)
+    model = service.prepare("model-gap", task, "2026-09-10T08:04:00Z", model_insufficient=True)
+    assert model.diagnosis.problem == "model_insufficient"
+    repeated = service.prepare(
+        "performance-gap", task, "2026-09-10T08:05:00Z", performance_failures=3
+    )
+    assert repeated.diagnosis.problem == "performance_failure"
 
 
 def test_recruited_agent_fills_plan_gap_and_replays(tmp_path):

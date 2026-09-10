@@ -9,14 +9,14 @@ import tempfile
 import threading
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 from urllib.parse import quote
 from uuid import uuid4
 
 import yaml
 from filelock import FileLock
 
-from gameagent.constitution import require, validate_model_routing
+from gameagent.constitution import provider_admission, require, validate_model_routing
 from gameagent.gm import plan_decisions, task_readiness, validate_plan
 from gameagent.intelligence import assemble_context as build_context
 from gameagent.intelligence import index_repository
@@ -27,24 +27,35 @@ from gameagent.models.api import (
     GateWaiverCommand,
     HumanReviewCommand,
     IntelligenceRefreshCommand,
+    LessonReviewCommand,
     PolicyCommand,
     ProjectCatalog,
     ProjectRemoval,
     ProjectSnapshot,
     ProjectSummary,
+    ProviderConfigureCommand,
+    ProviderDisableCommand,
     QARunCommand,
     ReconcileCommand,
+    SpendApprovalCommand,
     TaskProgressCommand,
     TaskProposal,
     TaskStartCommand,
 )
 from gameagent.models.contracts import (
+    AgentDefinition,
+    BudgetReservation,
+    BudgetReservationEvent,
     ContextPackage,
     Evaluation,
     EvaluationRecordedEvent,
     Event,
     Evidence,
     EvidenceRecordedEvent,
+    ExperienceLesson,
+    ExperienceLessonEvent,
+    ExperienceObservation,
+    ExperienceObservedEvent,
     ExternalChangeEvent,
     ExternalChangePayload,
     GateWaivedEvent,
@@ -55,20 +66,33 @@ from gameagent.models.contracts import (
     InboxEvent,
     InitializationReport,
     IntelligenceEvent,
+    LeadDomainAssessment,
     ModelBenchmark,
     ModelBenchmarkEvent,
     ModelRoutingEvent,
     ModelRoutingRecord,
+    OnboardingEvent,
+    OnboardingEventPayload,
+    PaidInvocationEvent,
+    PaidInvocationRecord,
     Permissions,
     PlanEvent,
     Policy,
     PolicyUpdatedEvent,
+    ProductionDomainInspection,
+    ProductionDomainInspectionEvent,
     ProductionPlan,
     Project,
     ProjectInitializedEvent,
     ProjectInitializedPayload,
     ProjectIntelligence,
+    ProjectOnboarding,
     ProjectReconciledEvent,
+    Provider,
+    ProviderConfiguredEvent,
+    ProviderConfiguredPayload,
+    ProviderEvent,
+    ProviderPayload,
     QAReport,
     ReconciliationPayload,
     ReconciliationRecord,
@@ -76,6 +100,9 @@ from gameagent.models.contracts import (
     RecruitmentRecord,
     Requirements,
     SourceRef,
+    SpendApproval,
+    SpendApprovedEvent,
+    SpendEvent,
     TaskContract,
     TaskEvent,
     TaskEventPayload,
@@ -85,6 +112,8 @@ from gameagent.models.contracts import (
     WorkspaceBaselineEvent,
     WorkspaceEntry,
     WorkspaceFingerprint,
+    WorldResearch,
+    WorldResearchEvent,
 )
 from gameagent.persistence.history import append, read_history, write_new
 from gameagent.persistence.projection import Projection
@@ -94,6 +123,9 @@ from gameagent.qa import (
     human_review_result,
     validate_gate_evaluation,
 )
+
+if TYPE_CHECKING:
+    from gameagent.knowledge import KnowledgeRouter
 
 
 def timestamp() -> str:
@@ -357,6 +389,99 @@ def initialize(root: Path, profile: Project, intake: InitializationReport | None
     return target
 
 
+def _onboarding_events(onboarding: ProjectOnboarding, start_sequence: int) -> list[OnboardingEvent]:
+    correlation_id = onboarding.onboarding_id
+    sequence = start_sequence
+    events: list[OnboardingEvent] = []
+
+    def record(
+        event_type: Literal[
+            "project.reconnaissance_started",
+            "project.reconnaissance_completed",
+            "domain.assessment_started",
+            "domain.assessment_completed",
+            "domain.assumption_recorded",
+            "domain.input_needed_later",
+            "domain.input_needed_now",
+            "project.reconciliation_started",
+            "project.reconciliation_completed",
+            "project.onboarding_completed",
+        ],
+        detail: str,
+        *,
+        domain: str | None = None,
+        assessment: LeadDomainAssessment | None = None,
+        final: ProjectOnboarding | None = None,
+    ) -> None:
+        nonlocal sequence
+        events.append(
+            OnboardingEvent(
+                event_id=f"evt-{uuid4()}",
+                project_id=onboarding.project_id,
+                timestamp=onboarding.completed_at,
+                actor_type="system",
+                actor_id="onboarding-gm",
+                correlation_id=correlation_id,
+                task_id=None,
+                sequence=sequence,
+                event_type=event_type,
+                payload=OnboardingEventPayload(
+                    domain=domain,
+                    detail=detail,
+                    assessment=assessment,
+                    onboarding=final,
+                ),
+            )
+        )
+        sequence += 1
+
+    record(
+        "project.reconnaissance_started",
+        "The GM began a bounded, read-only repository reconnaissance.",
+    )
+    record("project.reconnaissance_completed", onboarding.reconnaissance_summary)
+    for assessment in onboarding.assessments:
+        label = assessment.domain.replace("_", " ")
+        record(
+            "domain.assessment_started",
+            f"The {label} Lead began its domain assessment.",
+            domain=assessment.domain,
+        )
+        record(
+            "domain.assessment_completed",
+            assessment.summary,
+            domain=assessment.domain,
+            assessment=assessment,
+        )
+        for assumption in assessment.assumptions:
+            record(
+                "domain.assumption_recorded",
+                assumption.statement,
+                domain=assessment.domain,
+            )
+        for unknown in assessment.unknowns:
+            record(
+                (
+                    "domain.input_needed_now"
+                    if unknown.blocks_current_work
+                    else "domain.input_needed_later"
+                ),
+                unknown.question,
+                domain=assessment.domain,
+            )
+    record(
+        "project.reconciliation_started",
+        "The GM began reconciling duplicate questions, assumptions, and cross-domain findings.",
+    )
+    record("project.reconciliation_completed", onboarding.reconciliation_summary)
+    record(
+        "project.onboarding_completed",
+        "Domain-led onboarding completed and its project understanding became active.",
+        final=onboarding,
+    )
+    return events
+
+
 class ProjectStore:
     def __init__(self, root: Path, *, max_segment_bytes: int = 1024 * 1024) -> None:
         self.root = root.resolve(strict=True)
@@ -435,6 +560,15 @@ class ProjectStore:
         recruitments: dict[str, RecruitmentRecord] = {}
         model_benchmarks: dict[str, ModelBenchmark] = {}
         model_routing_records: dict[str, ModelRoutingRecord] = {}
+        providers: dict[str, Provider] = {}
+        spend_approvals: dict[str, SpendApproval] = {}
+        budget_reservations: dict[str, BudgetReservation] = {}
+        paid_invocations: dict[str, PaidInvocationRecord] = {}
+        production_domain_inspections: dict[str, ProductionDomainInspection] = {}
+        onboarding: ProjectOnboarding | None = None
+        observations: dict[str, ExperienceObservation] = {}
+        lessons: dict[str, ExperienceLesson] = {}
+        research_records: dict[str, WorldResearch] = {}
         for index, event in enumerate(events):
             require(
                 event.project_id == project.project.id, "project_scope_mismatch", event.event_id
@@ -474,7 +608,7 @@ class ProjectStore:
                 policy = event.payload
             elif isinstance(event, TaskEvent):
                 require(
-                    event.actor_type in {"human", "external"}
+                    event.actor_type in {"human", "external", "system"}
                     and event.task_id == event.payload.task_id
                     and event.payload.task_id in tasks,
                     "invalid_task_registration_event",
@@ -495,6 +629,20 @@ class ProjectStore:
                         f"{task.state} -> BLOCKED",
                     )
                     state = "BLOCKED"
+                elif event.event_type == "task.blocked_knowledge":
+                    require(
+                        task.state in {"QUEUED", "READY", "RUNNING"},
+                        "invalid_task_transition",
+                        f"{task.state} -> BLOCKED_KNOWLEDGE",
+                    )
+                    state = "BLOCKED_KNOWLEDGE"
+                elif event.event_type == "task.knowledge_resolved":
+                    require(
+                        task.state == "BLOCKED_KNOWLEDGE",
+                        "invalid_task_transition",
+                        f"{task.state} -> READY",
+                    )
+                    state = "READY"
                 elif event.event_type == "task.completed":
                     require(
                         task.state in {"RUNNING", "BLOCKED"},
@@ -655,6 +803,17 @@ class ProjectStore:
                     worker_record.worker_id,
                 )
                 previous = workers.get(worker_record.worker_id)
+                if previous is not None:
+                    require(
+                        (previous.knowledge_packet, previous.specialist, previous.context_package)
+                        == (
+                            worker_record.knowledge_packet,
+                            worker_record.specialist,
+                            worker_record.context_package,
+                        ),
+                        "worker_composition_immutable",
+                        worker_record.worker_id,
+                    )
                 require(
                     gm is None or gm.thread_id != worker_record.thread_id,
                     "thread_already_bound",
@@ -732,9 +891,17 @@ class ProjectStore:
                     event.event_id,
                 )
                 recruitment_previous = recruitments.get(record.recruitment_id)
+                if recruitment_previous and recruitment_previous.state == "auditioning":
+                    require(
+                        record.expertise_snapshot == recruitment_previous.expertise_snapshot
+                        and record.expertise_packs == recruitment_previous.expertise_packs,
+                        "recruitment_expertise_changed",
+                        record.recruitment_id,
+                    )
                 transitions = {
-                    None: {"candidate_composed"},
-                    "candidate_composed": {"auditioning"},
+                    None: {"candidate_composed", "remediation_required"},
+                    "candidate_composed": {"candidate_composed", "auditioning"},
+                    "remediation_required": set(),
                     "auditioning": {"probation", "rejected"},
                     "probation": set(),
                     "rejected": set(),
@@ -817,6 +984,264 @@ class ProjectStore:
                 )
                 validate_model_routing(routing)
                 model_routing_records[routing.routing_id] = routing
+            elif isinstance(event, ProviderConfiguredEvent):
+                configured = event.payload.provider
+                require(
+                    event.actor_type == "human"
+                    and event.actor_id == "local-director"
+                    and event.task_id is None,
+                    "human_authority_required",
+                    event.event_id,
+                )
+                if configured.billing == "paid" and not configured.cap.verified:
+                    require(
+                        configured.state == "DISABLED_UNCAPPED",
+                        "disabled_uncapped",
+                        configured.provider_id,
+                    )
+                providers[configured.provider_id] = configured
+            elif isinstance(event, ProviderEvent):
+                disabled_provider = providers.get(event.payload.provider_id)
+                require(
+                    event.actor_type == "human"
+                    and disabled_provider is not None
+                    and event.task_id is None,
+                    "invalid_provider_event",
+                    event.event_id,
+                )
+                assert disabled_provider is not None
+                providers[disabled_provider.provider_id] = disabled_provider.model_copy(
+                    update={"state": "DISABLED"}
+                )
+            elif isinstance(event, SpendApprovedEvent):
+                approval = event.payload
+                require(
+                    event.actor_type == "human"
+                    and event.actor_id == "local-director"
+                    and approval.project_id == project.project.id
+                    and approval.provider_id in providers
+                    and datetime.fromisoformat(approval.approved_at.replace("Z", "+00:00"))
+                    < datetime.fromisoformat(approval.expires_at.replace("Z", "+00:00")),
+                    "invalid_spend_approval",
+                    event.event_id,
+                )
+                previous_approval = spend_approvals.get(approval.approval_id)
+                require(
+                    previous_approval is None or previous_approval == approval,
+                    "request_id_conflict",
+                    approval.approval_id,
+                )
+                spend_approvals[approval.approval_id] = approval
+            elif isinstance(event, BudgetReservationEvent):
+                reservation = event.payload
+                previous_reservation = budget_reservations.get(reservation.reservation_id)
+                require(
+                    event.actor_type == "system"
+                    and event.actor_id == "provider-gateway"
+                    and reservation.project_id == project.project.id
+                    and reservation.provider_id in providers,
+                    "invalid_budget_reservation",
+                    event.event_id,
+                )
+                if previous_reservation is not None:
+                    require(
+                        (
+                            reservation.project_id,
+                            reservation.provider_id,
+                            reservation.request_id,
+                            reservation.task_id,
+                            reservation.month,
+                            reservation.predicted_cents,
+                            reservation.created_at,
+                        )
+                        == (
+                            previous_reservation.project_id,
+                            previous_reservation.provider_id,
+                            previous_reservation.request_id,
+                            previous_reservation.task_id,
+                            previous_reservation.month,
+                            previous_reservation.predicted_cents,
+                            previous_reservation.created_at,
+                        ),
+                        "reservation_binding_changed",
+                        reservation.reservation_id,
+                    )
+                    transitions = {
+                        "reserved": {"reserved", "in_flight", "released"},
+                        "in_flight": {"in_flight", "settled", "uncertain"},
+                        "uncertain": {"uncertain", "settled"},
+                        "settled": {"settled"},
+                        "released": {"released"},
+                    }
+                    require(
+                        reservation.state in transitions[previous_reservation.state],
+                        "invalid_reservation_transition",
+                        f"{previous_reservation.state} -> {reservation.state}",
+                    )
+                require(
+                    (reservation.actual_cents is not None) == (reservation.state == "settled"),
+                    "invalid_reservation_cost",
+                    reservation.reservation_id,
+                )
+                budget_reservations[reservation.reservation_id] = reservation
+            elif isinstance(event, PaidInvocationEvent):
+                invocation = event.payload
+                invocation_reservation = budget_reservations.get(invocation.reservation_id)
+                require(
+                    event.actor_type == "system"
+                    and event.actor_id == "provider-gateway"
+                    and invocation.project_id == project.project.id
+                    and invocation_reservation is not None
+                    and invocation.provider_id == invocation_reservation.provider_id
+                    and invocation.request_id == invocation_reservation.request_id
+                    and invocation.predicted_cents == invocation_reservation.predicted_cents,
+                    "invalid_paid_invocation",
+                    event.event_id,
+                )
+                previous_invocation = paid_invocations.get(invocation.invocation_id)
+                require(
+                    previous_invocation is None or previous_invocation == invocation,
+                    "request_id_conflict",
+                    invocation.invocation_id,
+                )
+                paid_invocations[invocation.invocation_id] = invocation
+            elif isinstance(event, SpendEvent):
+                require(
+                    event.actor_type == "system" and event.payload.provider_id in providers,
+                    "invalid_provider_spend",
+                    event.event_id,
+                )
+            elif isinstance(event, ProductionDomainInspectionEvent):
+                inspection = event.payload
+                require(
+                    event.actor_type == "system"
+                    and event.actor_id == inspection.tool_id
+                    and event.task_id == inspection.task_id
+                    and inspection.project_id == project.project.id
+                    and inspection.task_id in tasks
+                    and inspection.evidence_id in evidence
+                    and inspection.evaluation_id in evaluations
+                    and inspection.inspection_id not in production_domain_inspections,
+                    "invalid_production_domain_inspection",
+                    event.event_id,
+                )
+                production_domain_inspections[inspection.inspection_id] = inspection
+            elif isinstance(event, OnboardingEvent):
+                require(
+                    event.actor_type == "system"
+                    and event.actor_id == "onboarding-gm"
+                    and event.task_id is None,
+                    "invalid_onboarding_event",
+                    event.event_id,
+                )
+                if event.event_type == "domain.assessment_completed":
+                    require(
+                        event.payload.assessment is not None
+                        and event.payload.domain == event.payload.assessment.domain,
+                        "invalid_domain_assessment_event",
+                        event.event_id,
+                    )
+                if event.event_type == "project.onboarding_completed":
+                    require(
+                        event.payload.onboarding is not None
+                        and event.payload.onboarding.project_id == project.project.id,
+                        "invalid_onboarding_completion",
+                        event.event_id,
+                    )
+                    onboarding = event.payload.onboarding
+            elif isinstance(event, WorldResearchEvent):
+                research = event.payload
+                require(
+                    event.actor_type == "system"
+                    and event.actor_id == "research-specialist"
+                    and research.project_id == project.project.id
+                    and research.task_id in tasks
+                    and research.research_id not in research_records
+                    and (
+                        research.state != "available"
+                        or (
+                            tasks[research.task_id].permissions.network
+                            and research.source is not None
+                            and research.artifact is not None
+                            and research.excerpt is not None
+                        )
+                    ),
+                    "invalid_research_record",
+                    research.research_id,
+                )
+                research_records[research.research_id] = research
+            elif isinstance(event, ExperienceObservedEvent):
+                observation = event.payload
+                evaluation = evaluations.get(observation.evaluation_id or "")
+                require(
+                    event.actor_type == "system"
+                    and event.actor_id == "experience-capture"
+                    and observation.project_id == project.project.id
+                    and observation.state == "observed"
+                    and observation.scope == "project_private"
+                    and evaluation is not None
+                    and evaluation.task_id == observation.task_id
+                    and observation.evidence_ids == evaluation.evidence_ids
+                    and observation.outcome == evaluation.result,
+                    "invalid_experience_observation",
+                    observation.observation_id,
+                )
+                previous_observation = observations.get(observation.observation_id)
+                require(
+                    previous_observation is None or previous_observation == observation,
+                    "observation_immutable",
+                    observation.observation_id,
+                )
+                observations[observation.observation_id] = observation
+            elif isinstance(event, ExperienceLessonEvent):
+                lesson = event.payload
+                require(
+                    lesson.project_id == project.project.id
+                    and set(lesson.observation_ids) <= observations.keys(),
+                    "invalid_lesson_evidence",
+                    lesson.lesson_id,
+                )
+                previous_lesson = lessons.get(lesson.lesson_id)
+                if previous_lesson is None:
+                    require(
+                        event.actor_type == "system"
+                        and event.actor_id == "experience-distiller"
+                        and lesson.state in {"candidate", "repeated"}
+                        and lesson.scope == "project"
+                        and lesson.reviewer_id is None,
+                        "invalid_lesson_proposal",
+                        lesson.lesson_id,
+                    )
+                else:
+                    require(
+                        event.actor_type == "human"
+                        and lesson.reviewer_id == "human"
+                        and lesson.proposer_id != lesson.reviewer_id
+                        and lesson.state in {"validated", "rejected", "expired", "superseded"}
+                        and lesson.review_detail is not None
+                        and lesson.reviewed_at is not None,
+                        "independent_lesson_review_required",
+                        lesson.lesson_id,
+                    )
+                    unchanged = {
+                        "state",
+                        "reviewer_id",
+                        "review_detail",
+                        "reviewed_at",
+                        "confidence",
+                    }
+                    require(
+                        lesson.model_dump(exclude=unchanged)
+                        == previous_lesson.model_dump(exclude=unchanged),
+                        "lesson_content_changed",
+                        lesson.lesson_id,
+                    )
+                    require(
+                        previous_lesson.state not in {"rejected", "expired", "superseded"},
+                        "terminal_lesson_state",
+                        lesson.lesson_id,
+                    )
+                lessons[lesson.lesson_id] = lesson
             else:
                 # Do not silently project future event semantics as current Phase 1 state.
                 require(False, "unsupported_projection_event", event.event_type)
@@ -842,12 +1267,216 @@ class ProjectStore:
             recruitments=list(recruitments.values()),
             model_benchmarks=list(model_benchmarks.values()),
             model_routing_records=list(model_routing_records.values()),
+            providers=list(providers.values()),
+            spend_approvals=list(spend_approvals.values()),
+            budget_reservations=list(budget_reservations.values()),
+            paid_invocations=list(paid_invocations.values()),
+            production_domain_inspections=list(production_domain_inspections.values()),
+            onboarding=onboarding,
+            experience_observations=list(observations.values()),
+            experience_lessons=list(lessons.values()),
+            research_records=list(research_records.values()),
             workspace=workspace,
             reconciliations=list(reconciliations.values()),
             requires_reconciliation=any(
                 record.state == "unresolved" for record in reconciliations.values()
             ),
         ), events
+
+    def record_research(self, research: WorldResearch) -> WorldResearch:
+        with self.lock:
+            snapshot, events = self._replay()
+            task = self._task(snapshot, research.task_id)
+            require(
+                research.project_id == task.project_id
+                and (research.state != "available" or task.permissions.network),
+                "research_scope_mismatch",
+                research.research_id,
+            )
+            append(
+                self.directory / "events",
+                WorldResearchEvent(
+                    event_id=f"evt-{research.research_id}",
+                    project_id=research.project_id,
+                    task_id=research.task_id,
+                    timestamp=research.researched_at,
+                    actor_type="system",
+                    actor_id="research-specialist",
+                    correlation_id=research.research_id,
+                    sequence=len(events) + 1,
+                    event_type="knowledge.research_recorded",
+                    payload=research,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return research
+
+    def capture_experience(self) -> ProjectSnapshot:
+        """Idempotent local evidence capture; never promotes or exports project data."""
+        with self.lock:
+            snapshot, events = self._replay()
+            known = {item.evaluation_id for item in snapshot.experience_observations}
+            sequence = len(events)
+            for evaluation in snapshot.evaluations:
+                if evaluation.evaluation_id in known:
+                    continue
+                task = self._task(snapshot, evaluation.task_id)
+                worker = next(
+                    (item for item in reversed(snapshot.workers) if item.task_id == task.task_id),
+                    None,
+                )
+                observation = ExperienceObservation(
+                    observation_id=f"observation-{evaluation.evaluation_id}",
+                    project_id=evaluation.project_id,
+                    task_id=task.task_id,
+                    capability_ids=task.required_capabilities,
+                    conclusion=evaluation.rationale,
+                    state="observed",
+                    evidence_ids=evaluation.evidence_ids,
+                    source=SourceRef(
+                        uri=f"gan:evaluation:{evaluation.evaluation_id}",
+                        media_type="application/json",
+                        sha256=hashlib.sha256(evaluation.model_dump_json().encode()).hexdigest(),
+                    ),
+                    confidence=0.5,
+                    created_at=timestamp(),
+                    outcome=evaluation.result,
+                    evaluation_id=evaluation.evaluation_id,
+                    context_tags=[evaluation.gate_id, evaluation.claim, evaluation.authority],
+                    agent_id=worker.specialist.agent_id if worker and worker.specialist else None,
+                    method_ids=worker.knowledge_packet.selected_method_ids
+                    if worker and worker.knowledge_packet
+                    else [],
+                    expertise_packs=worker.expertise_packs if worker else [],
+                )
+                sequence += 1
+                append(
+                    self.directory / "events",
+                    ExperienceObservedEvent(
+                        event_id=f"evt-{observation.observation_id}",
+                        project_id=evaluation.project_id,
+                        timestamp=observation.created_at,
+                        actor_type="system",
+                        actor_id="experience-capture",
+                        correlation_id=observation.observation_id,
+                        task_id=task.task_id,
+                        sequence=sequence,
+                        event_type="experience.observed",
+                        payload=observation,
+                    ),
+                    self.max_segment_bytes,
+                )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return replayed
+
+    def distill_experience(self) -> ProjectSnapshot:
+        """Propose repeated QA patterns, explicitly without causal or global claims."""
+        self.capture_experience()
+        with self.lock:
+            snapshot, events = self._replay()
+            groups: dict[str, list[ExperienceObservation]] = {}
+            for observation in snapshot.experience_observations:
+                if observation.outcome == "failed" and observation.context_tags:
+                    groups.setdefault(observation.context_tags[0], []).append(observation)
+            known = {item.lesson_id for item in snapshot.experience_lessons}
+            sequence = len(events)
+            for gate, group in sorted(groups.items()):
+                if len({item.task_id for item in group}) < 2:
+                    continue
+                lesson_id = (
+                    "lesson-"
+                    + hashlib.sha256(
+                        json.dumps(sorted(item.observation_id for item in group)).encode()
+                    ).hexdigest()[:24]
+                )
+                if lesson_id in known:
+                    continue
+                lesson = ExperienceLesson(
+                    lesson_id=lesson_id,
+                    project_id=snapshot.project.project.id,
+                    observation_ids=[item.observation_id for item in group],
+                    capability_ids=sorted({cap for item in group for cap in item.capability_ids}),
+                    statement=f"Repeated failures at {gate}: include an explicit check of this gate before submitting similar work.",
+                    applicability=f"This project's tasks requiring {gate}.",
+                    limitations=[
+                        "Correlation only; no controlled comparison establishes causality.",
+                        "Project-local QA outcomes do not establish a universal professional rule.",
+                        "The underlying failures and corrective action require independent review.",
+                    ],
+                    state="repeated",
+                    proposer_id="experience-distiller",
+                    created_at=timestamp(),
+                    confidence=0.4,
+                )
+                sequence += 1
+                append(
+                    self.directory / "events",
+                    ExperienceLessonEvent(
+                        event_id=f"evt-{lesson_id}",
+                        project_id=lesson.project_id,
+                        timestamp=lesson.created_at,
+                        actor_type="system",
+                        actor_id="experience-distiller",
+                        correlation_id=lesson_id,
+                        task_id=None,
+                        sequence=sequence,
+                        event_type="experience.lesson_recorded",
+                        payload=lesson,
+                    ),
+                    self.max_segment_bytes,
+                )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return replayed
+
+    def review_lesson(self, command: LessonReviewCommand) -> ExperienceLesson:
+        with self.lock:
+            snapshot, events = self._replay()
+            lesson = next(
+                (
+                    item
+                    for item in snapshot.experience_lessons
+                    if item.lesson_id == command.lesson_id
+                ),
+                None,
+            )
+            require(lesson is not None, "lesson_not_found", command.lesson_id)
+            assert lesson is not None
+            require(
+                lesson.state not in {"rejected", "expired", "superseded"},
+                "terminal_lesson_state",
+                lesson.lesson_id,
+            )
+            updated = lesson.model_copy(
+                update={
+                    "state": command.decision,
+                    "reviewer_id": "human",
+                    "review_detail": command.detail,
+                    "reviewed_at": timestamp(),
+                }
+            )
+            append(
+                self.directory / "events",
+                ExperienceLessonEvent(
+                    event_id=f"evt-{uuid4()}",
+                    project_id=lesson.project_id,
+                    timestamp=updated.reviewed_at or timestamp(),
+                    actor_type="human",
+                    actor_id="human",
+                    correlation_id=lesson.lesson_id,
+                    task_id=None,
+                    sequence=len(events) + 1,
+                    event_type="experience.lesson_recorded",
+                    payload=updated,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return updated
 
     def record_model_benchmark(self, benchmark: ModelBenchmark) -> ModelBenchmark:
         with self.lock:
@@ -967,6 +1596,70 @@ class ProjectStore:
         evaluation: Evaluation,
     ) -> tuple[Evidence, Evaluation]:
         return self.record_qa_result(request_id, evidence, evaluation, actor_id="engine-adapter")
+
+    def record_domain_inspection(
+        self,
+        request_id: str,
+        inspection: ProductionDomainInspection,
+        evidence: Evidence,
+        evaluation: Evaluation,
+    ) -> ProductionDomainInspection:
+        existing = next(
+            (
+                item
+                for item in self.snapshot().production_domain_inspections
+                if item.inspection_id == inspection.inspection_id
+            ),
+            None,
+        )
+        if existing is not None:
+            require(existing == inspection, "request_id_conflict", request_id)
+            return existing
+        self.record_qa_result(
+            f"{request_id}-domain",
+            evidence,
+            evaluation,
+            actor_id=inspection.tool_id,
+        )
+        with self.lock:
+            snapshot, events = self._replay()
+            event_id = f"evt-{request_id}-domain-inspection"
+            previous = next((item for item in events if item.event_id == event_id), None)
+            if previous is not None:
+                require(
+                    isinstance(previous, ProductionDomainInspectionEvent)
+                    and previous.payload == inspection,
+                    "request_id_conflict",
+                    request_id,
+                )
+                return inspection
+            require(
+                any(item.evidence_id == inspection.evidence_id for item in snapshot.evidence)
+                and any(
+                    item.evaluation_id == inspection.evaluation_id for item in snapshot.evaluations
+                ),
+                "domain_evidence_missing",
+                inspection.inspection_id,
+            )
+            append(
+                self.directory / "events",
+                ProductionDomainInspectionEvent(
+                    event_id=event_id,
+                    project_id=inspection.project_id,
+                    timestamp=inspection.inspected_at,
+                    actor_type="system",
+                    actor_id=inspection.tool_id,
+                    correlation_id=request_id,
+                    task_id=inspection.task_id,
+                    sequence=snapshot.cursor + 1,
+                    event_type="production_domain.inspected",
+                    payload=inspection,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return inspection
 
     def record_qa_result(
         self,
@@ -1413,6 +2106,13 @@ class ProjectStore:
                 record.worker_id,
             )
             previous = next((w for w in snapshot.workers if w.worker_id == record.worker_id), None)
+            if previous is not None:
+                require(
+                    (previous.knowledge_packet, previous.specialist, previous.context_package)
+                    == (record.knowledge_packet, record.specialist, record.context_package),
+                    "worker_composition_immutable",
+                    record.worker_id,
+                )
             require(
                 previous is None
                 or (previous.thread_id, previous.task_id, previous.cwd)
@@ -1445,6 +2145,356 @@ class ProjectStore:
             self._sync(replayed, committed)
             return record
 
+    def configure_provider(self, command: ProviderConfigureCommand) -> Provider:
+        with self.lock:
+            snapshot, events = self._replay()
+            provider = command.provider
+            if provider.billing == "paid" and not provider.cap.verified:
+                provider = provider.model_copy(update={"state": "DISABLED_UNCAPPED"})
+            event_id = f"evt-{command.request_id}"
+            duplicate = next((item for item in events if item.event_id == event_id), None)
+            payload = ProviderConfiguredPayload(request_id=command.request_id, provider=provider)
+            if duplicate is not None:
+                require(
+                    isinstance(duplicate, ProviderConfiguredEvent) and duplicate.payload == payload,
+                    "request_id_conflict",
+                    command.request_id,
+                )
+                return provider
+            append(
+                self.directory / "events",
+                ProviderConfiguredEvent(
+                    event_id=event_id,
+                    project_id=snapshot.project.project.id,
+                    timestamp=timestamp(),
+                    actor_type="human",
+                    actor_id="local-director",
+                    correlation_id=command.request_id,
+                    task_id=None,
+                    sequence=snapshot.cursor + 1,
+                    event_type="provider.configured",
+                    payload=payload,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return provider
+
+    def disable_provider(self, command: ProviderDisableCommand) -> Provider:
+        with self.lock:
+            snapshot, events = self._replay()
+            provider = next(
+                (item for item in snapshot.providers if item.provider_id == command.provider_id),
+                None,
+            )
+            require(provider is not None, "provider_not_found", command.provider_id)
+            assert provider is not None
+            event_id = f"evt-{command.request_id}"
+            duplicate = next((item for item in events if item.event_id == event_id), None)
+            if duplicate is not None:
+                require(
+                    isinstance(duplicate, ProviderEvent)
+                    and duplicate.payload.provider_id == provider.provider_id
+                    and duplicate.payload.reason == command.reason,
+                    "request_id_conflict",
+                    command.request_id,
+                )
+                return provider.model_copy(update={"state": "DISABLED"})
+            append(
+                self.directory / "events",
+                ProviderEvent(
+                    event_id=event_id,
+                    project_id=snapshot.project.project.id,
+                    timestamp=timestamp(),
+                    actor_type="human",
+                    actor_id="local-director",
+                    correlation_id=command.request_id,
+                    task_id=None,
+                    sequence=snapshot.cursor + 1,
+                    event_type="provider.disabled",
+                    payload=ProviderPayload(
+                        provider_id=provider.provider_id, reason=command.reason
+                    ),
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return provider.model_copy(update={"state": "DISABLED"})
+
+    def approve_spend(
+        self, command: SpendApprovalCommand, *, now: datetime | None = None
+    ) -> SpendApproval:
+        approved_at = now or datetime.now(UTC)
+        require(approved_at.tzinfo is not None, "invalid_time", "Use a timezone-aware clock")
+        expires_at = datetime.fromisoformat(command.expires_at.replace("Z", "+00:00"))
+        require(expires_at > approved_at, "invalid_approval_expiry", command.expires_at)
+        with self.lock:
+            snapshot, events = self._replay()
+            require(
+                any(item.provider_id == command.provider_id for item in snapshot.providers),
+                "provider_not_found",
+                command.provider_id,
+            )
+            event_id = f"evt-{command.request_id}"
+            duplicate = next((item for item in events if item.event_id == event_id), None)
+            if duplicate is not None:
+                require(
+                    isinstance(duplicate, SpendApprovedEvent)
+                    and duplicate.payload.provider_id == command.provider_id
+                    and duplicate.payload.request_id == command.invocation_request_id
+                    and duplicate.payload.amount_cents == command.amount_cents
+                    and duplicate.payload.expires_at == command.expires_at,
+                    "request_id_conflict",
+                    command.request_id,
+                )
+                assert isinstance(duplicate, SpendApprovedEvent)
+                return duplicate.payload
+            approval = SpendApproval(
+                approval_id=f"approval-{command.request_id}",
+                project_id=snapshot.project.project.id,
+                provider_id=command.provider_id,
+                request_id=command.invocation_request_id,
+                amount_cents=command.amount_cents,
+                approved_at=approved_at.astimezone(UTC)
+                .isoformat(timespec="microseconds")
+                .replace("+00:00", "Z"),
+                expires_at=command.expires_at,
+            )
+            append(
+                self.directory / "events",
+                SpendApprovedEvent(
+                    event_id=event_id,
+                    project_id=approval.project_id,
+                    timestamp=approval.approved_at,
+                    actor_type="human",
+                    actor_id="local-director",
+                    correlation_id=command.request_id,
+                    task_id=None,
+                    sequence=snapshot.cursor + 1,
+                    event_type="provider.spend_approved",
+                    payload=approval,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return approval
+
+    @staticmethod
+    def budget_totals(snapshot: ProjectSnapshot, month: str) -> tuple[int, int]:
+        settled = sum(
+            item.actual_cents or 0
+            for item in snapshot.budget_reservations
+            if item.month == month and item.state == "settled"
+        )
+        reserved = sum(
+            item.predicted_cents
+            for item in snapshot.budget_reservations
+            if item.month == month and item.state in {"reserved", "in_flight", "uncertain"}
+        )
+        return settled, reserved
+
+    def reserve_provider_budget(
+        self,
+        provider_id: str,
+        request_id: str,
+        predicted_cents: int,
+        *,
+        task_id: str | None = None,
+        now: datetime | None = None,
+    ) -> BudgetReservation:
+        reserved_at = now or datetime.now(UTC)
+        require(reserved_at.tzinfo is not None, "invalid_time", "Use a timezone-aware clock")
+        normalized_now = reserved_at.astimezone(UTC)
+        month = normalized_now.strftime("%Y-%m")
+        reservation_id = f"reservation-{request_id}"
+        with self.lock:
+            snapshot, events = self._replay()
+            existing = next(
+                (
+                    item
+                    for item in snapshot.budget_reservations
+                    if item.reservation_id == reservation_id
+                ),
+                None,
+            )
+            if existing is not None:
+                require(
+                    (
+                        existing.provider_id,
+                        existing.request_id,
+                        existing.task_id,
+                        existing.predicted_cents,
+                    )
+                    == (provider_id, request_id, task_id, predicted_cents),
+                    "request_id_conflict",
+                    request_id,
+                )
+                return existing
+            provider = next(
+                (item for item in snapshot.providers if item.provider_id == provider_id), None
+            )
+            require(provider is not None, "provider_not_found", provider_id)
+            assert provider is not None
+            if task_id is not None:
+                self._task(snapshot, task_id)
+            settled, reserved = self.budget_totals(snapshot, month)
+            human_approved = any(
+                approval.provider_id == provider_id
+                and approval.request_id == request_id
+                and approval.amount_cents == predicted_cents
+                and datetime.fromisoformat(approval.approved_at.replace("Z", "+00:00"))
+                <= normalized_now
+                < datetime.fromisoformat(approval.expires_at.replace("Z", "+00:00"))
+                for approval in snapshot.spend_approvals
+            )
+            admission = provider_admission(
+                provider,
+                snapshot.policy,
+                predicted_cents=predicted_cents,
+                spent_cents=settled,
+                reserved_cents=reserved,
+                now=normalized_now,
+                human_approved=human_approved,
+            )
+            require(
+                admission == "allowed",
+                "human_approval_required",
+                f"Approve the {predicted_cents}-cent upper bound for {request_id}",
+            )
+            instant = normalized_now.isoformat(timespec="microseconds").replace("+00:00", "Z")
+            reservation = BudgetReservation(
+                reservation_id=reservation_id,
+                project_id=snapshot.project.project.id,
+                provider_id=provider_id,
+                request_id=request_id,
+                task_id=task_id,
+                month=month,
+                predicted_cents=predicted_cents,
+                state="reserved",
+                created_at=instant,
+                updated_at=instant,
+            )
+            append(
+                self.directory / "events",
+                BudgetReservationEvent(
+                    event_id=f"evt-{reservation_id}-reserved",
+                    project_id=reservation.project_id,
+                    timestamp=instant,
+                    actor_type="system",
+                    actor_id="provider-gateway",
+                    correlation_id=request_id,
+                    task_id=task_id,
+                    sequence=snapshot.cursor + 1,
+                    event_type="provider.reservation_updated",
+                    payload=reservation,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return reservation
+
+    def update_provider_reservation(
+        self,
+        reservation_id: str,
+        state: Literal["in_flight", "settled", "released", "uncertain"],
+        *,
+        actual_cents: int | None = None,
+        now: datetime | None = None,
+    ) -> BudgetReservation:
+        changed_at = (now or datetime.now(UTC)).astimezone(UTC)
+        with self.lock:
+            snapshot, events = self._replay()
+            previous = next(
+                (
+                    item
+                    for item in snapshot.budget_reservations
+                    if item.reservation_id == reservation_id
+                ),
+                None,
+            )
+            require(previous is not None, "reservation_not_found", reservation_id)
+            assert previous is not None
+            if previous.state == state:
+                require(
+                    previous.actual_cents == (actual_cents if state == "settled" else None),
+                    "request_id_conflict",
+                    reservation_id,
+                )
+                return previous
+            updated = previous.model_copy(
+                update={
+                    "state": state,
+                    "actual_cents": actual_cents if state == "settled" else None,
+                    "updated_at": changed_at.isoformat(timespec="microseconds").replace(
+                        "+00:00", "Z"
+                    ),
+                }
+            )
+            event_id = f"evt-{reservation_id}-{state}"
+            duplicate = next((item for item in events if item.event_id == event_id), None)
+            if duplicate is not None:
+                require(
+                    isinstance(duplicate, BudgetReservationEvent) and duplicate.payload == updated,
+                    "request_id_conflict",
+                    reservation_id,
+                )
+                return updated
+            append(
+                self.directory / "events",
+                BudgetReservationEvent(
+                    event_id=event_id,
+                    project_id=updated.project_id,
+                    timestamp=updated.updated_at,
+                    actor_type="system",
+                    actor_id="provider-gateway",
+                    correlation_id=updated.request_id,
+                    task_id=updated.task_id,
+                    sequence=snapshot.cursor + 1,
+                    event_type="provider.reservation_updated",
+                    payload=updated,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return updated
+
+    def record_paid_invocation(self, record: PaidInvocationRecord) -> PaidInvocationRecord:
+        with self.lock:
+            snapshot, events = self._replay()
+            event_id = f"evt-{record.invocation_id}"
+            duplicate = next((item for item in events if item.event_id == event_id), None)
+            if duplicate is not None:
+                require(
+                    isinstance(duplicate, PaidInvocationEvent) and duplicate.payload == record,
+                    "request_id_conflict",
+                    record.request_id,
+                )
+                return record
+            append(
+                self.directory / "events",
+                PaidInvocationEvent(
+                    event_id=event_id,
+                    project_id=record.project_id,
+                    timestamp=record.recorded_at,
+                    actor_type="system",
+                    actor_id="provider-gateway",
+                    correlation_id=record.request_id,
+                    task_id=record.task_id,
+                    sequence=snapshot.cursor + 1,
+                    event_type="provider.invocation_recorded",
+                    payload=record,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return record
+
     def _sync(self, snapshot: ProjectSnapshot, events: list[Event]) -> ProjectSnapshot:
         projection = Projection(self.directory / "projection.sqlite3")
         try:
@@ -1461,6 +2511,43 @@ class ProjectStore:
         with self.lock:
             snapshot, events = self._replay()
             return self._sync(snapshot, events)
+
+    def ensure_onboarding(
+        self,
+        knowledge_router: KnowledgeRouter | None = None,
+        agents: list[AgentDefinition] | None = None,
+    ) -> ProjectOnboarding:
+        """Create one durable domain-led onboarding record for an imported project."""
+
+        with self.lock:
+            snapshot, events = self._replay()
+            if snapshot.onboarding is not None:
+                return snapshot.onboarding
+            from gameagent.intake import assess_project_domains, inspect
+
+            _, intake = inspect(self.root)
+            intelligence = index_repository(
+                self.root,
+                snapshot.project,
+                intake,
+                snapshot.decisions,
+                timestamp(),
+            )
+            onboarding = assess_project_domains(
+                self.root,
+                snapshot.project,
+                intake,
+                timestamp(),
+                knowledge_router,
+                agents,
+                intelligence,
+            )
+            for event in _onboarding_events(onboarding, snapshot.cursor + 1):
+                append(self.directory / "events", event, self.max_segment_bytes)
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            assert replayed.onboarding is not None
+            return replayed.onboarding
 
     def events(self, after: int = 0, limit: int = 100) -> EventPage:
         require(after >= 0 and 1 <= limit <= 500, "invalid_cursor", "Invalid event page")
@@ -1672,6 +2759,39 @@ class ProjectStore:
 
     def block_task(self, command: TaskProgressCommand) -> TaskContract:
         return self._record_task_progress(command, "task.blocked")
+
+    def record_knowledge_state(self, task_id: str, *, blocked: bool, detail: str) -> TaskContract:
+        with self.lock:
+            snapshot, _ = self._replay()
+            task = self._task(snapshot, task_id)
+            event_type: Literal["task.blocked_knowledge", "task.knowledge_resolved"] = (
+                "task.blocked_knowledge" if blocked else "task.knowledge_resolved"
+            )
+            expected = {"QUEUED", "READY", "RUNNING"} if blocked else {"BLOCKED_KNOWLEDGE"}
+            if task.state not in expected:
+                return task
+            identity = hashlib.sha256(f"{task_id}\0{event_type}\0{detail}".encode()).hexdigest()[
+                :20
+            ]
+            append(
+                self.directory / "events",
+                TaskEvent(
+                    event_id=f"evt-knowledge-{identity}",
+                    project_id=task.project_id,
+                    timestamp=timestamp(),
+                    actor_type="system",
+                    actor_id="knowledge-router",
+                    correlation_id=f"knowledge-{identity}",
+                    task_id=task_id,
+                    sequence=snapshot.cursor + 1,
+                    event_type=event_type,
+                    payload=TaskEventPayload(task_id=task_id, detail=detail),
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return self._task(replayed, task_id)
 
     def complete_task(self, command: TaskProgressCommand) -> TaskContract:
         return self._record_task_progress(command, "task.completed")
@@ -1995,8 +3115,16 @@ class ProjectStore:
 class ProjectRegistry:
     """Small global catalog of project roots; project history remains project-local."""
 
-    def __init__(self, initial: ProjectStore, registry_path: Path | None = None) -> None:
+    def __init__(
+        self,
+        initial: ProjectStore,
+        registry_path: Path | None = None,
+        knowledge_router: KnowledgeRouter | None = None,
+        agents: list[AgentDefinition] | None = None,
+    ) -> None:
         self.registry_path = registry_path
+        self.knowledge_router = knowledge_router
+        self.agents = agents
         self.lock = threading.RLock()
         self.stores: dict[str, ProjectStore] = {}
         self.active_project_id = self._add_store(initial)
@@ -2066,6 +3194,7 @@ class ProjectRegistry:
                         root=str(store.root),
                         engine=(snapshot.project.engine.type if snapshot.project.engine else None),
                         stage=snapshot.project.production.stage,
+                        onboarding=snapshot.onboarding,
                     )
                 )
             return ProjectCatalog(
@@ -2103,6 +3232,7 @@ class ProjectRegistry:
                 root = Path(report.repository_root)
                 initialize(root, project, report)
             store = ProjectStore(root)
+            store.ensure_onboarding(self.knowledge_router, self.agents)
             self.active_project_id = self._add_store(store)
             self._persist()
             return self.catalog()

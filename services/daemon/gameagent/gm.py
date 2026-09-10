@@ -179,6 +179,8 @@ def task_readiness(
     decisions: list[InboxDecision],
     tasks: dict[str, TaskContract],
 ) -> TaskContract:
+    if task.state == "BLOCKED_KNOWLEDGE":
+        return task
     relevant = [d for d in decisions if task.task_id in d.task_ids]
     assignment = next(a for a in plan.assignments if a.task_id == task.task_id)
     if any(

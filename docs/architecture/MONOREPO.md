@@ -1,4 +1,4 @@
-# Monorepo structure (Phases 7, 8 and 10)
+# Monorepo structure (Phases 7–11)
 
 ```text
 apps/studio/                    Next 16 / React 19 local production Studio
@@ -9,9 +9,12 @@ services/daemon/
   gameagent/constitution.py    Pure state/authority admission rules
   gameagent/intake.py          Repository and engine inspection
   gameagent/intelligence.py    Bounded indexing, provenance and context retrieval
+  gameagent/knowledge.py       Global pack registry, FTS and Knowledge Router
   gameagent/qa.py              Reusable gate policies and derived QA reports
   gameagent/local_models.py    Hardware/Ollama inventory, benchmarks and routing
+  gameagent/providers.py       Secure credentials, paid adapters and execution gateway
   gameagent/recruiter.py       Capability gaps, auditions and global admission
+  gameagent/production_domains.py Read-only discipline tools and evidence assembly
   gameagent/adapters/godot.py  Godot inspection, build and runtime capture
   gameagent/projects.py        Registration, watcher, reconciliation and replay
   gameagent/api.py             Authenticated REST/WebSocket service
@@ -36,6 +39,7 @@ adapters/
   inference/ollama/            Reserved implementation boundary
   source-control/git/          Reserved implementation boundary
 agents/builtin/                Phase 4 capability specialist roster
+expertise/builtin/             Reviewed versioned Expertise Pack manifests
 capabilities/ontology/         PRD section 15 capability catalog
 docs/
   GREENLIGHT_HARVEST.md
@@ -97,6 +101,14 @@ Studio exposes the same index and context package through authenticated loopback
 routes. Index events remain canonical and rebuild into SQLite with the rest of the
 project snapshot.
 
+The Knowledge Fabric keeps curated professional expertise in a configurable global
+directory while Project Intelligence remains project-local. Reviewed, versioned
+Expertise Pack manifests are canonical; SQLite FTS is derived and contains no
+project content. The Knowledge Router assembles bounded task packets whose project,
+discipline, world and experience items retain distinct provenance. Workers and the
+Agent Inspector expose exact pack versions, selected methods, freshness and missing
+knowledge. Automated experience promotion and Pack Builder research remain paused.
+
 The Godot adapter detects a single project manifest up to three levels below the
 repository root, reads its engine version and main scene, inventories `OptionButton`
 nodes and imported PNG references, builds C# projects when present, and launches a
@@ -119,7 +131,26 @@ Ollama models are inspected live, while task-specific benchmark and routing reco
 remain canonical project events. Local qualification pins the current model digest,
 memory fit and a passing representative contract benchmark. Studio compares local,
 authenticated Codex, deterministic, paid and wait paths with explicit quality,
-confidence, runtime and cost rationale. Paid-provider invocation remains absent.
+confidence, runtime and cost rationale.
+
+Phase 9 adds the only paid-provider execution boundary. Provider configuration,
+verified cap evidence, scoped approvals, upper-bound reservations and invocation
+summaries are canonical events. Reservation admission replays and appends under the
+same cross-process project lock, so concurrent requests cannot overspend the
+aggregate monthly budget. Ambiguous outcomes retain their full reservation across
+restart; idempotent retries never repeat an in-flight or recorded invocation.
+Credential values live only in the operating system credential store. The Studio
+Providers workspace exposes readiness and ledger state without receiving secrets
+back from the daemon.
+
+Phase 11 adds bounded read-only vertical slices for gameplay, level design, art,
+audio and narrative. Each domain publishes a versioned definition and independent
+tool contract, produces content-addressed project evidence, evaluates a
+discipline-specific technical gate, and records a canonical task-scoped inspection
+event. The scans validate discoverability and structural readability only. They do
+not execute discovered code or claim creative quality, behavior, continuity, mix
+quality or fun. Studio presents the same definitions, tool health, evidence and run
+history returned by the daemon.
 
 ## Wire conventions
 

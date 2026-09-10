@@ -1,0 +1,107 @@
+schema_version: 1
+pack_id: game-ux-core
+name: Game UX Core
+version: 1.0.0
+description: Evidence-led interaction, onboarding, navigation, and accessibility practice for games.
+state: active
+domain_ids: [ux, game_ui]
+capability_ids:
+  [
+    usability_analysis,
+    interaction_design,
+    controller_navigation,
+    accessibility_ux,
+    onboarding_ux,
+  ]
+sources:
+  - schema_version: 1
+    source_id: wcag-2-2
+    title: Web Content Accessibility Guidelines 2.2
+    author: W3C Accessibility Guidelines Working Group
+    publisher: World Wide Web Consortium
+    uri: https://www.w3.org/TR/WCAG22/
+    source_type: standard
+    retrieved_at: "2026-09-09T00:00:00Z"
+    published_at: "2023-10-05T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-09T00:00:00Z"
+    license: W3C Document License
+    applicable_capability_ids:
+      [accessibility_ux, controller_navigation, interaction_design]
+  - schema_version: 1
+    source_id: gan-ux-evidence-policy
+    title: GAN evidence and human-judgment policy
+    author: Game Agent Network
+    publisher: Game Agent Network
+    uri: gan://spec/product-requirements/evidence
+    source_type: standard
+    retrieved_at: "2026-09-09T00:00:00Z"
+    authority: curated_practice
+    freshness_class: stable
+    applicable_capability_ids: [usability_analysis, onboarding_ux]
+methods:
+  - schema_version: 1
+    method_id: ux-task-flow-review
+    title: Task-flow review
+    purpose: Trace a player goal through visible states, controls, feedback, recovery, and completion.
+    applicable_capability_ids:
+      [usability_analysis, interaction_design, onboarding_ux]
+    steps:
+      - Name the player goal and starting state.
+      - Trace each action, response, error path, and completion signal.
+      - Separate observed behavior from intended behavior and recommendations.
+    evidence_requirements:
+      - Inspectable project UI structure or runtime capture.
+      - Explicit uncertainty where runtime behavior has not been observed.
+    source_ids: [gan-ux-evidence-policy]
+  - schema_version: 1
+    method_id: accessible-navigation-review
+    title: Accessible navigation review
+    purpose: Check whether focus, labels, contrast, input alternatives, and recovery support the target player context.
+    applicable_capability_ids: [accessibility_ux, controller_navigation]
+    steps:
+      - Identify supported input methods and navigation order.
+      - Inspect focus visibility, labels, contrast, and error recovery.
+      - Request measured or human evidence for player-facing claims.
+    evidence_requirements:
+      - Target input methods and platform constraints.
+      - Runtime or human evidence before claiming usability.
+    source_ids: [wcag-2-2, gan-ux-evidence-policy]
+items:
+  - schema_version: 1
+    item_id: ux-observed-vs-intended
+    title: Separate observed and intended behavior
+    kind: professional_knowledge
+    statement: Treat inspectable controls as evidence of current structure, not proof of intended flow or player comprehension.
+    domain_ids: [ux, game_ui]
+    capability_ids: [usability_analysis, onboarding_ux]
+    source_ids: [gan-ux-evidence-policy]
+    method_ids: [ux-task-flow-review]
+    freshness_class: stable
+    confidence: 0.98
+  - schema_version: 1
+    item_id: ux-input-paths
+    title: Validate every declared input path
+    kind: standard
+    statement: Navigation recommendations must account for each declared priority input method and preserve visible focus and recovery.
+    domain_ids: [ux, accessibility]
+    capability_ids: [controller_navigation, accessibility_ux]
+    source_ids: [wcag-2-2]
+    method_ids: [accessible-navigation-review]
+    freshness_class: version_sensitive
+    confidence: 0.95
+  - schema_version: 1
+    item_id: ux-no-visual-proof
+    title: A screenshot is not usability proof
+    kind: anti_pattern
+    statement: Static appearance alone cannot establish task completion, navigation correctness, accessibility, or player understanding.
+    domain_ids: [ux, game_ui]
+    capability_ids: [usability_analysis, accessibility_ux]
+    source_ids: [gan-ux-evidence-policy]
+    method_ids: [ux-task-flow-review, accessible-navigation-review]
+    freshness_class: stable
+    confidence: 0.99
+evaluation_ids: [ux-method-contract, ux-source-provenance]
+created_at: "2026-09-09T00:00:00Z"
+reviewed_at: "2026-09-09T00:00:00Z"

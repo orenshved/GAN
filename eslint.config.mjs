@@ -8,6 +8,8 @@ export default tseslint.config(
       "**/.venv/**",
       "**/generated.ts",
       "**/next-env.d.ts",
+      "scripts/ai-*.js",
+      "scripts/lib/*.js",
     ],
   },
   js.configs.recommended,

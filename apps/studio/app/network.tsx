@@ -10,6 +10,7 @@ import {
 import { useMemo, useState, type ReactNode } from "react";
 import type {
   AgentDefinition,
+  AgentKnowledgeCatalog,
   EventPage,
   ProjectSnapshot,
   TaskContract,
@@ -17,14 +18,17 @@ import type {
 import "@xyflow/react/dist/style.css";
 
 type HistoryEvent = EventPage["events"][number];
-type AgentState = "working" | "attention" | "hired" | "available";
-type AgentFilter = "all" | "used" | "working" | "available" | "attention";
+type AgentState =
+  "working" | "attention" | "hired" | "available" | "needs_expertise";
+type AgentFilter =
+  "all" | "used" | "working" | "available" | "attention" | "needs_expertise";
 type AgentView = {
   agent: AgentDefinition;
   state: AgentState;
   tasks: TaskContract[];
   history: HistoryEvent[];
   used: boolean;
+  expertiseAvailable: boolean;
 };
 
 const agentStateLabels: Record<AgentState, string> = {
@@ -32,6 +36,7 @@ const agentStateLabels: Record<AgentState, string> = {
   attention: "Needs attention",
   hired: "In use",
   available: "Available to hire",
+  needs_expertise: "Needs expertise",
 };
 
 const filterLabels: Record<AgentFilter, string> = {
@@ -40,6 +45,7 @@ const filterLabels: Record<AgentFilter, string> = {
   working: "Working now",
   available: "Available to hire",
   attention: "Needs attention",
+  needs_expertise: "Needs expertise",
 };
 
 function payloadAgentId(event: HistoryEvent) {
@@ -65,6 +71,7 @@ export function AgentNetwork({
   snapshot,
   roster,
   events,
+  knowledge,
   loading,
   error,
   selectTask,
@@ -72,6 +79,7 @@ export function AgentNetwork({
   snapshot: ProjectSnapshot;
   roster: AgentDefinition[];
   events: HistoryEvent[];
+  knowledge: AgentKnowledgeCatalog | undefined;
   loading: boolean;
   error: string | null;
   selectTask: (id: string) => void;
@@ -116,6 +124,11 @@ export function AgentNetwork({
         .filter((id): id is string => Boolean(id)),
     );
     return roster.map((agent) => {
+      const agentKnowledge = knowledge?.profiles.find(
+        (profile) => profile.agent_id === agent.agent_id,
+      );
+      const expertiseAvailable =
+        agentKnowledge?.qualification_state === "expertise_available";
       const tasks = snapshot.tasks.filter(
         (task) => agentByTask.get(task.task_id) === agent.agent_id,
       );
@@ -127,7 +140,10 @@ export function AgentNetwork({
       const attention =
         failedAgentIds.has(agent.agent_id) ||
         workers.some((worker) => worker.state === "failed") ||
-        tasks.some((task) => task.state === "BLOCKED");
+        tasks.some(
+          (task) =>
+            task.state === "BLOCKED" || task.state === "BLOCKED_KNOWLEDGE",
+        );
       const used = tasks.length > 0 || hiredAgentIds.has(agent.agent_id);
       const state: AgentState = attention
         ? "attention"
@@ -135,16 +151,25 @@ export function AgentNetwork({
           ? "working"
           : used
             ? "hired"
-            : "available";
+            : expertiseAvailable
+              ? "available"
+              : "needs_expertise";
       const history = events.filter(
         (event) =>
           event.actor_id === agent.agent_id ||
           payloadAgentId(event) === agent.agent_id ||
           Boolean(event.task_id && taskIds.has(event.task_id)),
       );
-      return { agent, state, tasks, history, used };
+      return { agent, state, tasks, history, used, expertiseAvailable };
     });
-  }, [events, roster, snapshot.plans, snapshot.tasks, snapshot.workers]);
+  }, [
+    events,
+    knowledge,
+    roster,
+    snapshot.plans,
+    snapshot.tasks,
+    snapshot.workers,
+  ]);
 
   const counts = useMemo<Record<AgentFilter, number>>(
     () => ({
@@ -153,6 +178,9 @@ export function AgentNetwork({
       working: agents.filter((agent) => agent.state === "working").length,
       available: agents.filter((agent) => agent.state === "available").length,
       attention: agents.filter((agent) => agent.state === "attention").length,
+      needs_expertise: agents.filter(
+        (agent) => agent.state === "needs_expertise",
+      ).length,
     }),
     [agents],
   );
@@ -175,6 +203,9 @@ export function AgentNetwork({
     visibleAgents.find((agent) => agent.agent.agent_id === selectedAgentId) ??
     visibleAgents[0] ??
     null;
+  const selectedKnowledge = knowledge?.profiles.find(
+    (profile) => profile.agent_id === selectedAgent?.agent.agent_id,
+  );
 
   const graph = useMemo(() => {
     const center = { x: 440, y: 270 };
@@ -414,6 +445,15 @@ export function AgentNetwork({
                 </dd>
                 <dt>Recorded history</dt>
                 <dd>{selectedAgent.history.length} events</dd>
+                <dt>Expertise coverage</dt>
+                <dd>
+                  {!selectedKnowledge
+                    ? "Not loaded"
+                    : selectedKnowledge.qualification_state ===
+                        "expertise_available"
+                      ? "Required packs available; not proof of audition qualification"
+                      : "Missing required expertise"}
+                </dd>
               </dl>
               <div className="agent-context-section">
                 <span className="eyebrow">CAPABILITIES</span>
@@ -424,6 +464,152 @@ export function AgentNetwork({
                     </span>
                   ))}
                 </div>
+              </div>
+              <div className="agent-context-section">
+                <span className="eyebrow">EXPERTISE PREVIEW</span>
+                <p className="muted">
+                  Retrieved for the current project context. This preview is not
+                  evidence that a worker used these items.
+                </p>
+                {selectedKnowledge?.resolved_packs.length ? (
+                  <ul className="agent-knowledge-list">
+                    {selectedKnowledge.resolved_packs.map((pack) => (
+                      <li key={`${pack.pack_id}@${pack.version}`}>
+                        <strong>{pack.pack_id.replaceAll("_", " ")}</strong>
+                        <span>v{pack.version}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="muted">No expertise pack selected.</p>
+                )}
+              </div>
+              {!!(
+                selectedKnowledge?.method_performance?.length ||
+                selectedKnowledge?.pack_performance?.length
+              ) && (
+                <div className="agent-context-section">
+                  <span className="eyebrow">
+                    OBSERVED KNOWLEDGE PERFORMANCE
+                  </span>
+                  <p className="muted">
+                    Outcome correlation from recorded tasks; this does not
+                    establish causation.
+                  </p>
+                  <ul className="agent-knowledge-list">
+                    {[
+                      ...(selectedKnowledge?.pack_performance ?? []),
+                      ...(selectedKnowledge?.method_performance ?? []),
+                    ].map((item) => (
+                      <li key={item.subject}>
+                        <strong>{item.subject.replaceAll("_", " ")}</strong>
+                        <span>
+                          {item.task_count} tasks · {item.passed_count} passed ·{" "}
+                          {item.failed_count} failed · {item.inconclusive_count}{" "}
+                          inconclusive
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {!!selectedKnowledge?.recorded_packets?.length && (
+                <div className="agent-context-section">
+                  <span className="eyebrow">RECORDED TASK KNOWLEDGE</span>
+                  {selectedKnowledge.recorded_packets.map((packet) => (
+                    <details
+                      className="agent-knowledge-details"
+                      key={packet.packet_id}
+                    >
+                      <summary>{packet.task_id}</summary>
+                      <p className="muted">
+                        {(packet.expertise_packs ?? [])
+                          .map((pack) => `${pack.pack_id} v${pack.version}`)
+                          .join(", ")}
+                      </p>
+                      <ul className="agent-knowledge-list">
+                        {(packet.items ?? []).map((item) => (
+                          <li key={item.retrieval_id}>
+                            <strong>{item.kind.replaceAll("_", " ")}</strong>
+                            <span>{item.statement}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  ))}
+                </div>
+              )}
+              <div className="agent-context-section">
+                <details className="agent-knowledge-details" open>
+                  <summary>
+                    <span className="eyebrow">RETRIEVED KNOWLEDGE</span>
+                    <span>{selectedKnowledge?.packet.items?.length ?? 0}</span>
+                  </summary>
+                  {selectedKnowledge?.packet.items?.length ? (
+                    <ul className="agent-retrieval-list">
+                      {(selectedKnowledge.packet.items ?? [])
+                        .slice(0, 8)
+                        .map((item) => (
+                          <li key={item.retrieval_id}>
+                            <div>
+                              <span>{item.plane}</span>
+                              <em>{item.kind.replaceAll("_", " ")}</em>
+                            </div>
+                            <p>{item.statement}</p>
+                            <small>{item.selection_reason}</small>
+                          </li>
+                        ))}
+                    </ul>
+                  ) : (
+                    <p className="muted">No knowledge matched this context.</p>
+                  )}
+                </details>
+                <details className="agent-knowledge-details">
+                  <summary>
+                    <span className="eyebrow">METHODS & SOURCES</span>
+                    <span>{selectedKnowledge?.methods.length ?? 0}</span>
+                  </summary>
+                  <ul className="agent-method-list">
+                    {(selectedKnowledge?.methods ?? []).map((method) => (
+                      <li key={method.method_id}>
+                        <strong>{method.title}</strong>
+                        <span>{method.purpose}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <ul className="agent-source-list">
+                    {(selectedKnowledge?.packet.sources ?? []).map((source) => (
+                      <li key={source.source_id}>
+                        <strong>{source.title}</strong>
+                        <span>
+                          {source.authority.replaceAll("_", " ")} ·{" "}
+                          {source.freshness_class.replaceAll("_", " ")}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+                {!!selectedKnowledge?.packet.missing_knowledge_flags
+                  ?.length && (
+                  <div className="agent-knowledge-warning">
+                    <span className="eyebrow">MISSING KNOWLEDGE</span>
+                    {(
+                      selectedKnowledge.packet.missing_knowledge_flags ?? []
+                    ).map((flag) => (
+                      <p key={flag}>{flag}</p>
+                    ))}
+                  </div>
+                )}
+                {!!selectedKnowledge?.packet.stale_knowledge_flags?.length && (
+                  <div className="agent-knowledge-warning">
+                    <span className="eyebrow">FRESHNESS REVIEW</span>
+                    {(selectedKnowledge.packet.stale_knowledge_flags ?? []).map(
+                      (flag) => (
+                        <p key={flag}>{flag}</p>
+                      ),
+                    )}
+                  </div>
+                )}
               </div>
               <div className="agent-context-section">
                 <span className="eyebrow">TASKS</span>

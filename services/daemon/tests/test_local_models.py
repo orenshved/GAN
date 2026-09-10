@@ -190,7 +190,10 @@ def test_ollama_library_parser_discovers_installable_models() -> None:
     assert families[0].source_url == "https://ollama.test/library/qwen-coder"
 
 
-def test_expert_can_recommend_an_uninstalled_hardware_task_fit(store: ProjectStore) -> None:
+def test_expert_can_recommend_an_uninstalled_hardware_task_fit(
+    store: ProjectStore, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("gameagent.local_models.hardware_inventory", lambda _now=None: hardware())
     expert = LocalModelExpert(FakeOllama(), FakeLibrary())
     recommendation = expert.recommend(store.snapshot().tasks[-1], "discover-a", NOW)
     assert recommendation.action == "install"
@@ -231,7 +234,7 @@ def test_router_prefers_qualified_local_and_explains_paid_boundary(
     assert "task-specific benchmark passed" in routing.reason
     paid = next(candidate for candidate in routing.candidates if candidate.route == "paid_provider")
     assert paid.viable is False
-    assert "Phase 9" in paid.reason
+    assert "provider gateway" in paid.reason
     store.record_model_benchmark(benchmark)
     store.record_model_routing(routing)
     assert ProjectStore(store.root).snapshot().model_routing_records == [routing]

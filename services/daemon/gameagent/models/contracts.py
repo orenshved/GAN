@@ -17,6 +17,7 @@ def valid_calendar_timestamp(value: str) -> str:
 
 Text = Annotated[str, StringConstraints(min_length=1, pattern=r"\S")]
 Identifier = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_.-]*$")]
+PackIdentifier = Annotated[str, StringConstraints(pattern=r"^[a-z0-9][a-z0-9-]*$")]
 Version = Annotated[str, StringConstraints(pattern=r"^[0-9]+\.[0-9]+\.[0-9]+$")]
 Timestamp = Annotated[
     str,
@@ -24,12 +25,21 @@ Timestamp = Annotated[
     Field(json_schema_extra={"format": "date-time"}),
     AfterValidator(valid_calendar_timestamp),
 ]
+BudgetMonth = Annotated[str, StringConstraints(pattern=r"^\d{4}-\d{2}$")]
 Cents = Annotated[int, Field(ge=0, le=9007199254740991, strict=True)]
 Count = Annotated[int, Field(ge=0, strict=True)]
 Actor = Literal["human", "gm", "agent", "system", "external"]
 EvidenceClass = Literal["deterministic", "measured", "comparative", "heuristic", "human"]
 EvaluationAuthority = Literal["advisory", "eligible", "human"]
-QADiscipline = Literal["ui", "engineering"]
+QADiscipline = Literal[
+    "ui",
+    "engineering",
+    "gameplay",
+    "level_design",
+    "art",
+    "audio",
+    "narrative",
+]
 ModelRoute = Literal[
     "deterministic_tool",
     "local_ollama",
@@ -52,6 +62,36 @@ TaskState = Literal[
     "CANCELLED",
     "SUPERSEDED",
     "NEEDS_HUMAN",
+    "BLOCKED_KNOWLEDGE",
+]
+KnowledgePlane = Literal["project", "discipline", "world", "experience"]
+FreshnessClass = Literal[
+    "stable",
+    "slow_changing",
+    "version_sensitive",
+    "policy_sensitive",
+    "live",
+]
+SourceAuthority = Literal[
+    "primary_standard",
+    "official_documentation",
+    "peer_reviewed",
+    "industry_reference",
+    "curated_practice",
+    "project_source",
+    "measured_result",
+    "human_judgment",
+]
+RetrievedKnowledgeKind = Literal[
+    "professional_knowledge",
+    "project_fact",
+    "project_inference",
+    "external_fact",
+    "observed_result",
+    "heuristic",
+    "hypothesis",
+    "human_judgment",
+    "measured_evidence",
 ]
 
 
@@ -118,6 +158,236 @@ class ResourcePolicy(Value):
     max_external_cost_cents: Cents = 0
 
 
+class ExpertisePackRef(Value):
+    pack_id: PackIdentifier
+    version: Version
+
+
+class KnowledgeSource(Contract):
+    source_id: Identifier
+    title: Text
+    author: Text | None = None
+    publisher: Text | None = None
+    uri: Text
+    source_type: Literal[
+        "standard",
+        "official_documentation",
+        "book",
+        "paper",
+        "article",
+        "project_document",
+        "measurement",
+        "human_review",
+    ]
+    retrieved_at: Timestamp
+    published_at: Timestamp | None = None
+    authority: SourceAuthority
+    freshness_class: FreshnessClass
+    fresh_until: Timestamp | None = None
+    license: Text | None = None
+    applicable_capability_ids: list[Identifier] = Field(default_factory=list)
+
+
+class KnowledgeMethod(Contract):
+    method_id: Identifier
+    title: Text
+    purpose: Text
+    applicable_capability_ids: Annotated[list[Identifier], Field(min_length=1)]
+    steps: Annotated[list[Text], Field(min_length=1)]
+    evidence_requirements: Annotated[list[Text], Field(min_length=1)]
+    source_ids: Annotated[list[Identifier], Field(min_length=1)]
+
+
+class ExpertiseKnowledgeItem(Contract):
+    item_id: Identifier
+    title: Text
+    kind: Literal[
+        "professional_knowledge",
+        "standard",
+        "heuristic",
+        "anti_pattern",
+        "example",
+        "benchmark",
+    ]
+    statement: Text
+    domain_ids: Annotated[list[Identifier], Field(min_length=1)]
+    capability_ids: Annotated[list[Identifier], Field(min_length=1)]
+    source_ids: Annotated[list[Identifier], Field(min_length=1)]
+    method_ids: list[Identifier] = Field(default_factory=list)
+    freshness_class: FreshnessClass
+    confidence: Annotated[float, Field(ge=0, le=1)]
+
+
+class ExpertisePack(Contract):
+    pack_id: PackIdentifier
+    name: Text
+    version: Version
+    description: Text
+    state: Literal["draft", "reviewed", "active", "deprecated"]
+    domain_ids: Annotated[list[Identifier], Field(min_length=1)]
+    capability_ids: Annotated[list[Identifier], Field(min_length=1)]
+    sources: Annotated[list[KnowledgeSource], Field(min_length=1)]
+    methods: Annotated[list[KnowledgeMethod], Field(min_length=1)]
+    items: Annotated[list[ExpertiseKnowledgeItem], Field(min_length=1)]
+    evaluation_ids: Annotated[list[Identifier], Field(min_length=1)]
+    required_tool_ids: list[Identifier] = Field(default_factory=list)
+    created_at: Timestamp
+    reviewed_at: Timestamp | None = None
+    supersedes_version: Version | None = None
+
+
+class ExperienceObservation(Contract):
+    observation_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    capability_ids: Annotated[list[Identifier], Field(min_length=1)]
+    conclusion: Text
+    state: Literal["observed", "proposed", "reviewed", "promoted", "rejected"]
+    scope: Literal["project_private", "global_candidate"] = "project_private"
+    evidence_ids: Annotated[list[Identifier], Field(min_length=1)]
+    source: SourceRef
+    confidence: Annotated[float, Field(ge=0, le=1)]
+    created_at: Timestamp
+    agent_id: Identifier | None = None
+    method_ids: list[Identifier] = Field(default_factory=list)
+    expertise_packs: list[ExpertisePackRef] = Field(default_factory=list)
+    outcome: Literal["passed", "failed", "inconclusive"] = "inconclusive"
+    evaluation_id: Identifier | None = None
+    context_tags: list[Text] = Field(default_factory=list)
+
+
+class PackAudition(Contract):
+    audition_id: Identifier
+    pack: ExpertisePackRef
+    candidate_sha256: Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
+    benchmark_id: Identifier
+    baseline_score: Annotated[float, Field(ge=0, le=1)]
+    candidate_score: Annotated[float, Field(ge=0, le=1)]
+    evidence: SourceRef
+    detail: Text
+    reviewer_id: Literal["human", "expertise-curator"] = "human"
+    recorded_at: Timestamp
+    evidence_class: Literal["human", "heuristic"] = "human"
+
+
+class PackBenchmarkResponse(Value):
+    findings: Annotated[list[Text], Field(min_length=1)]
+    uncertainty: list[Text]
+    source_ids: list[Identifier]
+
+
+class PackBenchmarkJudgment(Value):
+    baseline_score: Annotated[float, Field(ge=0, le=1)]
+    candidate_score: Annotated[float, Field(ge=0, le=1)]
+    rationale: Text
+    critical_issues: list[Text]
+
+
+class PackReview(Contract):
+    pack: ExpertisePackRef
+    candidate_sha256: Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
+    decision: Literal["approved", "rejected"]
+    provenance_checked: bool
+    privacy_checked: bool
+    licensing_checked: bool
+    contradictions_checked: bool
+    detail: Text
+    reviewer_id: Literal["human"] = "human"
+    reviewed_at: Timestamp
+
+
+class PackLifecycleRecord(Contract):
+    record_id: Identifier
+    pack: ExpertisePackRef
+    state: Literal["active", "deprecated", "disputed", "expired"]
+    reason: Text
+    reviewer_id: Literal["human"] = "human"
+    recorded_at: Timestamp
+
+
+class WorldResearch(Contract):
+    research_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    requirement: Text
+    url: Text
+    state: Literal["available", "blocked", "failed"]
+    detail: Text
+    source: KnowledgeSource | None = None
+    artifact: SourceRef | None = None
+    excerpt: Text | None = None
+    researched_at: Timestamp
+
+
+class ExperienceLesson(Contract):
+    lesson_id: Identifier
+    project_id: Identifier
+    observation_ids: Annotated[list[Identifier], Field(min_length=1)]
+    capability_ids: Annotated[list[Identifier], Field(min_length=1)]
+    statement: Text
+    applicability: Text
+    limitations: Annotated[list[Text], Field(min_length=1)]
+    state: Literal["candidate", "repeated", "validated", "rejected", "expired", "superseded"]
+    scope: Literal["project", "user_taste", "domain", "engine", "global"] = "project"
+    proposer_id: Identifier
+    reviewer_id: Identifier | None = None
+    review_detail: Text | None = None
+    created_at: Timestamp
+    reviewed_at: Timestamp | None = None
+    confidence: Annotated[float, Field(ge=0, le=1)]
+
+
+class GlobalExperience(Contract):
+    lesson_id: Identifier
+    statement: Text
+    applicability: Text
+    limitations: Annotated[list[Text], Field(min_length=1)]
+    capability_ids: Annotated[list[Identifier], Field(min_length=1)]
+    scope: Literal["global", "domain", "engine"]
+    scope_constraint: Identifier | None = None
+    evidence_digests: Annotated[
+        list[Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]], Field(min_length=1)
+    ]
+    confidence: Annotated[float, Field(ge=0, le=1)]
+    reviewer_id: Literal["human"] = "human"
+    reviewed_at: Timestamp
+
+
+class RetrievedKnowledge(Value):
+    retrieval_id: Identifier
+    plane: KnowledgePlane
+    kind: RetrievedKnowledgeKind
+    statement: Text
+    source_ids: list[Identifier] = Field(default_factory=list)
+    project_knowledge_id: Identifier | None = None
+    pack: ExpertisePackRef | None = None
+    method_ids: list[Identifier] = Field(default_factory=list)
+    authority: SourceAuthority
+    freshness_class: FreshnessClass
+    confidence: Annotated[float, Field(ge=0, le=1)]
+    relevance: Annotated[float, Field(ge=0, le=1)]
+    selection_reason: Text
+
+
+class KnowledgePacket(Contract):
+    packet_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    agent_id: Identifier
+    assembled_at: Timestamp
+    capability_ids: Annotated[list[Identifier], Field(min_length=1)]
+    expertise_packs: list[ExpertisePackRef] = Field(default_factory=list)
+    selected_method_ids: list[Identifier] = Field(default_factory=list)
+    methods: list[KnowledgeMethod] = Field(default_factory=list)
+    items: list[RetrievedKnowledge] = Field(default_factory=list)
+    sources: list[KnowledgeSource] = Field(default_factory=list)
+    project_sources: list[SourceRef] = Field(default_factory=list)
+    missing_knowledge_flags: list[Text] = Field(default_factory=list)
+    stale_knowledge_flags: list[Text] = Field(default_factory=list)
+    project_intelligence_digest: Annotated[str | None, Field(pattern=r"^[a-f0-9]{64}$")] = None
+    context_package_id: Identifier | None = None
+
+
 class AgentDefinition(Contract):
     agent_id: Identifier
     name: Text
@@ -132,6 +402,9 @@ class AgentDefinition(Contract):
     output_contract: Text
     required_gates: Annotated[list[Identifier], Field(min_length=1)]
     resource_policy: ResourcePolicy
+    required_expertise_pack_ids: list[PackIdentifier] = Field(default_factory=list)
+    optional_expertise_pack_ids: list[PackIdentifier] = Field(default_factory=list)
+    allowed_method_ids: list[Identifier] = Field(default_factory=list)
     probationary: bool = True
     # Project context and conversation memory are intentionally not fields here.
 
@@ -167,6 +440,8 @@ class AgentAssignment(Contract):
     sandbox: Literal["read_only", "workspace_write"] = "read_only"
     granted_permissions: Permissions
     assigned_by: Literal["gm"]
+    expertise_packs: list[ExpertisePackRef] = Field(default_factory=list)
+    knowledge_packet_id: Identifier | None = None
 
 
 class ToolDefinition(Contract):
@@ -190,6 +465,33 @@ class CapabilityGap(Contract):
     missing_capabilities: Annotated[list[Identifier], Field(min_length=1)]
     reason: Text
     detected_at: Timestamp
+
+
+class RecruitmentDiagnosis(Value):
+    problem: Literal[
+        "no_agent",
+        "missing_expertise_pack",
+        "missing_tool",
+        "stale_knowledge",
+        "performance_failure",
+        "model_insufficient",
+        "none",
+    ]
+    action: Literal[
+        "create_agent",
+        "attach_or_build_pack",
+        "install_or_authorize_tool",
+        "refresh_knowledge",
+        "requalify_agent",
+        "change_model",
+        "reuse_agent",
+    ]
+    agent_id: Identifier | None = None
+    required_pack_ids: list[PackIdentifier] = Field(default_factory=list)
+    missing_pack_ids: list[PackIdentifier] = Field(default_factory=list)
+    stale_pack_ids: list[PackIdentifier] = Field(default_factory=list)
+    missing_tool_ids: list[Identifier] = Field(default_factory=list)
+    detail: Text
 
 
 class ToolDiscovery(Value):
@@ -252,10 +554,16 @@ class RecruitmentRecord(Contract):
     candidate: AgentDefinition
     adjacent_agent_ids: list[Identifier]
     tool_discoveries: list[ToolDiscovery]
-    state: Literal["candidate_composed", "auditioning", "probation", "rejected"]
+    state: Literal[
+        "candidate_composed", "remediation_required", "auditioning", "probation", "rejected"
+    ]
+    diagnosis: RecruitmentDiagnosis
     audition: AgentAudition | None = None
     created_at: Timestamp
     updated_at: Timestamp
+    expertise_packs: list[ExpertisePackRef] = Field(default_factory=list)
+    expertise_snapshot: list[ExpertisePack] = Field(default_factory=list)
+    missing_expertise_capabilities: list[Identifier] = Field(default_factory=list)
 
 
 class AgentRegistrySnapshot(Value):
@@ -318,6 +626,68 @@ class InitializationFinding(Value):
     field: Identifier
     value: Text | None
     source: Text
+
+
+OnboardingReadiness = Literal[
+    "READY",
+    "READY_WITH_ASSUMPTIONS",
+    "NEEDS_INPUT_LATER",
+    "NEEDS_INPUT_NOW",
+    "BLOCKED_KNOWLEDGE",
+]
+
+
+class DomainReadiness(Value):
+    status: OnboardingReadiness
+    confidence: Annotated[float, Field(ge=0, le=1)]
+
+
+class DomainAssumption(Value):
+    statement: Text
+    confidence: Annotated[float, Field(ge=0, le=1)]
+    impact: Text
+    expires_when: Text
+
+
+class DomainUnknown(Value):
+    question: Text
+    impact: Text
+    blocks_current_work: bool
+
+
+class LeadDomainAssessment(Contract):
+    assessment_id: Identifier
+    project_id: Identifier
+    domain: Identifier
+    agent_id: Identifier
+    assessed_at: Timestamp
+    readiness: DomainReadiness
+    summary: Text
+    known_facts: list[Text]
+    inferred_facts: list[Text]
+    evidence: list[SourceRef]
+    assumptions: list[DomainAssumption]
+    unknowns: list[DomainUnknown]
+    recommendations: list[Text]
+    risks: list[Text]
+    contradictions: list[Text]
+    requested_human_inputs: list[Text]
+    expertise_packs: list[ExpertisePackRef] = Field(default_factory=list)
+    knowledge_packet: KnowledgePacket | None = None
+
+
+class ProjectOnboarding(Contract):
+    onboarding_id: Identifier
+    project_id: Identifier
+    state: Literal["READY", "NEEDS_HUMAN_INPUT", "BLOCKED_KNOWLEDGE", "ACTIVE"]
+    started_at: Timestamp
+    completed_at: Timestamp
+    reconnaissance_summary: Text
+    relevant_domains: Annotated[list[Identifier], Field(min_length=1)]
+    assessments: Annotated[list[LeadDomainAssessment], Field(min_length=1)]
+    reconciliation_summary: Text
+    blocking_questions: list[Text]
+    deferred_questions: list[Text]
 
 
 class InitializationReport(Contract):
@@ -476,6 +846,39 @@ class QAReport(Contract):
     explanation: Text
 
 
+class ProductionDomainDefinition(Contract):
+    domain_id: Identifier
+    version: Version
+    title: Text
+    description: Text
+    capability_ids: Annotated[list[Identifier], Field(min_length=1)]
+    tool_ids: Annotated[list[Identifier], Field(min_length=1)]
+    gate_ids: Annotated[list[Identifier], Field(min_length=1)]
+    accepted_extensions: Annotated[list[Text], Field(min_length=1)]
+
+
+class ProductionDomainFinding(Value):
+    finding_id: Identifier
+    severity: Literal["info", "warning", "error"]
+    title: Text
+    detail: Text
+    paths: list[Text] = Field(default_factory=list)
+
+
+class ProductionDomainInspection(Contract):
+    inspection_id: Identifier
+    project_id: Identifier
+    task_id: Identifier
+    domain_id: Identifier
+    tool_id: Identifier
+    status: Literal["passed", "needs_attention", "not_applicable"]
+    inspected_at: Timestamp
+    inspected_file_count: Count
+    evidence_id: Identifier
+    evaluation_id: Identifier
+    findings: Annotated[list[ProductionDomainFinding], Field(min_length=1)]
+
+
 class Decision(Contract):
     decision_id: Identifier
     project_id: Identifier
@@ -548,11 +951,54 @@ class VerifiedCap(Value):
 
 class Provider(Contract):
     provider_id: Identifier
+    display_name: Text = "External provider"
+    purpose: Text = "External model execution"
     billing: Literal["local", "codex_subscription", "paid"]
     state: Literal["ACTIVE", "DISABLED", "DISABLED_UNCAPPED"]
     currency: Literal["USD"] = "USD"
     cap: UnverifiedCap | VerifiedCap
+    adapter_id: Identifier | None = None
+    credential_id: Identifier | None = None
     # Secrets are resolved through an OS credential service, not these records.
+
+
+class SpendApproval(Contract):
+    approval_id: Identifier
+    project_id: Identifier
+    provider_id: Identifier
+    request_id: Identifier
+    amount_cents: Cents
+    approved_by: Literal["human"] = "human"
+    approved_at: Timestamp
+    expires_at: Timestamp
+
+
+class BudgetReservation(Contract):
+    reservation_id: Identifier
+    project_id: Identifier
+    provider_id: Identifier
+    request_id: Identifier
+    task_id: Identifier | None = None
+    month: BudgetMonth
+    predicted_cents: Cents
+    actual_cents: Cents | None = None
+    state: Literal["reserved", "in_flight", "settled", "released", "uncertain"]
+    created_at: Timestamp
+    updated_at: Timestamp
+
+
+class PaidInvocationRecord(Contract):
+    invocation_id: Identifier
+    project_id: Identifier
+    provider_id: Identifier
+    reservation_id: Identifier
+    request_id: Identifier
+    task_id: Identifier | None = None
+    state: Literal["succeeded", "failed", "uncertain"]
+    predicted_cents: Cents
+    actual_cents: Cents | None = None
+    detail: Text
+    recorded_at: Timestamp
 
 
 class GraphicsDevice(Value):
@@ -727,6 +1173,11 @@ class ProviderPayload(Value):
     reason: Text
 
 
+class ProviderConfiguredPayload(Value):
+    request_id: Identifier
+    provider: Provider
+
+
 class CommitPayload(Value):
     commit_id: Text
     workspace: Text
@@ -744,7 +1195,14 @@ class EventBase(Contract):
 
 
 class TaskEvent(EventBase):
-    event_type: Literal["task.created", "task.started", "task.blocked", "task.completed"]
+    event_type: Literal[
+        "task.created",
+        "task.started",
+        "task.blocked",
+        "task.blocked_knowledge",
+        "task.knowledge_resolved",
+        "task.completed",
+    ]
     payload: TaskEventPayload
 
 
@@ -795,6 +1253,26 @@ class ProviderEvent(EventBase):
     payload: ProviderPayload
 
 
+class ProviderConfiguredEvent(EventBase):
+    event_type: Literal["provider.configured"]
+    payload: ProviderConfiguredPayload
+
+
+class SpendApprovedEvent(EventBase):
+    event_type: Literal["provider.spend_approved"]
+    payload: SpendApproval
+
+
+class BudgetReservationEvent(EventBase):
+    event_type: Literal["provider.reservation_updated"]
+    payload: BudgetReservation
+
+
+class PaidInvocationEvent(EventBase):
+    event_type: Literal["provider.invocation_recorded"]
+    payload: PaidInvocationRecord
+
+
 class CommitEvent(EventBase):
     event_type: Literal["git.commit.created"]
     payload: CommitPayload
@@ -826,6 +1304,12 @@ class WorkerResult(Value):
     summary: Text
     findings: list[Text]
     next_steps: list[Text]
+    professional_reasoning: list[Text] = Field(default_factory=list)
+    project_evidence: list[Text] = Field(default_factory=list)
+    uncertainty: list[Text] = Field(default_factory=list)
+    missing_evidence: list[Text] = Field(default_factory=list)
+    qa_plan: list[Text] = Field(default_factory=list)
+    source_ids: list[Identifier] = Field(default_factory=list)
 
 
 class WorkerRecord(Contract):
@@ -838,6 +1322,11 @@ class WorkerRecord(Contract):
     turn_id: Text | None = None
     result: WorkerResult | None = None
     detail: Text
+    expertise_packs: list[ExpertisePackRef] = Field(default_factory=list)
+    knowledge_packet_id: Identifier | None = None
+    knowledge_packet: KnowledgePacket | None = None
+    specialist: AgentDefinition | None = None
+    context_package: "ContextPackage | None" = None
 
 
 class WorkerEvent(EventBase):
@@ -992,6 +1481,49 @@ class ModelRoutingEvent(EventBase):
     payload: ModelRoutingRecord
 
 
+class ProductionDomainInspectionEvent(EventBase):
+    event_type: Literal["production_domain.inspected"]
+    payload: ProductionDomainInspection
+
+
+class OnboardingEventPayload(Value):
+    domain: Identifier | None = None
+    detail: Text
+    assessment: LeadDomainAssessment | None = None
+    onboarding: ProjectOnboarding | None = None
+
+
+class OnboardingEvent(EventBase):
+    event_type: Literal[
+        "project.reconnaissance_started",
+        "project.reconnaissance_completed",
+        "domain.assessment_started",
+        "domain.assessment_completed",
+        "domain.assumption_recorded",
+        "domain.input_needed_later",
+        "domain.input_needed_now",
+        "project.reconciliation_started",
+        "project.reconciliation_completed",
+        "project.onboarding_completed",
+    ]
+    payload: OnboardingEventPayload
+
+
+class ExperienceObservedEvent(EventBase):
+    event_type: Literal["experience.observed"]
+    payload: ExperienceObservation
+
+
+class ExperienceLessonEvent(EventBase):
+    event_type: Literal["experience.lesson_recorded"]
+    payload: ExperienceLesson
+
+
+class WorldResearchEvent(EventBase):
+    event_type: Literal["knowledge.research_recorded"]
+    payload: WorldResearch
+
+
 Event = Annotated[
     TaskEvent
     | AgentEvent
@@ -1003,6 +1535,10 @@ Event = Annotated[
     | ProjectReconciledEvent
     | SpendEvent
     | ProviderEvent
+    | ProviderConfiguredEvent
+    | SpendApprovedEvent
+    | BudgetReservationEvent
+    | PaidInvocationEvent
     | CommitEvent
     | ProjectInitializedEvent
     | TaskProposedEvent
@@ -1017,7 +1553,13 @@ Event = Annotated[
     | RecruitmentEvent
     | GateWaivedEvent
     | ModelBenchmarkEvent
-    | ModelRoutingEvent,
+    | ModelRoutingEvent
+    | ProductionDomainInspectionEvent
+    | OnboardingEvent
+    | ExperienceObservedEvent
+    | ExperienceLessonEvent
+    | WorldResearchEvent,
+    # World research remains project-scoped and cannot promote expertise.
     Field(discriminator="event_type"),
 ]
 
@@ -1037,12 +1579,24 @@ class ProtocolDocument(Value):
     evaluation: Evaluation | None = None
     qa_gate: QAGateDefinition | None = None
     qa_report: QAReport | None = None
+    production_domain: ProductionDomainDefinition | None = None
+    production_domain_inspection: ProductionDomainInspection | None = None
+    lead_domain_assessment: LeadDomainAssessment | None = None
+    project_onboarding: ProjectOnboarding | None = None
     gate_waiver: GateWaiver | None = None
     decision: Decision | None = None
     knowledge: KnowledgeEntry | None = None
+    knowledge_source: KnowledgeSource | None = None
+    knowledge_method: KnowledgeMethod | None = None
+    expertise_pack: ExpertisePack | None = None
+    experience_observation: ExperienceObservation | None = None
+    knowledge_packet: KnowledgePacket | None = None
     project_intelligence: ProjectIntelligence | None = None
     context_package: ContextPackage | None = None
     provider: Provider | None = None
+    spend_approval: SpendApproval | None = None
+    budget_reservation: BudgetReservation | None = None
+    paid_invocation: PaidInvocationRecord | None = None
     hardware_inventory: LocalHardwareInventory | None = None
     local_model_inventory: LocalModelInventory | None = None
     local_model_recommendation: LocalModelRecommendation | None = None

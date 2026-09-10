@@ -1,4 +1,27 @@
 {
+  "WorldResearch": {
+    "research_id": "research-fixture",
+    "project_id": "project-fixture",
+    "task_id": "task-fixture",
+    "requirement": "Inspect current platform guidance",
+    "url": "https://example.com/guidance",
+    "state": "blocked",
+    "detail": "Task network permission is absent",
+    "researched_at": "2026-09-09T12:00:00Z"
+  },
+  "GlobalExperience": {
+    "lesson_id": "global-lesson-fixture",
+    "statement": "Include focus restoration in modal reviews",
+    "applicability": "Controller-driven modal navigation",
+    "limitations": ["Heuristic; no causal guarantee"],
+    "capability_ids": ["controller_navigation"],
+    "scope": "domain",
+    "evidence_digests": [
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    ],
+    "confidence": 0.4,
+    "reviewed_at": "2026-09-09T12:00:00Z"
+  },
   "GMRecord": {
     "project_id": "project-test",
     "thread_id": "gm-thread-test",

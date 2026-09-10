@@ -838,7 +838,11 @@ class LocalModelExpert:
                 confidence=0,
                 expected_external_cost_cents=None,
                 expected_external_cost_avoided_cents=0,
-                reason="Paid execution is unavailable until Phase 9 verifies a provider-side hard cap",
+                reason=(
+                    "Paid execution is admitted per invocation only after the provider gateway "
+                    "derives a known upper-bound cost and verifies cap, budget, credential, and "
+                    "approval state"
+                ),
             ),
             ModelRouteCandidate(
                 route="wait_for_codex",

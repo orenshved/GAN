@@ -5,9 +5,12 @@ from pathlib import Path
 import pytest
 
 from gameagent.constitution import ConstitutionError, completion_allowed
+from gameagent.knowledge import KnowledgeFabric
 from gameagent.models.api import (
     GateWaiverCommand,
     HumanReviewCommand,
+    LessonPromotionCommand,
+    LessonReviewCommand,
     QARunCommand,
     TaskProposal,
 )
@@ -36,10 +39,114 @@ def store(tmp_path: Path) -> ProjectStore:
 
 
 def test_gate_catalog_covers_all_evidence_classes() -> None:
-    assert {item.discipline for item in gate_catalog()} == {"ui", "engineering"}
+    assert {item.discipline for item in gate_catalog()} == {
+        "ui",
+        "engineering",
+        "gameplay",
+        "level_design",
+        "art",
+        "audio",
+        "narrative",
+    }
     assert {
         evidence_class for gate in GATES for evidence_class in gate.required_evidence_classes
     } == {"deterministic", "measured", "comparative", "heuristic", "human"}
+
+
+def test_learning_is_durable_local_idempotent_and_requires_independent_review(store):
+    for index in range(2):
+        task = store.propose(
+            TaskProposal(
+                request_id=f"learning-{index}",
+                title="Review focus",
+                objective="Focus is visible",
+                required_capabilities=["usability_analysis"],
+                deliverables=["Review"],
+            )
+        )
+        store.record_human_review(
+            HumanReviewCommand(
+                request_id=f"rejected-{index}",
+                task_id=task.task_id,
+                gate_id="human_judgment",
+                verdict="rejected",
+                summary="Controller focus was not visible.",
+            )
+        )
+    snapshot = store.distill_experience()
+    assert len(snapshot.experience_observations) == 2
+    assert len(snapshot.experience_lessons) == 1
+    lesson = snapshot.experience_lessons[0]
+    assert lesson.state == "repeated" and lesson.scope == "project"
+    assert store.distill_experience().cursor == snapshot.cursor
+    validated = store.review_lesson(
+        LessonReviewCommand(
+            lesson_id=lesson.lesson_id,
+            decision="validated",
+            detail="Reviewed both recordings; use only for this project.",
+        )
+    )
+    assert validated.reviewer_id != validated.proposer_id
+    assert store.rebuild().experience_lessons == [validated]
+    fabric = KnowledgeFabric.from_environment(store.root / "test-global-library")
+    assert not fabric.catalog().global_experience
+    command = LessonPromotionCommand(
+        lesson_id=lesson.lesson_id,
+        statement="Check controller focus before similar interface reviews.",
+        applicability="Controller modal reviews",
+        limitations=["Limited observational evidence; no causal claim."],
+        scope="domain",
+        scope_constraint="interface-design",
+        privacy_checked=True,
+        generalization_reviewed=True,
+    )
+    with pytest.raises(ConstitutionError):
+        fabric.promote_lesson(
+            command.model_copy(
+                update={"statement": "Private Game Title should use blue controls."}
+            ),
+            validated,
+            snapshot.experience_observations,
+            "Private Game Title",
+        )
+    promoted = fabric.promote_lesson(
+        command, validated, snapshot.experience_observations, "Private Game Title"
+    )
+    assert "project_id" not in promoted.model_dump()
+    assert "Private Game Title" not in promoted.model_dump_json()
+    assert (
+        fabric.promote_lesson(
+            command, validated, snapshot.experience_observations, "Private Game Title"
+        )
+        == promoted
+    )
+    store.review_lesson(
+        LessonReviewCommand(
+            lesson_id=lesson.lesson_id, decision="expired", detail="Input design changed."
+        )
+    )
+    with pytest.raises(ConstitutionError, match="lesson-"):
+        store.review_lesson(
+            LessonReviewCommand(
+                lesson_id=lesson.lesson_id,
+                decision="validated",
+                detail="Cannot revive expired history.",
+            )
+        )
+
+
+def test_repeated_rejections_on_one_task_do_not_create_generalized_lesson(store):
+    for index in range(3):
+        store.record_human_review(
+            HumanReviewCommand(
+                request_id=f"same-task-{index}",
+                task_id="task-qa-task",
+                gate_id="human_judgment",
+                verdict="rejected",
+                summary="One task is not independent repetition.",
+            )
+        )
+    assert store.distill_experience().experience_lessons == []
 
 
 def test_qa_run_records_deterministic_evidence_and_explains_pass(

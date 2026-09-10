@@ -1,0 +1,44 @@
+# Serena project configuration
+# https://github.com/oraios/serena
+
+project_name: game-agent-network
+
+# Languages to index (add all that apply)
+languages:
+  - typescript
+  - javascript
+  - python
+  # - rust
+  # - go
+
+# Directories to index
+include:
+  - apps
+  - packages
+  - services
+  - agents
+  - capabilities
+  - expertise
+  - adapters
+  - tools
+  - scripts
+
+# Directories to exclude (Serena also respects .gitignore)
+exclude:
+  - node_modules
+  - dist
+  - build
+  - .next
+  - out
+  - coverage
+  - .cache
+  - __pycache__
+  - .ai/reports
+
+# Symbol index settings
+index:
+  # Maximum file size to index (bytes)
+  max_file_size: 524288 # 512 KB
+
+  # Whether to follow symlinks
+  follow_symlinks: false

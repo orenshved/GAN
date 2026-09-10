@@ -29,6 +29,20 @@ const allowed = new Set([
   "gm-objective",
   "agent-roster",
   "agent-registry",
+  "agent-knowledge",
+  "knowledge-catalog",
+  "learning-run",
+  "learning-status",
+  "knowledge-maintenance-run",
+  "lesson-review",
+  "lesson-promote",
+  "pack-candidate",
+  "pack-build",
+  "pack-audition",
+  "pack-audition-run",
+  "pack-review",
+  "pack-lifecycle",
+  "research-run",
   "recruitments",
   "recruit",
   "qa-gates",
@@ -40,6 +54,14 @@ const allowed = new Set([
   "model-recommend",
   "model-benchmark",
   "model-route",
+  "providers",
+  "provider-configure",
+  "provider-disable",
+  "provider-credential",
+  "provider-approve",
+  "provider-invoke",
+  "production-domains",
+  "production-domain-run",
   "decision-resolve",
 ]);
 
@@ -94,7 +116,8 @@ async function proxy(
         path[0] === "runtime-capture" ||
           path[0] === "recruit" ||
           path[0] === "model-benchmark" ||
-          path[0] === "model-recommend"
+          path[0] === "model-recommend" ||
+          path[0] === "production-domain-run"
           ? 120000
           : 10000,
       ),

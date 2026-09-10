@@ -2,40 +2,63 @@
 
 from typing import Annotated, Literal
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 
 from gameagent.models.contracts import (
     AgentRegistrySnapshot,
+    BudgetReservation,
     ContextPackage,
+    Count,
     EngineAdapter,
     Evaluation,
     Event,
     Evidence,
+    ExperienceLesson,
+    ExperienceObservation,
+    ExpertisePack,
+    ExpertisePackRef,
+    FreshnessClass,
     GateWaiver,
+    GlobalExperience,
     GMRecord,
     Identifier,
     InboxDecision,
+    KnowledgeMethod,
+    KnowledgePacket,
     LocalHardwareInventory,
     LocalModelInventory,
     LocalModelRecommendation,
     ModelBenchmark,
     ModelRoutingRecord,
+    PackAudition,
+    PackIdentifier,
+    PackLifecycleRecord,
+    PackReview,
+    PaidInvocationRecord,
     PlanDraft,
     Policy,
+    ProductionDomainDefinition,
+    ProductionDomainInspection,
     ProductionPlan,
     Project,
     ProjectIntelligence,
+    ProjectOnboarding,
+    Provider,
     QAGateDefinition,
     QAReport,
     ReconciliationRecord,
     RecruitmentRecord,
     SourceRef,
+    SpendApproval,
     TaskContract,
     Text,
     Timestamp,
+    ToolDefinition,
     Value,
+    Version,
     WorkerRecord,
     WorkspaceFingerprint,
+    WorldResearch,
 )
 
 
@@ -96,6 +119,222 @@ class ProjectSnapshot(Value):
     recruitments: list[RecruitmentRecord] = Field(default_factory=list)
     model_benchmarks: list[ModelBenchmark] = Field(default_factory=list)
     model_routing_records: list[ModelRoutingRecord] = Field(default_factory=list)
+    providers: list[Provider] = Field(default_factory=list)
+    spend_approvals: list[SpendApproval] = Field(default_factory=list)
+    budget_reservations: list[BudgetReservation] = Field(default_factory=list)
+    paid_invocations: list[PaidInvocationRecord] = Field(default_factory=list)
+    production_domain_inspections: list[ProductionDomainInspection] = Field(default_factory=list)
+    onboarding: ProjectOnboarding | None = None
+    experience_observations: list[ExperienceObservation] = Field(default_factory=list)
+    experience_lessons: list[ExperienceLesson] = Field(default_factory=list)
+    research_records: list[WorldResearch] = Field(default_factory=list)
+
+
+class ResearchCommand(Value):
+    task_id: Identifier
+    requirement: Text
+    url: Text
+    freshness_class: FreshnessClass = "version_sensitive"
+
+
+class LessonReviewCommand(Value):
+    lesson_id: Identifier
+    decision: Literal["validated", "rejected", "expired", "superseded"]
+    detail: Text
+
+
+class LessonPromotionCommand(Value):
+    lesson_id: Identifier
+    statement: Text
+    applicability: Text
+    limitations: Annotated[list[Text], Field(min_length=1)]
+    scope: Literal["global", "domain", "engine"]
+    scope_constraint: Identifier | None = None
+    privacy_checked: Literal[True]
+    generalization_reviewed: Literal[True]
+
+
+class ExpertiseBaselineStatus(Value):
+    pack_id: PackIdentifier
+    state: Literal["missing", "draft", "trusted", "unavailable"]
+    version: Version | None = None
+
+
+class KnowledgeCatalog(Value):
+    packs: list[ExpertisePack]
+    baseline: list[ExpertiseBaselineStatus] = Field(default_factory=list)
+    candidates: list[ExpertisePack] = Field(default_factory=list)
+    auditions: list[PackAudition] = Field(default_factory=list)
+    reviews: list[PackReview] = Field(default_factory=list)
+    maintenance_flags: list[Text] = Field(default_factory=list)
+    global_experience: list[GlobalExperience] = Field(default_factory=list)
+    lifecycle: list[PackLifecycleRecord] = Field(default_factory=list)
+
+
+class PackLifecycleCommand(Value):
+    pack: ExpertisePackRef
+    state: Literal["active", "deprecated", "disputed", "expired"]
+    reason: Text
+
+
+class PackCandidateCommand(Value):
+    pack: ExpertisePack
+
+
+class PackBuildCommand(Value):
+    task_id: Identifier
+    pack_id: Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9-]*$")]
+    version: Annotated[str, Field(pattern=r"^\d+\.\d+\.\d+$")]
+
+
+class PackAutomatedAuditionCommand(Value):
+    pack: ExpertisePackRef
+    benchmark_id: Identifier
+    scenario: Annotated[str, Field(min_length=10, max_length=8000)]
+    expected_findings: Annotated[list[Text], Field(min_length=1, max_length=20)]
+
+
+class PackAuditionCommand(Value):
+    pack: ExpertisePackRef
+    benchmark_id: Identifier
+    baseline_score: Annotated[float, Field(ge=0, le=1)]
+    candidate_score: Annotated[float, Field(ge=0, le=1)]
+    evidence_text: Annotated[str, Field(min_length=10, max_length=100_000)]
+    detail: Text
+
+
+class PackReviewCommand(Value):
+    pack: ExpertisePackRef
+    decision: Literal["approved", "rejected"]
+    provenance_checked: bool
+    privacy_checked: bool
+    licensing_checked: bool
+    contradictions_checked: bool
+    detail: Text
+
+
+class KnowledgePerformanceSummary(Value):
+    subject: Text
+    task_count: Count
+    passed_count: Count
+    failed_count: Count
+    inconclusive_count: Count
+    interpretation: Literal["observed_correlation_not_causation"] = (
+        "observed_correlation_not_causation"
+    )
+
+
+class AgentKnowledgeProfile(Value):
+    agent_id: Identifier
+    qualification_state: Literal["expertise_available", "missing_required_expertise"]
+    required_pack_ids: list[Identifier]
+    resolved_packs: list[ExpertisePackRef]
+    methods: list[KnowledgeMethod]
+    packet: KnowledgePacket
+    recorded_packets: list[KnowledgePacket] = Field(default_factory=list)
+    method_performance: list[KnowledgePerformanceSummary] = Field(default_factory=list)
+    pack_performance: list[KnowledgePerformanceSummary] = Field(default_factory=list)
+
+
+class AgentKnowledgeCatalog(Value):
+    profiles: list[AgentKnowledgeProfile]
+
+
+class KnowledgeMaintenanceReport(Value):
+    run_id: Identifier
+    state: Literal["passed", "attention"]
+    rebuilt_full_text_index: bool
+    stale_sources: list[Text] = Field(default_factory=list)
+    broken_sources: list[Text] = Field(default_factory=list)
+    benchmark_regressions: list[Text] = Field(default_factory=list)
+    contradiction_candidates: list[Text] = Field(default_factory=list)
+    deprecated_versions: list[Text] = Field(default_factory=list)
+    ran_at: Timestamp
+
+
+class LearningMaintenanceStatus(Value):
+    enabled: bool
+    state: Literal["disabled", "idle", "waiting_for_idle", "running", "failed"]
+    last_started_at: Timestamp | None = None
+    last_completed_at: Timestamp | None = None
+    detail: Text | None = None
+    knowledge_report: KnowledgeMaintenanceReport | None = None
+
+
+class ProductionDomainCatalog(Value):
+    domains: list[ProductionDomainDefinition]
+    tools: list[ToolDefinition]
+    inspections: list[ProductionDomainInspection]
+
+
+class ProductionDomainRunCommand(Value):
+    request_id: Identifier
+    task_id: Identifier
+    domain_id: Identifier
+
+
+class ProviderConfigureCommand(Value):
+    request_id: Identifier
+    provider: Provider
+
+
+class ProviderDisableCommand(Value):
+    request_id: Identifier
+    provider_id: Identifier
+    reason: Text
+
+
+class ProviderCredentialCommand(Value):
+    provider_id: Identifier
+    secret: SecretStr
+
+
+class ProviderCredentialStatus(Value):
+    provider_id: Identifier
+    configured: bool
+
+
+class SpendApprovalCommand(Value):
+    request_id: Identifier
+    provider_id: Identifier
+    invocation_request_id: Identifier
+    amount_cents: Annotated[int, Field(ge=0, strict=True)]
+    expires_at: Timestamp
+
+
+class ProviderInvokeCommand(Value):
+    request_id: Identifier
+    provider_id: Identifier
+    prompt: Text
+    task_id: Identifier | None = None
+    max_output_tokens: Annotated[int, Field(gt=0, le=131072, strict=True)] = 4096
+
+
+class ProviderInvocationResult(Value):
+    record: PaidInvocationRecord
+    output: Text | None = None
+
+
+class ProviderStatus(Value):
+    provider: Provider
+    credential_configured: bool
+    adapter_available: bool
+
+
+class BudgetLedger(Value):
+    month: Annotated[str, Field(pattern=r"^\d{4}-\d{2}$")]
+    budget_cents: Annotated[int, Field(ge=0, strict=True)]
+    settled_cents: Annotated[int, Field(ge=0, strict=True)]
+    reserved_cents: Annotated[int, Field(ge=0, strict=True)]
+    available_cents: Annotated[int, Field(ge=0, strict=True)]
+
+
+class ProviderRegistry(Value):
+    providers: list[ProviderStatus]
+    ledger: BudgetLedger
+    approvals: list[SpendApproval]
+    reservations: list[BudgetReservation]
+    invocations: list[PaidInvocationRecord]
 
 
 class IntelligenceRefreshCommand(Value):
@@ -124,6 +363,7 @@ class ProjectSummary(Value):
     root: Text
     engine: Text | None = None
     stage: Text
+    onboarding: ProjectOnboarding | None = None
 
 
 class ProjectCatalog(Value):
@@ -238,7 +478,20 @@ class StreamMessage(EventPage):
 
 
 class ApiCatalog(Value):
+    pack_automated_audition_command: PackAutomatedAuditionCommand
+    pack_lifecycle_command: PackLifecycleCommand
+    pack_build_command: PackBuildCommand
+    lesson_promotion_command: LessonPromotionCommand
+    research_command: ResearchCommand
+    pack_candidate_command: PackCandidateCommand
+    pack_audition_command: PackAuditionCommand
+    pack_review_command: PackReviewCommand
+    lesson_review_command: LessonReviewCommand
     agent_registry: AgentRegistrySnapshot
+    knowledge_catalog: KnowledgeCatalog
+    agent_knowledge_catalog: AgentKnowledgeCatalog
+    knowledge_maintenance_report: KnowledgeMaintenanceReport
+    learning_maintenance_status: LearningMaintenanceStatus
     recruitment_command: RecruitmentCommand
     qa_gates: list[QAGateDefinition]
     qa_report: QAReport
@@ -252,6 +505,18 @@ class ApiCatalog(Value):
     local_model_recommendation: LocalModelRecommendation
     model_route_command: ModelRouteCommand
     model_routing: ModelRoutingRecord
+    provider_registry: ProviderRegistry
+    provider_configure_command: ProviderConfigureCommand
+    provider_disable_command: ProviderDisableCommand
+    provider_credential_command: ProviderCredentialCommand
+    provider_credential_status: ProviderCredentialStatus
+    spend_approval_command: SpendApprovalCommand
+    provider_invoke_command: ProviderInvokeCommand
+    provider_invocation_result: ProviderInvocationResult
+    production_domain_catalog: ProductionDomainCatalog
+    production_domain_run_command: ProductionDomainRunCommand
+    production_domain_inspection: ProductionDomainInspection
+    project_onboarding: ProjectOnboarding
     plan_draft: PlanDraft
     objective_command: ObjectiveCommand
     decision_command: DecisionCommand

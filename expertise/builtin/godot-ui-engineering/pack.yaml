@@ -1,0 +1,77 @@
+schema_version: 1
+pack_id: godot-ui-engineering
+name: Godot UI Engineering
+version: 1.0.0
+description: Version-sensitive Godot Control layout, input, theme, and UI verification practice.
+state: active
+domain_ids: [godot, game_ui, engineering]
+capability_ids:
+  [ui_engineering, controller_navigation, accessibility_ux, godot_development]
+sources:
+  - schema_version: 1
+    source_id: godot-control-docs
+    title: Godot Control class reference
+    author: Godot Engine contributors
+    publisher: Godot Engine
+    uri: https://docs.godotengine.org/en/stable/classes/class_control.html
+    source_type: official_documentation
+    retrieved_at: "2026-09-09T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-03-09T00:00:00Z"
+    license: CC BY 3.0
+    applicable_capability_ids: [ui_engineering, controller_navigation]
+  - schema_version: 1
+    source_id: godot-containers-docs
+    title: Using Containers in Godot
+    author: Godot Engine contributors
+    publisher: Godot Engine
+    uri: https://docs.godotengine.org/en/stable/tutorials/ui/gui_containers.html
+    source_type: official_documentation
+    retrieved_at: "2026-09-09T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-03-09T00:00:00Z"
+    license: CC BY 3.0
+    applicable_capability_ids: [ui_engineering]
+methods:
+  - schema_version: 1
+    method_id: godot-ui-structure-review
+    title: Godot UI structure review
+    purpose: Validate that Control layout and focus behavior are container-driven, responsive, and testable in the target scene.
+    applicable_capability_ids:
+      [ui_engineering, controller_navigation, godot_development]
+    steps:
+      - Identify the active Control hierarchy, containers, anchors, and size flags.
+      - Trace focus neighbors and declared input actions.
+      - Verify behavior at target viewport sizes with runtime capture.
+    evidence_requirements:
+      - Active .tscn or runtime scene path.
+      - Runtime capture for layout and focus claims.
+    source_ids: [godot-control-docs, godot-containers-docs]
+items:
+  - schema_version: 1
+    item_id: godot-ui-container-layout
+    title: Prefer container-owned layout
+    kind: professional_knowledge
+    statement: Use Control containers, anchors, and size flags to express responsive layout; avoid treating fixed editor coordinates as the layout contract.
+    domain_ids: [godot, game_ui]
+    capability_ids: [ui_engineering, godot_development]
+    source_ids: [godot-control-docs, godot-containers-docs]
+    method_ids: [godot-ui-structure-review]
+    freshness_class: version_sensitive
+    confidence: 0.97
+  - schema_version: 1
+    item_id: godot-ui-focus-runtime
+    title: Verify focus at runtime
+    kind: professional_knowledge
+    statement: Focus order and controller traversal require runtime verification in the active scene; node presence alone is insufficient.
+    domain_ids: [godot, accessibility]
+    capability_ids: [controller_navigation, accessibility_ux, ui_engineering]
+    source_ids: [godot-control-docs]
+    method_ids: [godot-ui-structure-review]
+    freshness_class: version_sensitive
+    confidence: 0.97
+evaluation_ids: [godot-ui-method-contract, godot-ui-version-freshness]
+created_at: "2026-09-09T00:00:00Z"
+reviewed_at: "2026-09-09T00:00:00Z"

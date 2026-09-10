@@ -125,7 +125,7 @@ try {
   await writeFile(join(temporary, "README.md"), "# Smoke Game\n");
   await writeFile(
     join(temporary, "main.tscn"),
-    '[node name="Main" type="Node2D"]\n',
+    '[gd_scene format=3]\n\n[node name="Main" type="Node2D"]\n',
   );
   await writeFile(
     join(secondTemporary, "project.godot"),
@@ -195,22 +195,55 @@ try {
     children,
   );
   await waitFor(studioUrl, {}, children);
+  const daemonHeaders = { Authorization: `Bearer ${token}` };
+  const roster = await (
+    await fetch(`${daemonUrl}/agent-roster`, { headers: daemonHeaders })
+  ).json();
+  const agentKnowledge = await (
+    await fetch(`${daemonUrl}/agent-knowledge`, { headers: daemonHeaders })
+  ).json();
+  const expectedAllAgentNodes = roster.length + 1;
+  const expectedAvailableAgentNodes =
+    agentKnowledge.profiles.filter(
+      (profile) => profile.qualification_state === "expertise_available",
+    ).length + 1;
 
   browser = await chromium.launch();
   const page = await browser.newPage();
   await page.goto(studioUrl);
   await page.getByRole("heading", { name: "Director Desk" }).waitFor();
+  assert.equal(await page.getByText(/^EVENT \d+$/).count(), 0);
+  const dividerAlignment = await page.evaluate(() => {
+    const topbar = globalThis.document
+      .querySelector(".topbar")
+      ?.getBoundingClientRect();
+    const inspectorHeader = globalThis.document
+      .querySelector(".inspector > .section-heading")
+      ?.getBoundingClientRect();
+    return {
+      topbarBottom: topbar?.bottom,
+      inspectorBottom: inspectorHeader?.bottom,
+    };
+  });
+  assert.equal(dividerAlignment.inspectorBottom, dividerAlignment.topbarBottom);
   await page.getByRole("button", { name: "Switch or import project" }).click();
   await page.getByLabel("Add local repository").fill(secondTemporary);
-  await page.getByRole("button", { name: "Import repository" }).click();
+  await page.getByRole("button", { name: "Import and inspect" }).click();
+  await page.getByRole("heading", { name: "Project understanding" }).waitFor();
+  await page.getByText("WE'RE GOOD TO START").waitFor();
+  await page.getByText("engineering", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "Enter project" }).click();
+  await page.locator(".project-dialog").waitFor({ state: "hidden" });
   await page.getByText("Second Smoke Game / Director Desk").waitFor();
   await page.getByRole("button", { name: "Switch or import project" }).click();
   await page.getByRole("button", { name: /Smoke Game.*Open project/ }).click();
+  await page.locator(".project-dialog").waitFor({ state: "hidden" });
   await page.getByText("Smoke Game / Director Desk").waitFor();
   await page.getByRole("button", { name: "Switch or import project" }).click();
   await page
     .getByRole("button", { name: /Second Smoke Game.*Open project/ })
     .click();
+  await page.locator(".project-dialog").waitFor({ state: "hidden" });
   await page.getByText("Second Smoke Game / Director Desk").waitFor();
   await page.getByRole("button", { name: "Switch or import project" }).click();
   await page
@@ -238,24 +271,73 @@ try {
     .waitFor();
   await page
     .locator("nav")
+    .getByRole("button", { name: /Disciplines/ })
+    .click();
+  await page
+    .getByRole("heading", { name: "Production discipline audits" })
+    .waitFor();
+  assert.equal(await page.locator(".domain-card").count(), 5);
+  const levelDomain = page.locator(".domain-card", {
+    has: page.getByRole("heading", { name: "Level design" }),
+  });
+  const domainResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/daemon/production-domain-run"),
+  );
+  await levelDomain
+    .getByRole("button", { name: "Run read-only audit" })
+    .click();
+  assert.equal((await domainResponse).status(), 200);
+  await levelDomain.getByText("passed", { exact: true }).waitFor();
+  await levelDomain.getByText(/1 files/).waitFor();
+  await page
+    .locator("nav")
     .getByRole("button", { name: /Production/ })
     .click();
   const agentNetwork = page.locator('[aria-label="Agent network"]');
   await agentNetwork.getByRole("heading", { name: "Agent network" }).waitFor();
+  await agentNetwork
+    .locator(".agent-index")
+    .getByRole("button", { name: "Engineering Lead" })
+    .click();
+  await agentNetwork
+    .locator(".agent-knowledge-list")
+    .getByText("game-engineering-core", { exact: true })
+    .waitFor();
+  await agentNetwork
+    .locator(".agent-retrieval-list")
+    .getByText("professional knowledge", { exact: true })
+    .first()
+    .waitFor();
   await agentNetwork.locator(".react-flow__node").first().waitFor();
-  assert.equal(await agentNetwork.locator(".react-flow__node").count(), 7);
+  assert.equal(
+    await agentNetwork.locator(".react-flow__node").count(),
+    expectedAllAgentNodes,
+  );
   assert.equal(
     await page.getByRole("heading", { name: "Direct the project" }).count(),
     0,
   );
   await agentNetwork.getByRole("button", { name: /Available to hire/ }).click();
-  assert.equal(await agentNetwork.locator(".react-flow__node").count(), 7);
+  assert.equal(
+    await agentNetwork.locator(".react-flow__node").count(),
+    expectedAvailableAgentNodes,
+  );
   await agentNetwork.getByRole("button", { name: /All agents/ }).click();
   await page
     .locator("nav")
     .getByRole("button", { name: /Project Intelligence/ })
     .click();
   await page.getByRole("heading", { name: "Repository index" }).waitFor();
+  await page.getByRole("heading", { name: "Expertise library" }).waitFor();
+  await page
+    .getByRole("heading", { name: "Learning from production" })
+    .waitFor();
+  await page.getByRole("heading", { name: "Current research" }).waitFor();
+  const learningResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/daemon/learning-run"),
+  );
+  await page.getByRole("button", { name: "Capture and distill" }).click();
+  assert.equal((await learningResponse).status(), 200);
   const indexResponse = page.waitForResponse((response) =>
     response.url().includes("/api/daemon/project-intelligence-refresh"),
   );
@@ -275,7 +357,10 @@ try {
   await page.getByRole("heading", { name: "Capability registry" }).waitFor();
   await page.getByText("Recruitment changes evaluator availability").waitFor();
   await page.locator(".registry-table tbody tr").first().waitFor();
-  assert.equal(await page.locator(".registry-table tbody tr").count(), 6);
+  assert.equal(
+    await page.locator(".registry-table tbody tr").count(),
+    roster.length,
+  );
   await page
     .locator("nav")
     .getByRole("button", { name: /Models/ })
@@ -297,7 +382,23 @@ try {
   await page
     .getByRole("heading", { name: "Latest routing decision" })
     .waitFor();
-  await page.getByText(/Paid execution is unavailable until Phase 9/).waitFor();
+  await page
+    .getByText(
+      /Paid execution is admitted per invocation only after the provider gateway/,
+    )
+    .waitFor();
+  await page
+    .locator("nav")
+    .getByRole("button", { name: /Providers/ })
+    .click();
+  await page
+    .getByRole("heading", {
+      name: "Paid work is admitted before it can execute",
+    })
+    .waitFor();
+  await page
+    .getByText("No paid provider is configured.", { exact: false })
+    .waitFor();
   await page.locator("nav").getByRole("button", { name: /QA/ }).click();
   await page.getByRole("heading", { name: "Quality gates" }).waitFor();
   await page.getByText("Required evidence has not been recorded.").waitFor();

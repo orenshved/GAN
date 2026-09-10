@@ -1,0 +1,105 @@
+schema_version: 1
+pack_id: game-engineering-core
+name: Game Engineering Core
+version: 1.0.0
+description: Architecture, implementation, dependency, and verification practice for game production code.
+state: active
+domain_ids: [engineering, game_engineering]
+capability_ids:
+  [
+    ui_engineering,
+    gameplay_engineering,
+    tooling,
+    build_engineering,
+    dependency_analysis,
+  ]
+sources:
+  - schema_version: 1
+    source_id: gan-engineering-invariants
+    title: Game Agent Network architecture invariants
+    author: Game Agent Network
+    publisher: Game Agent Network
+    uri: gan://architecture/invariants
+    source_type: standard
+    retrieved_at: "2026-09-09T00:00:00Z"
+    authority: curated_practice
+    freshness_class: stable
+    applicable_capability_ids:
+      [ui_engineering, gameplay_engineering, tooling, dependency_analysis]
+  - schema_version: 1
+    source_id: gan-evidence-contract
+    title: Game Agent Network evidence contract
+    author: Game Agent Network
+    publisher: Game Agent Network
+    uri: gan://spec/product-requirements/qa-evidence
+    source_type: standard
+    retrieved_at: "2026-09-09T00:00:00Z"
+    authority: curated_practice
+    freshness_class: stable
+    applicable_capability_ids:
+      [build_engineering, gameplay_engineering, ui_engineering]
+methods:
+  - schema_version: 1
+    method_id: engineering-change-plan
+    title: Bounded engineering change plan
+    purpose: Connect a requested behavior to the smallest safe ownership boundary and verification path.
+    applicable_capability_ids:
+      [ui_engineering, gameplay_engineering, tooling, build_engineering]
+    steps:
+      - Identify the authoritative contract and current implementation boundary.
+      - Trace dependencies and state transitions before editing.
+      - Implement the smallest coherent slice and verify its observable contract.
+    evidence_requirements:
+      - Cited project files or contracts.
+      - Deterministic checks plus runtime evidence where behavior is claimed.
+    source_ids: [gan-engineering-invariants, gan-evidence-contract]
+  - schema_version: 1
+    method_id: dependency-boundary-review
+    title: Dependency boundary review
+    purpose: Prevent infrastructure and adapter concerns from becoming domain truth.
+    applicable_capability_ids: [dependency_analysis, tooling, build_engineering]
+    steps:
+      - Map ownership and dependency direction.
+      - Identify imports or writes that cross the declared boundary.
+      - Verify the corrected boundary with automated checks.
+    evidence_requirements:
+      - Current dependency graph or source imports.
+      - A repeatable boundary test.
+    source_ids: [gan-engineering-invariants]
+items:
+  - schema_version: 1
+    item_id: engineering-contract-first
+    title: Contracts own cross-boundary meaning
+    kind: professional_knowledge
+    statement: Change the canonical domain contract before generated clients or boundary consumers, then regenerate and verify drift.
+    domain_ids: [engineering]
+    capability_ids: [ui_engineering, tooling, dependency_analysis]
+    source_ids: [gan-engineering-invariants]
+    method_ids: [engineering-change-plan]
+    freshness_class: stable
+    confidence: 0.99
+  - schema_version: 1
+    item_id: engineering-small-slice
+    title: Prefer a coherent vertical slice
+    kind: heuristic
+    statement: A small end-to-end behavior with evidence is safer than broad disconnected scaffolding.
+    domain_ids: [engineering, production]
+    capability_ids: [gameplay_engineering, ui_engineering, build_engineering]
+    source_ids: [gan-engineering-invariants, gan-evidence-contract]
+    method_ids: [engineering-change-plan]
+    freshness_class: stable
+    confidence: 0.94
+  - schema_version: 1
+    item_id: engineering-no-structural-overclaim
+    title: Structural inspection is bounded evidence
+    kind: anti_pattern
+    statement: Readable source and configuration establish discoverability, not runtime correctness, performance, or player-facing quality.
+    domain_ids: [engineering, qa]
+    capability_ids: [dependency_analysis, build_engineering]
+    source_ids: [gan-evidence-contract]
+    method_ids: [dependency-boundary-review]
+    freshness_class: stable
+    confidence: 0.99
+evaluation_ids: [engineering-method-contract, engineering-boundary-contract]
+created_at: "2026-09-09T00:00:00Z"
+reviewed_at: "2026-09-09T00:00:00Z"

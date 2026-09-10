@@ -3,7 +3,7 @@
 A local-first production orchestration foundation for turning human game direction
 into accountable tasks, specialist work and inspectable evidence.
 
-**Status: Phases 7, 8 and 10 complete.** The persistent project GM turns objectives into
+**Status: Phases 7–11 complete.** The persistent project GM turns objectives into
 typed multidisciplinary plans, while Project Intelligence indexes repository
 files, design documents, decisions, and asset references into bounded,
 provenance-aware worker context. The first Godot adapter now inspects nested Godot
@@ -24,8 +24,23 @@ verification, and Director rejection always wins.
 The Local Model Expert inventories actual workstation hardware and Ollama models,
 records content-addressed representative benchmarks, and compares deterministic,
 local, authenticated Codex, paid, and wait routes. Every recommendation preserves
-quality, confidence, measured runtime, external cost, and rationale; paid execution
-remains structurally unavailable until Phase 9 verifies provider-side hard caps.
+quality, confidence, measured runtime, external cost, and rationale. Paid execution
+now passes through a single fail-closed gateway with verified provider-side cap
+proof, atomic monthly reservations, exact approval at $1.00 or more, secure OS
+credentials, idempotent calls, and conservative timeout recovery.
+Phase 11 adds gameplay, level-design, art, audio, and narrative vertical slices.
+Each discipline has a versioned contract, installed read-only inspection tool,
+evidence-backed QA gate, canonical task history, and Studio representation. These
+structural audits deliberately do not promote file validity into claims about
+creative quality, behavior, continuity, mix, or fun.
+The Knowledge Fabric now qualifies specialists with reviewed, versioned Expertise
+Packs and assembles task-scoped packets from separate project and discipline
+planes. Its first roster includes Game UX, Game Engineering, Game QA, and Godot UI
+Engineering packs. Agent Inspector shows the exact pack versions, methods, sources,
+freshness, retrieved context and observed method/pack outcomes. Worker results expose
+an expandable evidence-separated “Why?” view. Missing required expertise moves a
+planned task or onboarding assessment to `BLOCKED_KNOWLEDGE`; it does not masquerade
+as a generic failure. Project Intelligence is never copied into the global expertise store.
 
 ## Architecture
 
@@ -35,15 +50,20 @@ flowchart TD
   Studio -->|Server-side bearer bridge| Daemon[Python daemon]
   Daemon --> GM[GM production authority: contracts only]
   Daemon --> Intelligence[Project Intelligence: indexed facts and references]
+  Daemon --> Knowledge[Knowledge Fabric: packs, FTS and domain-aware routing]
   Daemon --> Godot[Godot adapter: inspect, build, run, capture]
   Daemon --> Router[Local Model Expert: inventory, benchmark, route]
+  Daemon --> Gateway[Paid-provider gateway: cap, reserve, invoke, reconcile]
+  Daemon --> Domains[Production domains: gameplay, levels, art, audio, narrative]
   Router --> Ollama[Ollama: local inference]
   Router --> Workers
   GM --> Tasks[Capability-based task proposals]
   Intelligence --> Tasks
+  Knowledge --> Workers
   Tasks --> Workers[Authenticated Codex read-only analysis]
   Workers --> Evidence[Artifacts and QA evidence]
   Godot --> Evidence
+  Domains --> Evidence
   Evidence --> QA[QA fabric: gates, reports and waivers]
   QA --> GM
   Daemon --> History[Canonical project files and JSONL events]
@@ -57,16 +77,18 @@ flowchart TD
 Pydantic owns the contracts and generates JSON Schema and TypeScript. Project
 events are canonical; SQLite and Studio state are rebuildable views.
 
-| Principle                              | Foundation implementation                                   |
-| -------------------------------------- | ----------------------------------------------------------- |
-| GM owns production authority           | Pure command/event admission and state-machine checks       |
-| Agents are capability packages         | Versioned schemas, separate tools and project assignments   |
-| Human judgment overrides scores        | Canonical human review and rejection precedence             |
-| QA needs evidence                      | Typed gates, scoped evidence, rationale and audited waivers |
-| Model routing needs evidence           | Live inventory, representative benchmarks and route records |
-| No uncapped paid providers             | Fail-closed cap/budget admission rules                      |
-| Project identity stays isolated        | Global definitions exclude context; thread scope validation |
-| Local project history remains portable | Durable rotated JSONL, replay and rebuildable SQLite        |
+| Principle                               | Foundation implementation                                    |
+| --------------------------------------- | ------------------------------------------------------------ |
+| GM owns production authority            | Pure command/event admission and state-machine checks        |
+| Agents are capability packages          | Versioned schemas, separate tools and project assignments    |
+| Human judgment overrides scores         | Canonical human review and rejection precedence              |
+| QA needs evidence                       | Typed gates, scoped evidence, rationale and audited waivers  |
+| Model routing needs evidence            | Live inventory, representative benchmarks and route records  |
+| No uncapped paid providers              | Verified caps, atomic reservations and one execution gateway |
+| New disciplines ship vertically         | Contract, tool, QA, evidence, history and Studio together    |
+| Project identity stays isolated         | Global definitions exclude context; thread scope validation  |
+| Expertise stays qualified and traceable | Versioned packs, provenance, freshness and packet references |
+| Local project history remains portable  | Durable rotated JSONL, replay and rebuildable SQLite         |
 
 ## Local setup (PowerShell)
 
@@ -93,6 +115,20 @@ explicit interpreter path is required.
 Set `GAMEAGENT_OLLAMA_URL` to the local Ollama endpoint to enable inventory and
 benchmarks. `GAMEAGENT_OLLAMA_BENCHMARK_TIMEOUT_SECONDS` controls generation time;
 missing or unhealthy Ollama state fails closed and remains visible in Studio.
+Optional paid-provider adapter metadata is configured with the
+`GAMEAGENT_PROVIDER_*` dotenv fields. Store the credential from the Providers page;
+GAN writes it to Windows Credential Manager and never to `.env` or project history.
+Set `GAMEAGENT_KNOWLEDGE_HOME` only to move the canonical global Expertise Pack
+directory from its default `~/.gameagent/knowledge/` location.
+The Project Intelligence page includes the expertise library, pack draft builder,
+independent audition/review controls, current research and project learning.
+`GAMEAGENT_RESEARCH_HOSTS` is an exact, comma-separated allowlist of authoritative
+HTTPS hostnames; empty disables research. Task network permission is also required.
+`GAMEAGENT_BACKGROUND_LEARNING=1` enables idle-only local QA capture/distillation
+at `GAMEAGENT_LEARNING_INTERVAL_SECONDS` intervals. It never buys provider calls or
+promotes lessons, and its idle/running/waiting/failed state is visible in Studio.
+Global lesson export requires a separate explicit privacy and
+generalization review; project evidence stays local.
 
 `gameagent init` detects the repository and likely engine/rendering mode, records
 documents, assets and Git HEAD, and lists important unknowns without an intake
@@ -140,6 +176,7 @@ task in `REVIEW` and records Git context plus content-addressed surviving files.
 - [Domain vocabulary](docs/architecture/VOCABULARY.md)
 - [Invariant coverage and runtime limits](docs/architecture/INVARIANTS.md)
 - [Architectural decisions](docs/decisions/)
+- [Knowledge Fabric storage decision](docs/decisions/0012-canonical-knowledge-fabric-storage.md)
 - [Phase 0 handoff](docs/development/PHASE_0_HANDOFF.md)
 - [Phase 1 handoff](docs/development/PHASE_1_HANDOFF.md)
 - [Phase 2 handoff](docs/development/PHASE_2_HANDOFF.md)
@@ -149,7 +186,9 @@ task in `REVIEW` and records Git context plus content-addressed surviving files.
 - [Phase 6 handoff](docs/development/PHASE_6_HANDOFF.md)
 - [Phase 7 handoff](docs/development/PHASE_7_HANDOFF.md)
 - [Phase 8 handoff](docs/development/PHASE_8_HANDOFF.md)
+- [Phase 9 handoff](docs/development/PHASE_9_HANDOFF.md)
 - [Phase 10 handoff](docs/development/PHASE_10_HANDOFF.md)
+- [Phase 11 handoff](docs/development/PHASE_11_HANDOFF.md)
 
 ## Roadmap
 
@@ -165,8 +204,9 @@ task in `REVIEW` and records Git context plus content-addressed surviving files.
 | 10     | Complete ahead of Phase 7: recruiter, auditions and global registry |
 | 7      | Complete: evidence-backed QA fabric                                 |
 | 8      | Complete: local model expert and explainable model router           |
-| 9      | Real provider budget gateway                                        |
-| 11–12  | Additional disciplines and desktop packaging                        |
+| 9      | Complete: verified-cap provider budget and execution gateway        |
+| 11     | Complete: gameplay, level design, art, audio and narrative slices   |
+| 12     | Desktop packaging                                                   |
 
 The eventual public portfolio can host the Studio presentation layer separately.
 The local daemon owns filesystem access and durable project state, so it is not a

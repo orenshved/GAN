@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "codebase-memory": {
+      "command": "npx",
+      "args": ["-y", "codebase-memory-mcp"],
+      "env": {
+        "REPO_PATH": "."
+      }
+    },
+    "serena": {
+      "command": "uvx",
+      "args": ["--from", "serena", "serena-mcp"],
+      "env": {
+        "SERENA_PROJECT": ".serena/project.yml"
+      }
+    }
+  }
+}

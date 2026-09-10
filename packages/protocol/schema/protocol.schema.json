@@ -23,8 +23,28 @@
           "title": "Assignment Id",
           "type": "string"
         },
+        "expertise_packs": {
+          "items": {
+            "$ref": "#/$defs/ExpertisePackRef"
+          },
+          "title": "Expertise Packs",
+          "type": "array"
+        },
         "granted_permissions": {
           "$ref": "#/$defs/Permissions"
+        },
+        "knowledge_packet_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Knowledge Packet Id"
         },
         "project_id": {
           "pattern": "^[a-z][a-z0-9_.-]*$",
@@ -157,6 +177,14 @@
           "title": "Agent Id",
           "type": "string"
         },
+        "allowed_method_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Allowed Method Ids",
+          "type": "array"
+        },
         "allowed_tool_ids": {
           "items": {
             "pattern": "^[a-z][a-z0-9_.-]*$",
@@ -192,6 +220,14 @@
           "title": "Name",
           "type": "string"
         },
+        "optional_expertise_pack_ids": {
+          "items": {
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "type": "string"
+          },
+          "title": "Optional Expertise Pack Ids",
+          "type": "array"
+        },
         "output_contract": {
           "minLength": 1,
           "pattern": "\\S",
@@ -205,6 +241,14 @@
           "default": true,
           "title": "Probationary",
           "type": "boolean"
+        },
+        "required_expertise_pack_ids": {
+          "items": {
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "type": "string"
+          },
+          "title": "Required Expertise Pack Ids",
+          "type": "array"
         },
         "required_gates": {
           "items": {
@@ -346,6 +390,97 @@
         "payload"
       ],
       "title": "AgentEvent",
+      "type": "object"
+    },
+    "AgentKnowledgeCatalog": {
+      "additionalProperties": false,
+      "properties": {
+        "profiles": {
+          "items": {
+            "$ref": "#/$defs/AgentKnowledgeProfile"
+          },
+          "title": "Profiles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "profiles"
+      ],
+      "title": "AgentKnowledgeCatalog",
+      "type": "object"
+    },
+    "AgentKnowledgeProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Agent Id",
+          "type": "string"
+        },
+        "method_performance": {
+          "items": {
+            "$ref": "#/$defs/KnowledgePerformanceSummary"
+          },
+          "title": "Method Performance",
+          "type": "array"
+        },
+        "methods": {
+          "items": {
+            "$ref": "#/$defs/KnowledgeMethod"
+          },
+          "title": "Methods",
+          "type": "array"
+        },
+        "pack_performance": {
+          "items": {
+            "$ref": "#/$defs/KnowledgePerformanceSummary"
+          },
+          "title": "Pack Performance",
+          "type": "array"
+        },
+        "packet": {
+          "$ref": "#/$defs/KnowledgePacket"
+        },
+        "qualification_state": {
+          "enum": [
+            "expertise_available",
+            "missing_required_expertise"
+          ],
+          "title": "Qualification State",
+          "type": "string"
+        },
+        "recorded_packets": {
+          "items": {
+            "$ref": "#/$defs/KnowledgePacket"
+          },
+          "title": "Recorded Packets",
+          "type": "array"
+        },
+        "required_pack_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Required Pack Ids",
+          "type": "array"
+        },
+        "resolved_packs": {
+          "items": {
+            "$ref": "#/$defs/ExpertisePackRef"
+          },
+          "title": "Resolved Packs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "agent_id",
+        "qualification_state",
+        "required_pack_ids",
+        "resolved_packs",
+        "methods",
+        "packet"
+      ],
+      "title": "AgentKnowledgeProfile",
       "type": "object"
     },
     "AgentRegistryEntry": {
@@ -715,6 +850,237 @@
         "evidence_class"
       ],
       "title": "AuditionTestCase",
+      "type": "object"
+    },
+    "BudgetLedger": {
+      "additionalProperties": false,
+      "properties": {
+        "available_cents": {
+          "minimum": 0,
+          "title": "Available Cents",
+          "type": "integer"
+        },
+        "budget_cents": {
+          "minimum": 0,
+          "title": "Budget Cents",
+          "type": "integer"
+        },
+        "month": {
+          "pattern": "^\\d{4}-\\d{2}$",
+          "title": "Month",
+          "type": "string"
+        },
+        "reserved_cents": {
+          "minimum": 0,
+          "title": "Reserved Cents",
+          "type": "integer"
+        },
+        "settled_cents": {
+          "minimum": 0,
+          "title": "Settled Cents",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "month",
+        "budget_cents",
+        "settled_cents",
+        "reserved_cents",
+        "available_cents"
+      ],
+      "title": "BudgetLedger",
+      "type": "object"
+    },
+    "BudgetReservation": {
+      "additionalProperties": false,
+      "properties": {
+        "actual_cents": {
+          "anyOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actual Cents"
+        },
+        "created_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Created At",
+          "type": "string"
+        },
+        "month": {
+          "pattern": "^\\d{4}-\\d{2}$",
+          "title": "Month",
+          "type": "string"
+        },
+        "predicted_cents": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "title": "Predicted Cents",
+          "type": "integer"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "provider_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Provider Id",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "reservation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Reservation Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "reserved",
+            "in_flight",
+            "settled",
+            "released",
+            "uncertain"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Updated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reservation_id",
+        "project_id",
+        "provider_id",
+        "request_id",
+        "month",
+        "predicted_cents",
+        "state",
+        "created_at",
+        "updated_at"
+      ],
+      "title": "BudgetReservation",
+      "type": "object"
+    },
+    "BudgetReservationEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "provider.reservation_updated",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/BudgetReservation"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "BudgetReservationEvent",
       "type": "object"
     },
     "Capability": {
@@ -1443,6 +1809,99 @@
       "title": "Direction",
       "type": "object"
     },
+    "DomainAssumption": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "expires_when": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Expires When",
+          "type": "string"
+        },
+        "impact": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Impact",
+          "type": "string"
+        },
+        "statement": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "statement",
+        "confidence",
+        "impact",
+        "expires_when"
+      ],
+      "title": "DomainAssumption",
+      "type": "object"
+    },
+    "DomainReadiness": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "status": {
+          "enum": [
+            "READY",
+            "READY_WITH_ASSUMPTIONS",
+            "NEEDS_INPUT_LATER",
+            "NEEDS_INPUT_NOW",
+            "BLOCKED_KNOWLEDGE"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "confidence"
+      ],
+      "title": "DomainReadiness",
+      "type": "object"
+    },
+    "DomainUnknown": {
+      "additionalProperties": false,
+      "properties": {
+        "blocks_current_work": {
+          "title": "Blocks Current Work",
+          "type": "boolean"
+        },
+        "impact": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Impact",
+          "type": "string"
+        },
+        "question": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Question",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question",
+        "impact",
+        "blocks_current_work"
+      ],
+      "title": "DomainUnknown",
+      "type": "object"
+    },
     "Engine": {
       "additionalProperties": false,
       "properties": {
@@ -1995,6 +2454,18 @@
                 "$ref": "#/$defs/ProviderEvent"
               },
               {
+                "$ref": "#/$defs/ProviderConfiguredEvent"
+              },
+              {
+                "$ref": "#/$defs/SpendApprovedEvent"
+              },
+              {
+                "$ref": "#/$defs/BudgetReservationEvent"
+              },
+              {
+                "$ref": "#/$defs/PaidInvocationEvent"
+              },
+              {
                 "$ref": "#/$defs/CommitEvent"
               },
               {
@@ -2038,6 +2509,21 @@
               },
               {
                 "$ref": "#/$defs/ModelRoutingEvent"
+              },
+              {
+                "$ref": "#/$defs/ProductionDomainInspectionEvent"
+              },
+              {
+                "$ref": "#/$defs/OnboardingEvent"
+              },
+              {
+                "$ref": "#/$defs/ExperienceObservedEvent"
+              },
+              {
+                "$ref": "#/$defs/ExperienceLessonEvent"
+              },
+              {
+                "$ref": "#/$defs/WorldResearchEvent"
               }
             ]
           },
@@ -2233,6 +2719,813 @@
         "payload"
       ],
       "title": "EvidenceRecordedEvent",
+      "type": "object"
+    },
+    "ExperienceLesson": {
+      "additionalProperties": false,
+      "properties": {
+        "applicability": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Applicability",
+          "type": "string"
+        },
+        "capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Capability Ids",
+          "type": "array"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "created_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Created At",
+          "type": "string"
+        },
+        "lesson_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Lesson Id",
+          "type": "string"
+        },
+        "limitations": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Limitations",
+          "type": "array"
+        },
+        "observation_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Observation Ids",
+          "type": "array"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "proposer_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Proposer Id",
+          "type": "string"
+        },
+        "review_detail": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Review Detail"
+        },
+        "reviewed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewed At"
+        },
+        "reviewer_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewer Id"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "scope": {
+          "default": "project",
+          "enum": [
+            "project",
+            "user_taste",
+            "domain",
+            "engine",
+            "global"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "candidate",
+            "repeated",
+            "validated",
+            "rejected",
+            "expired",
+            "superseded"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "statement": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lesson_id",
+        "project_id",
+        "observation_ids",
+        "capability_ids",
+        "statement",
+        "applicability",
+        "limitations",
+        "state",
+        "proposer_id",
+        "created_at",
+        "confidence"
+      ],
+      "title": "ExperienceLesson",
+      "type": "object"
+    },
+    "ExperienceLessonEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "experience.lesson_recorded",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ExperienceLesson"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "ExperienceLessonEvent",
+      "type": "object"
+    },
+    "ExperienceObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Agent Id"
+        },
+        "capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Capability Ids",
+          "type": "array"
+        },
+        "conclusion": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Conclusion",
+          "type": "string"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "context_tags": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Context Tags",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Created At",
+          "type": "string"
+        },
+        "evaluation_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Evaluation Id"
+        },
+        "evidence_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "expertise_packs": {
+          "items": {
+            "$ref": "#/$defs/ExpertisePackRef"
+          },
+          "title": "Expertise Packs",
+          "type": "array"
+        },
+        "method_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Method Ids",
+          "type": "array"
+        },
+        "observation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Observation Id",
+          "type": "string"
+        },
+        "outcome": {
+          "default": "inconclusive",
+          "enum": [
+            "passed",
+            "failed",
+            "inconclusive"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "scope": {
+          "default": "project_private",
+          "enum": [
+            "project_private",
+            "global_candidate"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "state": {
+          "enum": [
+            "observed",
+            "proposed",
+            "reviewed",
+            "promoted",
+            "rejected"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "observation_id",
+        "project_id",
+        "task_id",
+        "capability_ids",
+        "conclusion",
+        "state",
+        "evidence_ids",
+        "source",
+        "confidence",
+        "created_at"
+      ],
+      "title": "ExperienceObservation",
+      "type": "object"
+    },
+    "ExperienceObservedEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "experience.observed",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ExperienceObservation"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "ExperienceObservedEvent",
+      "type": "object"
+    },
+    "ExpertiseBaselineStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "pack_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "title": "Pack Id",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "missing",
+            "draft",
+            "trusted",
+            "unavailable"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        }
+      },
+      "required": [
+        "pack_id",
+        "state"
+      ],
+      "title": "ExpertiseBaselineStatus",
+      "type": "object"
+    },
+    "ExpertiseKnowledgeItem": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Capability Ids",
+          "type": "array"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "domain_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Domain Ids",
+          "type": "array"
+        },
+        "freshness_class": {
+          "enum": [
+            "stable",
+            "slow_changing",
+            "version_sensitive",
+            "policy_sensitive",
+            "live"
+          ],
+          "title": "Freshness Class",
+          "type": "string"
+        },
+        "item_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Item Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "professional_knowledge",
+            "standard",
+            "heuristic",
+            "anti_pattern",
+            "example",
+            "benchmark"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "method_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Method Ids",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "source_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Source Ids",
+          "type": "array"
+        },
+        "statement": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Statement",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "item_id",
+        "title",
+        "kind",
+        "statement",
+        "domain_ids",
+        "capability_ids",
+        "source_ids",
+        "freshness_class",
+        "confidence"
+      ],
+      "title": "ExpertiseKnowledgeItem",
+      "type": "object"
+    },
+    "ExpertisePack": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Capability Ids",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Created At",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Description",
+          "type": "string"
+        },
+        "domain_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Domain Ids",
+          "type": "array"
+        },
+        "evaluation_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evaluation Ids",
+          "type": "array"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/ExpertiseKnowledgeItem"
+          },
+          "minItems": 1,
+          "title": "Items",
+          "type": "array"
+        },
+        "methods": {
+          "items": {
+            "$ref": "#/$defs/KnowledgeMethod"
+          },
+          "minItems": 1,
+          "title": "Methods",
+          "type": "array"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Name",
+          "type": "string"
+        },
+        "pack_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "title": "Pack Id",
+          "type": "string"
+        },
+        "required_tool_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Required Tool Ids",
+          "type": "array"
+        },
+        "reviewed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewed At"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/KnowledgeSource"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "state": {
+          "enum": [
+            "draft",
+            "reviewed",
+            "active",
+            "deprecated"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "supersedes_version": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Supersedes Version"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pack_id",
+        "name",
+        "version",
+        "description",
+        "state",
+        "domain_ids",
+        "capability_ids",
+        "sources",
+        "methods",
+        "items",
+        "evaluation_ids",
+        "created_at"
+      ],
+      "title": "ExpertisePack",
+      "type": "object"
+    },
+    "ExpertisePackRef": {
+      "additionalProperties": false,
+      "properties": {
+        "pack_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "title": "Pack Id",
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pack_id",
+        "version"
+      ],
+      "title": "ExpertisePackRef",
       "type": "object"
     },
     "ExternalChangeEvent": {
@@ -2706,6 +3999,115 @@
         "reason"
       ],
       "title": "GateWaiverCommand",
+      "type": "object"
+    },
+    "GlobalExperience": {
+      "additionalProperties": false,
+      "properties": {
+        "applicability": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Applicability",
+          "type": "string"
+        },
+        "capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Capability Ids",
+          "type": "array"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "evidence_digests": {
+          "items": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Digests",
+          "type": "array"
+        },
+        "lesson_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Lesson Id",
+          "type": "string"
+        },
+        "limitations": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Limitations",
+          "type": "array"
+        },
+        "reviewed_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Reviewed At",
+          "type": "string"
+        },
+        "reviewer_id": {
+          "const": "human",
+          "default": "human",
+          "title": "Reviewer Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "scope": {
+          "enum": [
+            "global",
+            "domain",
+            "engine"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "scope_constraint": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scope Constraint"
+        },
+        "statement": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lesson_id",
+        "statement",
+        "applicability",
+        "limitations",
+        "capability_ids",
+        "scope",
+        "evidence_digests",
+        "confidence",
+        "reviewed_at"
+      ],
+      "title": "GlobalExperience",
       "type": "object"
     },
     "GraphicsDevice": {
@@ -3327,6 +4729,74 @@
       "title": "IntelligenceRefreshCommand",
       "type": "object"
     },
+    "KnowledgeCatalog": {
+      "additionalProperties": false,
+      "properties": {
+        "auditions": {
+          "items": {
+            "$ref": "#/$defs/PackAudition"
+          },
+          "title": "Auditions",
+          "type": "array"
+        },
+        "baseline": {
+          "items": {
+            "$ref": "#/$defs/ExpertiseBaselineStatus"
+          },
+          "title": "Baseline",
+          "type": "array"
+        },
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/ExpertisePack"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "global_experience": {
+          "items": {
+            "$ref": "#/$defs/GlobalExperience"
+          },
+          "title": "Global Experience",
+          "type": "array"
+        },
+        "lifecycle": {
+          "items": {
+            "$ref": "#/$defs/PackLifecycleRecord"
+          },
+          "title": "Lifecycle",
+          "type": "array"
+        },
+        "maintenance_flags": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Maintenance Flags",
+          "type": "array"
+        },
+        "packs": {
+          "items": {
+            "$ref": "#/$defs/ExpertisePack"
+          },
+          "title": "Packs",
+          "type": "array"
+        },
+        "reviews": {
+          "items": {
+            "$ref": "#/$defs/PackReview"
+          },
+          "title": "Reviews",
+          "type": "array"
+        }
+      },
+      "required": [
+        "packs"
+      ],
+      "title": "KnowledgeCatalog",
+      "type": "object"
+    },
     "KnowledgeEntry": {
       "additionalProperties": false,
       "properties": {
@@ -3423,6 +4893,861 @@
         "evidence_ids"
       ],
       "title": "KnowledgeEntry",
+      "type": "object"
+    },
+    "KnowledgeMaintenanceReport": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmark_regressions": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Benchmark Regressions",
+          "type": "array"
+        },
+        "broken_sources": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Broken Sources",
+          "type": "array"
+        },
+        "contradiction_candidates": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Contradiction Candidates",
+          "type": "array"
+        },
+        "deprecated_versions": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Deprecated Versions",
+          "type": "array"
+        },
+        "ran_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Ran At",
+          "type": "string"
+        },
+        "rebuilt_full_text_index": {
+          "title": "Rebuilt Full Text Index",
+          "type": "boolean"
+        },
+        "run_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "stale_sources": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Stale Sources",
+          "type": "array"
+        },
+        "state": {
+          "enum": [
+            "passed",
+            "attention"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "state",
+        "rebuilt_full_text_index",
+        "ran_at"
+      ],
+      "title": "KnowledgeMaintenanceReport",
+      "type": "object"
+    },
+    "KnowledgeMethod": {
+      "additionalProperties": false,
+      "properties": {
+        "applicable_capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Applicable Capability Ids",
+          "type": "array"
+        },
+        "evidence_requirements": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Requirements",
+          "type": "array"
+        },
+        "method_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Method Id",
+          "type": "string"
+        },
+        "purpose": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Purpose",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "source_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Source Ids",
+          "type": "array"
+        },
+        "steps": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Steps",
+          "type": "array"
+        },
+        "title": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method_id",
+        "title",
+        "purpose",
+        "applicable_capability_ids",
+        "steps",
+        "evidence_requirements",
+        "source_ids"
+      ],
+      "title": "KnowledgeMethod",
+      "type": "object"
+    },
+    "KnowledgePacket": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Agent Id",
+          "type": "string"
+        },
+        "assembled_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Assembled At",
+          "type": "string"
+        },
+        "capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Capability Ids",
+          "type": "array"
+        },
+        "context_package_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Context Package Id"
+        },
+        "expertise_packs": {
+          "items": {
+            "$ref": "#/$defs/ExpertisePackRef"
+          },
+          "title": "Expertise Packs",
+          "type": "array"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/RetrievedKnowledge"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "methods": {
+          "items": {
+            "$ref": "#/$defs/KnowledgeMethod"
+          },
+          "title": "Methods",
+          "type": "array"
+        },
+        "missing_knowledge_flags": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Missing Knowledge Flags",
+          "type": "array"
+        },
+        "packet_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Packet Id",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "project_intelligence_digest": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Project Intelligence Digest"
+        },
+        "project_sources": {
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Project Sources",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "selected_method_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Selected Method Ids",
+          "type": "array"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/KnowledgeSource"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "stale_knowledge_flags": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Stale Knowledge Flags",
+          "type": "array"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "packet_id",
+        "project_id",
+        "task_id",
+        "agent_id",
+        "assembled_at",
+        "capability_ids"
+      ],
+      "title": "KnowledgePacket",
+      "type": "object"
+    },
+    "KnowledgePerformanceSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "failed_count": {
+          "minimum": 0,
+          "title": "Failed Count",
+          "type": "integer"
+        },
+        "inconclusive_count": {
+          "minimum": 0,
+          "title": "Inconclusive Count",
+          "type": "integer"
+        },
+        "interpretation": {
+          "const": "observed_correlation_not_causation",
+          "default": "observed_correlation_not_causation",
+          "title": "Interpretation",
+          "type": "string"
+        },
+        "passed_count": {
+          "minimum": 0,
+          "title": "Passed Count",
+          "type": "integer"
+        },
+        "subject": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Subject",
+          "type": "string"
+        },
+        "task_count": {
+          "minimum": 0,
+          "title": "Task Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "subject",
+        "task_count",
+        "passed_count",
+        "failed_count",
+        "inconclusive_count"
+      ],
+      "title": "KnowledgePerformanceSummary",
+      "type": "object"
+    },
+    "KnowledgeSource": {
+      "additionalProperties": false,
+      "properties": {
+        "applicable_capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Applicable Capability Ids",
+          "type": "array"
+        },
+        "author": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Author"
+        },
+        "authority": {
+          "enum": [
+            "primary_standard",
+            "official_documentation",
+            "peer_reviewed",
+            "industry_reference",
+            "curated_practice",
+            "project_source",
+            "measured_result",
+            "human_judgment"
+          ],
+          "title": "Authority",
+          "type": "string"
+        },
+        "fresh_until": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fresh Until"
+        },
+        "freshness_class": {
+          "enum": [
+            "stable",
+            "slow_changing",
+            "version_sensitive",
+            "policy_sensitive",
+            "live"
+          ],
+          "title": "Freshness Class",
+          "type": "string"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "published_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Published At"
+        },
+        "publisher": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Publisher"
+        },
+        "retrieved_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Retrieved At",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "source_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_type": {
+          "enum": [
+            "standard",
+            "official_documentation",
+            "book",
+            "paper",
+            "article",
+            "project_document",
+            "measurement",
+            "human_review"
+          ],
+          "title": "Source Type",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        },
+        "uri": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Uri",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "title",
+        "uri",
+        "source_type",
+        "retrieved_at",
+        "authority",
+        "freshness_class"
+      ],
+      "title": "KnowledgeSource",
+      "type": "object"
+    },
+    "LeadDomainAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Agent Id",
+          "type": "string"
+        },
+        "assessed_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Assessed At",
+          "type": "string"
+        },
+        "assessment_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Assessment Id",
+          "type": "string"
+        },
+        "assumptions": {
+          "items": {
+            "$ref": "#/$defs/DomainAssumption"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "contradictions": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Contradictions",
+          "type": "array"
+        },
+        "domain": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Domain",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "expertise_packs": {
+          "items": {
+            "$ref": "#/$defs/ExpertisePackRef"
+          },
+          "title": "Expertise Packs",
+          "type": "array"
+        },
+        "inferred_facts": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Inferred Facts",
+          "type": "array"
+        },
+        "knowledge_packet": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KnowledgePacket"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "known_facts": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Known Facts",
+          "type": "array"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "readiness": {
+          "$ref": "#/$defs/DomainReadiness"
+        },
+        "recommendations": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Recommendations",
+          "type": "array"
+        },
+        "requested_human_inputs": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Requested Human Inputs",
+          "type": "array"
+        },
+        "risks": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Risks",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "summary": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Summary",
+          "type": "string"
+        },
+        "unknowns": {
+          "items": {
+            "$ref": "#/$defs/DomainUnknown"
+          },
+          "title": "Unknowns",
+          "type": "array"
+        }
+      },
+      "required": [
+        "assessment_id",
+        "project_id",
+        "domain",
+        "agent_id",
+        "assessed_at",
+        "readiness",
+        "summary",
+        "known_facts",
+        "inferred_facts",
+        "evidence",
+        "assumptions",
+        "unknowns",
+        "recommendations",
+        "risks",
+        "contradictions",
+        "requested_human_inputs"
+      ],
+      "title": "LeadDomainAssessment",
+      "type": "object"
+    },
+    "LearningMaintenanceStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        },
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "knowledge_report": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KnowledgeMaintenanceReport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "last_completed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Completed At"
+        },
+        "last_started_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Started At"
+        },
+        "state": {
+          "enum": [
+            "disabled",
+            "idle",
+            "waiting_for_idle",
+            "running",
+            "failed"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "enabled",
+        "state"
+      ],
+      "title": "LearningMaintenanceStatus",
+      "type": "object"
+    },
+    "LessonPromotionCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "applicability": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Applicability",
+          "type": "string"
+        },
+        "generalization_reviewed": {
+          "const": true,
+          "title": "Generalization Reviewed",
+          "type": "boolean"
+        },
+        "lesson_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Lesson Id",
+          "type": "string"
+        },
+        "limitations": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Limitations",
+          "type": "array"
+        },
+        "privacy_checked": {
+          "const": true,
+          "title": "Privacy Checked",
+          "type": "boolean"
+        },
+        "scope": {
+          "enum": [
+            "global",
+            "domain",
+            "engine"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "scope_constraint": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scope Constraint"
+        },
+        "statement": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lesson_id",
+        "statement",
+        "applicability",
+        "limitations",
+        "scope",
+        "privacy_checked",
+        "generalization_reviewed"
+      ],
+      "title": "LessonPromotionCommand",
+      "type": "object"
+    },
+    "LessonReviewCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "enum": [
+            "validated",
+            "rejected",
+            "expired",
+            "superseded"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "lesson_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Lesson Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lesson_id",
+        "decision",
+        "detail"
+      ],
+      "title": "LessonReviewCommand",
       "type": "object"
     },
     "LocalHardwareInventory": {
@@ -4618,6 +6943,767 @@
       "title": "ObjectiveCommand",
       "type": "object"
     },
+    "OnboardingEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "project.reconnaissance_started",
+            "project.reconnaissance_completed",
+            "domain.assessment_started",
+            "domain.assessment_completed",
+            "domain.assumption_recorded",
+            "domain.input_needed_later",
+            "domain.input_needed_now",
+            "project.reconciliation_started",
+            "project.reconciliation_completed",
+            "project.onboarding_completed"
+          ],
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/OnboardingEventPayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "OnboardingEvent",
+      "type": "object"
+    },
+    "OnboardingEventPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "assessment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LeadDomainAssessment"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "domain": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain"
+        },
+        "onboarding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProjectOnboarding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "detail"
+      ],
+      "title": "OnboardingEventPayload",
+      "type": "object"
+    },
+    "PackAudition": {
+      "additionalProperties": false,
+      "properties": {
+        "audition_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Audition Id",
+          "type": "string"
+        },
+        "baseline_score": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Baseline Score",
+          "type": "number"
+        },
+        "benchmark_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Benchmark Id",
+          "type": "string"
+        },
+        "candidate_score": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Candidate Score",
+          "type": "number"
+        },
+        "candidate_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Candidate Sha256",
+          "type": "string"
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "evidence": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "evidence_class": {
+          "default": "human",
+          "enum": [
+            "human",
+            "heuristic"
+          ],
+          "title": "Evidence Class",
+          "type": "string"
+        },
+        "pack": {
+          "$ref": "#/$defs/ExpertisePackRef"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Recorded At",
+          "type": "string"
+        },
+        "reviewer_id": {
+          "default": "human",
+          "enum": [
+            "human",
+            "expertise-curator"
+          ],
+          "title": "Reviewer Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "audition_id",
+        "pack",
+        "candidate_sha256",
+        "benchmark_id",
+        "baseline_score",
+        "candidate_score",
+        "evidence",
+        "detail",
+        "recorded_at"
+      ],
+      "title": "PackAudition",
+      "type": "object"
+    },
+    "PackAuditionCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_score": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Baseline Score",
+          "type": "number"
+        },
+        "benchmark_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Benchmark Id",
+          "type": "string"
+        },
+        "candidate_score": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Candidate Score",
+          "type": "number"
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "evidence_text": {
+          "maxLength": 100000,
+          "minLength": 10,
+          "title": "Evidence Text",
+          "type": "string"
+        },
+        "pack": {
+          "$ref": "#/$defs/ExpertisePackRef"
+        }
+      },
+      "required": [
+        "pack",
+        "benchmark_id",
+        "baseline_score",
+        "candidate_score",
+        "evidence_text",
+        "detail"
+      ],
+      "title": "PackAuditionCommand",
+      "type": "object"
+    },
+    "PackAutomatedAuditionCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmark_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Benchmark Id",
+          "type": "string"
+        },
+        "expected_findings": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Expected Findings",
+          "type": "array"
+        },
+        "pack": {
+          "$ref": "#/$defs/ExpertisePackRef"
+        },
+        "scenario": {
+          "maxLength": 8000,
+          "minLength": 10,
+          "title": "Scenario",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pack",
+        "benchmark_id",
+        "scenario",
+        "expected_findings"
+      ],
+      "title": "PackAutomatedAuditionCommand",
+      "type": "object"
+    },
+    "PackBuildCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "pack_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "title": "Pack Id",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "pack_id",
+        "version"
+      ],
+      "title": "PackBuildCommand",
+      "type": "object"
+    },
+    "PackCandidateCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "pack": {
+          "$ref": "#/$defs/ExpertisePack"
+        }
+      },
+      "required": [
+        "pack"
+      ],
+      "title": "PackCandidateCommand",
+      "type": "object"
+    },
+    "PackLifecycleCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "pack": {
+          "$ref": "#/$defs/ExpertisePackRef"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "active",
+            "deprecated",
+            "disputed",
+            "expired"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pack",
+        "state",
+        "reason"
+      ],
+      "title": "PackLifecycleCommand",
+      "type": "object"
+    },
+    "PackLifecycleRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "pack": {
+          "$ref": "#/$defs/ExpertisePackRef"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "record_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Recorded At",
+          "type": "string"
+        },
+        "reviewer_id": {
+          "const": "human",
+          "default": "human",
+          "title": "Reviewer Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "active",
+            "deprecated",
+            "disputed",
+            "expired"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "record_id",
+        "pack",
+        "state",
+        "reason",
+        "recorded_at"
+      ],
+      "title": "PackLifecycleRecord",
+      "type": "object"
+    },
+    "PackReview": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Candidate Sha256",
+          "type": "string"
+        },
+        "contradictions_checked": {
+          "title": "Contradictions Checked",
+          "type": "boolean"
+        },
+        "decision": {
+          "enum": [
+            "approved",
+            "rejected"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "licensing_checked": {
+          "title": "Licensing Checked",
+          "type": "boolean"
+        },
+        "pack": {
+          "$ref": "#/$defs/ExpertisePackRef"
+        },
+        "privacy_checked": {
+          "title": "Privacy Checked",
+          "type": "boolean"
+        },
+        "provenance_checked": {
+          "title": "Provenance Checked",
+          "type": "boolean"
+        },
+        "reviewed_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Reviewed At",
+          "type": "string"
+        },
+        "reviewer_id": {
+          "const": "human",
+          "default": "human",
+          "title": "Reviewer Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "pack",
+        "candidate_sha256",
+        "decision",
+        "provenance_checked",
+        "privacy_checked",
+        "licensing_checked",
+        "contradictions_checked",
+        "detail",
+        "reviewed_at"
+      ],
+      "title": "PackReview",
+      "type": "object"
+    },
+    "PackReviewCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "contradictions_checked": {
+          "title": "Contradictions Checked",
+          "type": "boolean"
+        },
+        "decision": {
+          "enum": [
+            "approved",
+            "rejected"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "licensing_checked": {
+          "title": "Licensing Checked",
+          "type": "boolean"
+        },
+        "pack": {
+          "$ref": "#/$defs/ExpertisePackRef"
+        },
+        "privacy_checked": {
+          "title": "Privacy Checked",
+          "type": "boolean"
+        },
+        "provenance_checked": {
+          "title": "Provenance Checked",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "pack",
+        "decision",
+        "provenance_checked",
+        "privacy_checked",
+        "licensing_checked",
+        "contradictions_checked",
+        "detail"
+      ],
+      "title": "PackReviewCommand",
+      "type": "object"
+    },
+    "PaidInvocationEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "provider.invocation_recorded",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/PaidInvocationRecord"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "PaidInvocationEvent",
+      "type": "object"
+    },
+    "PaidInvocationRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "actual_cents": {
+          "anyOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actual Cents"
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "invocation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Invocation Id",
+          "type": "string"
+        },
+        "predicted_cents": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "title": "Predicted Cents",
+          "type": "integer"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "provider_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Provider Id",
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Recorded At",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "reservation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Reservation Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "succeeded",
+            "failed",
+            "uncertain"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        }
+      },
+      "required": [
+        "invocation_id",
+        "project_id",
+        "provider_id",
+        "reservation_id",
+        "request_id",
+        "state",
+        "predicted_cents",
+        "detail",
+        "recorded_at"
+      ],
+      "title": "PaidInvocationRecord",
+      "type": "object"
+    },
     "Permissions": {
       "additionalProperties": false,
       "properties": {
@@ -5244,6 +8330,372 @@
       "title": "Production",
       "type": "object"
     },
+    "ProductionDomainCatalog": {
+      "additionalProperties": false,
+      "properties": {
+        "domains": {
+          "items": {
+            "$ref": "#/$defs/ProductionDomainDefinition"
+          },
+          "title": "Domains",
+          "type": "array"
+        },
+        "inspections": {
+          "items": {
+            "$ref": "#/$defs/ProductionDomainInspection"
+          },
+          "title": "Inspections",
+          "type": "array"
+        },
+        "tools": {
+          "items": {
+            "$ref": "#/$defs/ToolDefinition"
+          },
+          "title": "Tools",
+          "type": "array"
+        }
+      },
+      "required": [
+        "domains",
+        "tools",
+        "inspections"
+      ],
+      "title": "ProductionDomainCatalog",
+      "type": "object"
+    },
+    "ProductionDomainDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_extensions": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Accepted Extensions",
+          "type": "array"
+        },
+        "capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Capability Ids",
+          "type": "array"
+        },
+        "description": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Description",
+          "type": "string"
+        },
+        "domain_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Domain Id",
+          "type": "string"
+        },
+        "gate_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Gate Ids",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "title": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        },
+        "tool_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Tool Ids",
+          "type": "array"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain_id",
+        "version",
+        "title",
+        "description",
+        "capability_ids",
+        "tool_ids",
+        "gate_ids",
+        "accepted_extensions"
+      ],
+      "title": "ProductionDomainDefinition",
+      "type": "object"
+    },
+    "ProductionDomainFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "finding_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "paths": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Paths",
+          "type": "array"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "finding_id",
+        "severity",
+        "title",
+        "detail"
+      ],
+      "title": "ProductionDomainFinding",
+      "type": "object"
+    },
+    "ProductionDomainInspection": {
+      "additionalProperties": false,
+      "properties": {
+        "domain_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Domain Id",
+          "type": "string"
+        },
+        "evaluation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Evaluation Id",
+          "type": "string"
+        },
+        "evidence_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Evidence Id",
+          "type": "string"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/ProductionDomainFinding"
+          },
+          "minItems": 1,
+          "title": "Findings",
+          "type": "array"
+        },
+        "inspected_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Inspected At",
+          "type": "string"
+        },
+        "inspected_file_count": {
+          "minimum": 0,
+          "title": "Inspected File Count",
+          "type": "integer"
+        },
+        "inspection_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Inspection Id",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "needs_attention",
+            "not_applicable"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "tool_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Tool Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "inspection_id",
+        "project_id",
+        "task_id",
+        "domain_id",
+        "tool_id",
+        "status",
+        "inspected_at",
+        "inspected_file_count",
+        "evidence_id",
+        "evaluation_id",
+        "findings"
+      ],
+      "title": "ProductionDomainInspection",
+      "type": "object"
+    },
+    "ProductionDomainInspectionEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "production_domain.inspected",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ProductionDomainInspection"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "ProductionDomainInspectionEvent",
+      "type": "object"
+    },
+    "ProductionDomainRunCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "domain_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Domain Id",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "task_id",
+        "domain_id"
+      ],
+      "title": "ProductionDomainRunCommand",
+      "type": "object"
+    },
     "ProductionPlan": {
       "additionalProperties": false,
       "properties": {
@@ -5653,6 +9105,111 @@
       "title": "ProjectIntelligence",
       "type": "object"
     },
+    "ProjectOnboarding": {
+      "additionalProperties": false,
+      "properties": {
+        "assessments": {
+          "items": {
+            "$ref": "#/$defs/LeadDomainAssessment"
+          },
+          "minItems": 1,
+          "title": "Assessments",
+          "type": "array"
+        },
+        "blocking_questions": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Blocking Questions",
+          "type": "array"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Completed At",
+          "type": "string"
+        },
+        "deferred_questions": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Deferred Questions",
+          "type": "array"
+        },
+        "onboarding_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Onboarding Id",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "reconciliation_summary": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reconciliation Summary",
+          "type": "string"
+        },
+        "reconnaissance_summary": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reconnaissance Summary",
+          "type": "string"
+        },
+        "relevant_domains": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Relevant Domains",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "started_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Started At",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "READY",
+            "NEEDS_HUMAN_INPUT",
+            "BLOCKED_KNOWLEDGE",
+            "ACTIVE"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "onboarding_id",
+        "project_id",
+        "state",
+        "started_at",
+        "completed_at",
+        "reconnaissance_summary",
+        "relevant_domains",
+        "assessments",
+        "reconciliation_summary",
+        "blocking_questions",
+        "deferred_questions"
+      ],
+      "title": "ProjectOnboarding",
+      "type": "object"
+    },
     "ProjectReconciledEvent": {
       "additionalProperties": false,
       "properties": {
@@ -5773,6 +9330,13 @@
     "ProjectSnapshot": {
       "additionalProperties": false,
       "properties": {
+        "budget_reservations": {
+          "items": {
+            "$ref": "#/$defs/BudgetReservation"
+          },
+          "title": "Budget Reservations",
+          "type": "array"
+        },
         "cursor": {
           "minimum": 0,
           "title": "Cursor",
@@ -5797,6 +9361,20 @@
             "$ref": "#/$defs/Evidence"
           },
           "title": "Evidence",
+          "type": "array"
+        },
+        "experience_lessons": {
+          "items": {
+            "$ref": "#/$defs/ExperienceLesson"
+          },
+          "title": "Experience Lessons",
+          "type": "array"
+        },
+        "experience_observations": {
+          "items": {
+            "$ref": "#/$defs/ExperienceObservation"
+          },
+          "title": "Experience Observations",
           "type": "array"
         },
         "gm": {
@@ -5840,6 +9418,24 @@
           "title": "Model Routing Records",
           "type": "array"
         },
+        "onboarding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProjectOnboarding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "paid_invocations": {
+          "items": {
+            "$ref": "#/$defs/PaidInvocationRecord"
+          },
+          "title": "Paid Invocations",
+          "type": "array"
+        },
         "plans": {
           "items": {
             "$ref": "#/$defs/ProductionPlan"
@@ -5850,8 +9446,22 @@
         "policy": {
           "$ref": "#/$defs/Policy"
         },
+        "production_domain_inspections": {
+          "items": {
+            "$ref": "#/$defs/ProductionDomainInspection"
+          },
+          "title": "Production Domain Inspections",
+          "type": "array"
+        },
         "project": {
           "$ref": "#/$defs/Project"
+        },
+        "providers": {
+          "items": {
+            "$ref": "#/$defs/Provider"
+          },
+          "title": "Providers",
+          "type": "array"
         },
         "reconciliations": {
           "items": {
@@ -5871,6 +9481,20 @@
           "default": false,
           "title": "Requires Reconciliation",
           "type": "boolean"
+        },
+        "research_records": {
+          "items": {
+            "$ref": "#/$defs/WorldResearch"
+          },
+          "title": "Research Records",
+          "type": "array"
+        },
+        "spend_approvals": {
+          "items": {
+            "$ref": "#/$defs/SpendApproval"
+          },
+          "title": "Spend Approvals",
+          "type": "array"
         },
         "tasks": {
           "items": {
@@ -5938,6 +9562,17 @@
           "title": "Name",
           "type": "string"
         },
+        "onboarding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProjectOnboarding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "project_id": {
           "pattern": "^[a-z][a-z0-9_.-]*$",
           "title": "Project Id",
@@ -5968,6 +9603,19 @@
     "Provider": {
       "additionalProperties": false,
       "properties": {
+        "adapter_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Adapter Id"
+        },
         "billing": {
           "enum": [
             "local",
@@ -5988,15 +9636,42 @@
           ],
           "title": "Cap"
         },
+        "credential_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Credential Id"
+        },
         "currency": {
           "const": "USD",
           "default": "USD",
           "title": "Currency",
           "type": "string"
         },
+        "display_name": {
+          "default": "External provider",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Display Name",
+          "type": "string"
+        },
         "provider_id": {
           "pattern": "^[a-z][a-z0-9_.-]*$",
           "title": "Provider Id",
+          "type": "string"
+        },
+        "purpose": {
+          "default": "External model execution",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Purpose",
           "type": "string"
         },
         "schema_version": {
@@ -6022,6 +9697,201 @@
         "cap"
       ],
       "title": "Provider",
+      "type": "object"
+    },
+    "ProviderConfigureCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/Provider"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "provider"
+      ],
+      "title": "ProviderConfigureCommand",
+      "type": "object"
+    },
+    "ProviderConfiguredEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "provider.configured",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ProviderConfiguredPayload"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "ProviderConfiguredEvent",
+      "type": "object"
+    },
+    "ProviderConfiguredPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/Provider"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "provider"
+      ],
+      "title": "ProviderConfiguredPayload",
+      "type": "object"
+    },
+    "ProviderCredentialCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "provider_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Provider Id",
+          "type": "string"
+        },
+        "secret": {
+          "format": "password",
+          "title": "Secret",
+          "type": "string",
+          "writeOnly": true
+        }
+      },
+      "required": [
+        "provider_id",
+        "secret"
+      ],
+      "title": "ProviderCredentialCommand",
+      "type": "object"
+    },
+    "ProviderCredentialStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "configured": {
+          "title": "Configured",
+          "type": "boolean"
+        },
+        "provider_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Provider Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider_id",
+        "configured"
+      ],
+      "title": "ProviderCredentialStatus",
+      "type": "object"
+    },
+    "ProviderDisableCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "provider_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Provider Id",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "provider_id",
+        "reason"
+      ],
+      "title": "ProviderDisableCommand",
       "type": "object"
     },
     "ProviderEvent": {
@@ -6111,6 +9981,81 @@
       "title": "ProviderEvent",
       "type": "object"
     },
+    "ProviderInvocationResult": {
+      "additionalProperties": false,
+      "properties": {
+        "output": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output"
+        },
+        "record": {
+          "$ref": "#/$defs/PaidInvocationRecord"
+        }
+      },
+      "required": [
+        "record"
+      ],
+      "title": "ProviderInvocationResult",
+      "type": "object"
+    },
+    "ProviderInvokeCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "max_output_tokens": {
+          "default": 4096,
+          "exclusiveMinimum": 0,
+          "maximum": 131072,
+          "title": "Max Output Tokens",
+          "type": "integer"
+        },
+        "prompt": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Prompt",
+          "type": "string"
+        },
+        "provider_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Provider Id",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        }
+      },
+      "required": [
+        "request_id",
+        "provider_id",
+        "prompt"
+      ],
+      "title": "ProviderInvokeCommand",
+      "type": "object"
+    },
     "ProviderPayload": {
       "additionalProperties": false,
       "properties": {
@@ -6131,6 +10076,74 @@
         "reason"
       ],
       "title": "ProviderPayload",
+      "type": "object"
+    },
+    "ProviderRegistry": {
+      "additionalProperties": false,
+      "properties": {
+        "approvals": {
+          "items": {
+            "$ref": "#/$defs/SpendApproval"
+          },
+          "title": "Approvals",
+          "type": "array"
+        },
+        "invocations": {
+          "items": {
+            "$ref": "#/$defs/PaidInvocationRecord"
+          },
+          "title": "Invocations",
+          "type": "array"
+        },
+        "ledger": {
+          "$ref": "#/$defs/BudgetLedger"
+        },
+        "providers": {
+          "items": {
+            "$ref": "#/$defs/ProviderStatus"
+          },
+          "title": "Providers",
+          "type": "array"
+        },
+        "reservations": {
+          "items": {
+            "$ref": "#/$defs/BudgetReservation"
+          },
+          "title": "Reservations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "providers",
+        "ledger",
+        "approvals",
+        "reservations",
+        "invocations"
+      ],
+      "title": "ProviderRegistry",
+      "type": "object"
+    },
+    "ProviderStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter_available": {
+          "title": "Adapter Available",
+          "type": "boolean"
+        },
+        "credential_configured": {
+          "title": "Credential Configured",
+          "type": "boolean"
+        },
+        "provider": {
+          "$ref": "#/$defs/Provider"
+        }
+      },
+      "required": [
+        "provider",
+        "credential_configured",
+        "adapter_available"
+      ],
+      "title": "ProviderStatus",
       "type": "object"
     },
     "QAGateDefinition": {
@@ -6168,7 +10181,12 @@
         "discipline": {
           "enum": [
             "ui",
-            "engineering"
+            "engineering",
+            "gameplay",
+            "level_design",
+            "art",
+            "audio",
+            "narrative"
           ],
           "title": "Discipline",
           "type": "string"
@@ -6658,6 +10676,95 @@
       "title": "RecruitmentCommand",
       "type": "object"
     },
+    "RecruitmentDiagnosis": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "create_agent",
+            "attach_or_build_pack",
+            "install_or_authorize_tool",
+            "refresh_knowledge",
+            "requalify_agent",
+            "change_model",
+            "reuse_agent"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "agent_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Agent Id"
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "missing_pack_ids": {
+          "items": {
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "type": "string"
+          },
+          "title": "Missing Pack Ids",
+          "type": "array"
+        },
+        "missing_tool_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Missing Tool Ids",
+          "type": "array"
+        },
+        "problem": {
+          "enum": [
+            "no_agent",
+            "missing_expertise_pack",
+            "missing_tool",
+            "stale_knowledge",
+            "performance_failure",
+            "model_insufficient",
+            "none"
+          ],
+          "title": "Problem",
+          "type": "string"
+        },
+        "required_pack_ids": {
+          "items": {
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "type": "string"
+          },
+          "title": "Required Pack Ids",
+          "type": "array"
+        },
+        "stale_pack_ids": {
+          "items": {
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "type": "string"
+          },
+          "title": "Stale Pack Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "problem",
+        "action",
+        "detail"
+      ],
+      "title": "RecruitmentDiagnosis",
+      "type": "object"
+    },
     "RecruitmentEvent": {
       "additionalProperties": false,
       "properties": {
@@ -6776,8 +10883,33 @@
           "title": "Created At",
           "type": "string"
         },
+        "diagnosis": {
+          "$ref": "#/$defs/RecruitmentDiagnosis"
+        },
+        "expertise_packs": {
+          "items": {
+            "$ref": "#/$defs/ExpertisePackRef"
+          },
+          "title": "Expertise Packs",
+          "type": "array"
+        },
+        "expertise_snapshot": {
+          "items": {
+            "$ref": "#/$defs/ExpertisePack"
+          },
+          "title": "Expertise Snapshot",
+          "type": "array"
+        },
         "gap": {
           "$ref": "#/$defs/CapabilityGap"
+        },
+        "missing_expertise_capabilities": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Missing Expertise Capabilities",
+          "type": "array"
         },
         "project_id": {
           "pattern": "^[a-z][a-z0-9_.-]*$",
@@ -6798,6 +10930,7 @@
         "state": {
           "enum": [
             "candidate_composed",
+            "remediation_required",
             "auditioning",
             "probation",
             "rejected"
@@ -6833,6 +10966,7 @@
         "adjacent_agent_ids",
         "tool_discoveries",
         "state",
+        "diagnosis",
         "created_at",
         "updated_at"
       ],
@@ -6898,6 +11032,47 @@
       "title": "Requirements",
       "type": "object"
     },
+    "ResearchCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "freshness_class": {
+          "default": "version_sensitive",
+          "enum": [
+            "stable",
+            "slow_changing",
+            "version_sensitive",
+            "policy_sensitive",
+            "live"
+          ],
+          "title": "Freshness Class",
+          "type": "string"
+        },
+        "requirement": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Requirement",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "url": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "requirement",
+        "url"
+      ],
+      "title": "ResearchCommand",
+      "type": "object"
+    },
     "ResourcePolicy": {
       "additionalProperties": false,
       "properties": {
@@ -6915,6 +11090,143 @@
         }
       },
       "title": "ResourcePolicy",
+      "type": "object"
+    },
+    "RetrievedKnowledge": {
+      "additionalProperties": false,
+      "properties": {
+        "authority": {
+          "enum": [
+            "primary_standard",
+            "official_documentation",
+            "peer_reviewed",
+            "industry_reference",
+            "curated_practice",
+            "project_source",
+            "measured_result",
+            "human_judgment"
+          ],
+          "title": "Authority",
+          "type": "string"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "freshness_class": {
+          "enum": [
+            "stable",
+            "slow_changing",
+            "version_sensitive",
+            "policy_sensitive",
+            "live"
+          ],
+          "title": "Freshness Class",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "professional_knowledge",
+            "project_fact",
+            "project_inference",
+            "external_fact",
+            "observed_result",
+            "heuristic",
+            "hypothesis",
+            "human_judgment",
+            "measured_evidence"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "method_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Method Ids",
+          "type": "array"
+        },
+        "pack": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExpertisePackRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "plane": {
+          "enum": [
+            "project",
+            "discipline",
+            "world",
+            "experience"
+          ],
+          "title": "Plane",
+          "type": "string"
+        },
+        "project_knowledge_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Project Knowledge Id"
+        },
+        "relevance": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Relevance",
+          "type": "number"
+        },
+        "retrieval_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Retrieval Id",
+          "type": "string"
+        },
+        "selection_reason": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Selection Reason",
+          "type": "string"
+        },
+        "source_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        },
+        "statement": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "retrieval_id",
+        "plane",
+        "kind",
+        "statement",
+        "authority",
+        "freshness_class",
+        "confidence",
+        "relevance",
+        "selection_reason"
+      ],
+      "title": "RetrievedKnowledge",
       "type": "object"
     },
     "RuntimeCaptureCommand": {
@@ -7011,6 +11323,199 @@
         "sha256"
       ],
       "title": "SourceRef",
+      "type": "object"
+    },
+    "SpendApproval": {
+      "additionalProperties": false,
+      "properties": {
+        "amount_cents": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "title": "Amount Cents",
+          "type": "integer"
+        },
+        "approval_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Approval Id",
+          "type": "string"
+        },
+        "approved_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Approved At",
+          "type": "string"
+        },
+        "approved_by": {
+          "const": "human",
+          "default": "human",
+          "title": "Approved By",
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Expires At",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "provider_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Provider Id",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "approval_id",
+        "project_id",
+        "provider_id",
+        "request_id",
+        "amount_cents",
+        "approved_at",
+        "expires_at"
+      ],
+      "title": "SpendApproval",
+      "type": "object"
+    },
+    "SpendApprovalCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "amount_cents": {
+          "minimum": 0,
+          "title": "Amount Cents",
+          "type": "integer"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Expires At",
+          "type": "string"
+        },
+        "invocation_request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Invocation Request Id",
+          "type": "string"
+        },
+        "provider_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Provider Id",
+          "type": "string"
+        },
+        "request_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "provider_id",
+        "invocation_request_id",
+        "amount_cents",
+        "expires_at"
+      ],
+      "title": "SpendApprovalCommand",
+      "type": "object"
+    },
+    "SpendApprovedEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "provider.spend_approved",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/SpendApproval"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "SpendApprovedEvent",
       "type": "object"
     },
     "SpendEvent": {
@@ -7170,6 +11675,18 @@
                 "$ref": "#/$defs/ProviderEvent"
               },
               {
+                "$ref": "#/$defs/ProviderConfiguredEvent"
+              },
+              {
+                "$ref": "#/$defs/SpendApprovedEvent"
+              },
+              {
+                "$ref": "#/$defs/BudgetReservationEvent"
+              },
+              {
+                "$ref": "#/$defs/PaidInvocationEvent"
+              },
+              {
                 "$ref": "#/$defs/CommitEvent"
               },
               {
@@ -7213,6 +11730,21 @@
               },
               {
                 "$ref": "#/$defs/ModelRoutingEvent"
+              },
+              {
+                "$ref": "#/$defs/ProductionDomainInspectionEvent"
+              },
+              {
+                "$ref": "#/$defs/OnboardingEvent"
+              },
+              {
+                "$ref": "#/$defs/ExperienceObservedEvent"
+              },
+              {
+                "$ref": "#/$defs/ExperienceLessonEvent"
+              },
+              {
+                "$ref": "#/$defs/WorldResearchEvent"
               }
             ]
           },
@@ -7372,7 +11904,8 @@
             "COMPLETE",
             "CANCELLED",
             "SUPERSEDED",
-            "NEEDS_HUMAN"
+            "NEEDS_HUMAN",
+            "BLOCKED_KNOWLEDGE"
           ],
           "title": "State",
           "type": "string"
@@ -7442,6 +11975,8 @@
             "task.created",
             "task.started",
             "task.blocked",
+            "task.blocked_knowledge",
+            "task.knowledge_resolved",
             "task.completed"
           ],
           "title": "Event Type",
@@ -8094,6 +12629,17 @@
     "WorkerRecord": {
       "additionalProperties": false,
       "properties": {
+        "context_package": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContextPackage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "cwd": {
           "minLength": 1,
           "pattern": "\\S",
@@ -8105,6 +12651,37 @@
           "pattern": "\\S",
           "title": "Detail",
           "type": "string"
+        },
+        "expertise_packs": {
+          "items": {
+            "$ref": "#/$defs/ExpertisePackRef"
+          },
+          "title": "Expertise Packs",
+          "type": "array"
+        },
+        "knowledge_packet": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KnowledgePacket"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "knowledge_packet_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Knowledge Packet Id"
         },
         "project_id": {
           "pattern": "^[a-z][a-z0-9_.-]*$",
@@ -8127,6 +12704,17 @@
           "default": 1,
           "title": "Schema Version",
           "type": "integer"
+        },
+        "specialist": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AgentDefinition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "state": {
           "enum": [
@@ -8194,6 +12782,15 @@
           "title": "Findings",
           "type": "array"
         },
+        "missing_evidence": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Missing Evidence",
+          "type": "array"
+        },
         "next_steps": {
           "items": {
             "minLength": 1,
@@ -8203,11 +12800,55 @@
           "title": "Next Steps",
           "type": "array"
         },
+        "professional_reasoning": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Professional Reasoning",
+          "type": "array"
+        },
+        "project_evidence": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Project Evidence",
+          "type": "array"
+        },
+        "qa_plan": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Qa Plan",
+          "type": "array"
+        },
+        "source_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        },
         "summary": {
           "minLength": 1,
           "pattern": "\\S",
           "title": "Summary",
           "type": "string"
+        },
+        "uncertainty": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Uncertainty",
+          "type": "array"
         }
       },
       "required": [
@@ -8391,6 +13032,200 @@
       ],
       "title": "WorkspaceFingerprint",
       "type": "object"
+    },
+    "WorldResearch": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "detail": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "excerpt": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Excerpt"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "requirement": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Requirement",
+          "type": "string"
+        },
+        "research_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Research Id",
+          "type": "string"
+        },
+        "researched_at": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Researched At",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KnowledgeSource"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "state": {
+          "enum": [
+            "available",
+            "blocked",
+            "failed"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "url": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "research_id",
+        "project_id",
+        "task_id",
+        "requirement",
+        "url",
+        "state",
+        "detail",
+        "researched_at"
+      ],
+      "title": "WorldResearch",
+      "type": "object"
+    },
+    "WorldResearchEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "knowledge.research_recorded",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/WorldResearch"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "WorldResearchEvent",
+      "type": "object"
     }
   },
   "$id": "https://gameagent.local/protocol/v1",
@@ -8424,6 +13259,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/AgentAssignment"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "budget_reservation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BudgetReservation"
         },
         {
           "type": "null"
@@ -8532,6 +13378,18 @@
               "$ref": "#/$defs/ProviderEvent"
             },
             {
+              "$ref": "#/$defs/ProviderConfiguredEvent"
+            },
+            {
+              "$ref": "#/$defs/SpendApprovedEvent"
+            },
+            {
+              "$ref": "#/$defs/BudgetReservationEvent"
+            },
+            {
+              "$ref": "#/$defs/PaidInvocationEvent"
+            },
+            {
               "$ref": "#/$defs/CommitEvent"
             },
             {
@@ -8575,6 +13433,21 @@
             },
             {
               "$ref": "#/$defs/ModelRoutingEvent"
+            },
+            {
+              "$ref": "#/$defs/ProductionDomainInspectionEvent"
+            },
+            {
+              "$ref": "#/$defs/OnboardingEvent"
+            },
+            {
+              "$ref": "#/$defs/ExperienceObservedEvent"
+            },
+            {
+              "$ref": "#/$defs/ExperienceLessonEvent"
+            },
+            {
+              "$ref": "#/$defs/WorldResearchEvent"
             }
           ]
         },
@@ -8589,6 +13462,28 @@
       "anyOf": [
         {
           "$ref": "#/$defs/Evidence"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "experience_observation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExperienceObservation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "expertise_pack": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExpertisePack"
         },
         {
           "type": "null"
@@ -8622,6 +13517,50 @@
       "anyOf": [
         {
           "$ref": "#/$defs/KnowledgeEntry"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "knowledge_method": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/KnowledgeMethod"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "knowledge_packet": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/KnowledgePacket"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "knowledge_source": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/KnowledgeSource"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "lead_domain_assessment": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LeadDomainAssessment"
         },
         {
           "type": "null"
@@ -8673,10 +13612,43 @@
       ],
       "default": null
     },
+    "paid_invocation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PaidInvocationRecord"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "policy": {
       "anyOf": [
         {
           "$ref": "#/$defs/Policy"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "production_domain": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProductionDomainDefinition"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "production_domain_inspection": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProductionDomainInspection"
         },
         {
           "type": "null"
@@ -8699,6 +13671,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/ProjectIntelligence"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "project_onboarding": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProjectOnboarding"
         },
         {
           "type": "null"
@@ -8743,6 +13726,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/RecruitmentRecord"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "spend_approval": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SpendApproval"
         },
         {
           "type": "null"
