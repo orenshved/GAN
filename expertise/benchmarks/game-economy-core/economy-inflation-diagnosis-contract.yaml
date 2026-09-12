@@ -1,0 +1,35 @@
+schema_version: 1
+benchmark_id: economy-inflation-diagnosis-contract
+pack_id: game-economy-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [economy_analysis, balance_simulation]
+scenario: >-
+  A synthetic economy dashboard for a live MMORPG shows the total stock of
+  its primary gold currency rising sharply over the past two weeks. The rise
+  coincides with a win-back marketing campaign that successfully brought
+  many lapsed players back into the game. A team message states: "Faucet
+  output is clearly too high across the board, we should cut quest gold
+  rewards by 20% game-wide to bring the stock back down." No breakdown by
+  issuance channel or by account activity status is mentioned. A reviewer is
+  asked whether an across-the-board faucet cut is the right response.
+discriminates: >-
+  A generic reviewer may accept the cut because the stock chart is clearly
+  rising and a reward nerf is a plausible-sounding lever. A specialist
+  checks whether the timing lines up with the win-back campaign, meaning
+  previously idle balances re-entering circulation, before endorsing a
+  blanket nerf to ongoing rewards.
+expected_specialist_findings:
+  - The stock increase coincides with a win-back campaign that reactivated lapsed players, released sleeping money held by previously inactive accounts is a documented inflation trigger distinct from faucets being too generous, and produces the same rising aggregate stock chart.
+  - Before endorsing a game-wide faucet cut, the increase should be broken down by issuance channel and by account activity status, newly reactivated versus continuously active, to determine whether returning balances, not the ongoing faucet rate, explain the spike.
+  - A game-wide reward cut punishes continuously active players for a stock increase that may be entirely attributable to a one-time reactivation event, and would not address the actual cause if that turns out to be what is driving it.
+  - Recommend monitoring whether the stock growth rate returns to baseline once the reactivated-balance bump has worked through the economy before making any permanent faucet adjustment.
+expected_uncertainty:
+  - Whether the reactivated players' ongoing spending behavior also differs from continuously active players, not stated, would require the decomposed cohort data to determine.
+acceptable_source_ids: [netease-inflation-monitoring-gdc2020]
+scoring_notes: >-
+  Pass only if the enriched run specifically identifies the win-back
+  campaign and reactivated-balance explanation as a real possibility and
+  requires a channel and cohort breakdown before endorsing the game-wide
+  cut. Accepting the cut at face value, or vaguely recommending "more
+  investigation" without naming the reactivation or channel-breakdown
+  mechanism, is a fail.

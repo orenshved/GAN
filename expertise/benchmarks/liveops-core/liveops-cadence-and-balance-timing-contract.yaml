@@ -1,0 +1,31 @@
+schema_version: 1
+benchmark_id: liveops-cadence-and-balance-timing-contract
+pack_id: liveops-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [liveops_design, live_operations]
+scenario: >-
+  A synthetic live-service game has released content at irregular intervals
+  of 6 weeks, then 11 weeks, then 3 weeks, with irregular sizes each time.
+  Three weeks into the current content cycle, the design team proposes a
+  balance patch nerfing the currently most popular build. A team lead says:
+  "Let's ship the balance nerf now while the exploit is fresh in everyone's
+  mind, content timing has never really mattered before." A reviewer is
+  asked whether this plan is sound.
+discriminates: >-
+  A generic reviewer may accept the plan because the nerf itself may well be
+  a reasonable balance fix. A specialist checks the plan against documented
+  cadence and balance-timing practice and flags both the irregular schedule
+  and the mid-cycle timing as separate problems.
+expected_specialist_findings:
+  - The irregular release timing and scope described has previously been shown to make players unable to predict when to expect the next content, weakening the kind of predictable return date that reduces burnout and disengagement; the claim that "content timing has never really mattered before" runs directly against documented practice rather than being a neutral assumption.
+  - Shipping a balance nerf three weeks into the current cycle will be experienced as unfair specifically by players who already committed to the now-nerfed build under the prior balance, independent of whether the nerf is a good change on its own technical merits.
+  - The plan treats urgency ("while the exploit is fresh in everyone's mind") as sufficient justification for mid-cycle timing without weighing it against the fairness cost that mid-cycle changes are documented to carry.
+  - Recommend holding the balance change for the next cycle boundary, where it becomes a visible, fair part of players' fresh build choices, and separately recommend establishing a fixed, predictable release cadence going forward instead of the current irregular pattern.
+expected_uncertainty:
+  - How severe or exploitative the currently popular build actually is, which could argue for an earlier fix in some cases depending on impact — not stated.
+acceptable_source_ids: [wilson-poe-played-forever-gdc2019]
+scoring_notes: >-
+  Pass only if the enriched run names both the cadence-predictability
+  problem and the mid-cycle balance-timing problem as distinct issues.
+  Accepting the plan because the nerf is reasonable, or flagging only the
+  cadence or only the balance timing without the other, is a fail.

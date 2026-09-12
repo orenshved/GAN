@@ -39,6 +39,11 @@ QADiscipline = Literal[
     "art",
     "audio",
     "narrative",
+    "production",
+    "compliance",
+    "data",
+    "support",
+    "security",
 ]
 ModelRoute = Literal[
     "deterministic_tool",
@@ -141,6 +146,7 @@ class Capability(Contract):
     required_inputs: list[Text]
     expected_outputs: Annotated[list[Text], Field(min_length=1)]
     evaluation_requirements: Annotated[list[Identifier], Field(min_length=1)]
+    related_capability_ids: list[Identifier] = Field(default_factory=list)
 
 
 class ModelPreferences(Value):
@@ -1459,6 +1465,11 @@ class InboxEvent(EventBase):
     payload: InboxDecision
 
 
+class InboxDecisionRequestedEvent(EventBase):
+    event_type: Literal["gm.decision_requested"]
+    payload: InboxDecision
+
+
 class IntelligenceEvent(EventBase):
     event_type: Literal["project.intelligence_indexed"]
     payload: ProjectIntelligence
@@ -1560,6 +1571,7 @@ Event = Annotated[
     | GMEvent
     | PlanEvent
     | InboxEvent
+    | InboxDecisionRequestedEvent
     | IntelligenceEvent
     | EvidenceRecordedEvent
     | EvaluationRecordedEvent

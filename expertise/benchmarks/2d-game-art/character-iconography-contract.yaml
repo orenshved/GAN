@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: character-iconography-contract
+pack_id: 2d-game-art
+applies_to_versions: ["1.0.0"]
+capability_ids: [character_art]
+scenario: >-
+  A synthetic hero character is redesigned for a sequel: the color palette,
+  outfit silhouette, hairstyle, and signature weapon are all changed
+  completely, with nothing about the character's appearance carried over from
+  the original design. Only the character's name and backstory remain the
+  same. A marketing note describes this as: "It's the same beloved character,
+  just modernized." A reviewer is asked whether this framing is accurate.
+discriminates: >-
+  A generic reviewer may accept that keeping the name and backstory is enough
+  continuity. A specialist checks for preserved visual identifying elements
+  specifically and flags that name continuity alone does not give players a
+  visual way to recognize the character.
+expected_specialist_findings:
+  - With the palette, silhouette, hairstyle, and signature weapon all changed, there is no visual identifying element carried over from the original design.
+  - Name and backstory continuity operates on a different channel than visual recognizability; players who recognize a character primarily by sight will not experience this as the same character.
+  - The word "modernized" describes a stylistic update; it does not by itself justify discarding every visual identifier that made the original design recognizable.
+  - Recommend identifying at least one or two of the original iconic elements, such as the signature weapon or a distinctive silhouette feature, and preserving them through the redesign.
+expected_uncertainty:
+  - Whether the sequel intends this as a deliberate rebrand rather than a continuation of the same character's visual identity — not stated.
+acceptable_source_ids: [child-of-light-gdc-talk]
+scoring_notes: >-
+  Pass only if the enriched run identifies the absence of preserved visual
+  identifying elements as the actual problem, distinct from name/lore
+  continuity, and recommends retaining specific elements. Accepting "same
+  character, modernized" as accurate because the name persists is a fail.

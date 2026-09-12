@@ -63,6 +63,7 @@ from gameagent.models.contracts import (
     GMEvent,
     GMRecord,
     InboxDecision,
+    InboxDecisionRequestedEvent,
     InboxEvent,
     InitializationReport,
     IntelligenceEvent,
@@ -631,7 +632,7 @@ class ProjectStore:
                     state = "BLOCKED"
                 elif event.event_type == "task.blocked_knowledge":
                     require(
-                        task.state in {"QUEUED", "READY", "RUNNING"},
+                        task.state in {"QUEUED", "READY", "RUNNING", "NEEDS_HUMAN"},
                         "invalid_task_transition",
                         f"{task.state} -> BLOCKED_KNOWLEDGE",
                     )
@@ -783,6 +784,20 @@ class ProjectStore:
                     event.event_id,
                 )
                 decisions[decision.decision_id] = decision
+            elif isinstance(event, InboxDecisionRequestedEvent):
+                decision = event.payload
+                require(
+                    event.actor_type == "gm"
+                    and event.actor_id == "project-gm"
+                    and event.task_id in decision.task_ids
+                    and decision.project_id == project.project.id
+                    and decision.decision_id not in decisions
+                    and decision.selected_option is None
+                    and decision.rationale is None,
+                    "invalid_decision_request",
+                    event.event_id,
+                )
+                decisions[decision.decision_id] = decision
             elif isinstance(event, IntelligenceEvent):
                 index_record = event.payload
                 require(
@@ -901,7 +916,7 @@ class ProjectStore:
                 transitions = {
                     None: {"candidate_composed", "remediation_required"},
                     "candidate_composed": {"candidate_composed", "auditioning"},
-                    "remediation_required": set(),
+                    "remediation_required": {"remediation_required", "candidate_composed"},
                     "auditioning": {"probation", "rejected"},
                     "probation": set(),
                     "rejected": set(),
@@ -1588,6 +1603,70 @@ class ProjectStore:
             replayed, committed = self._replay()
             self._sync(replayed, committed)
             return record
+
+    def record_knowledge_escalation(self, record: RecruitmentRecord) -> InboxDecision:
+        """Surface an unresolved capability or expertise gap to the Director."""
+        with self.lock:
+            snapshot, events = self._replay()
+            decision_id = f"knowledge-gap-{record.task_id}"
+            existing = next(
+                (item for item in snapshot.decisions if item.decision_id == decision_id), None
+            )
+            if existing is not None:
+                return existing
+            plan = next(
+                (
+                    item
+                    for item in snapshot.plans
+                    if record.task_id in {t.task_id for t in item.tasks}
+                ),
+                None,
+            )
+            require(plan is not None, "recruitment_plan_missing", record.task_id)
+            assert plan is not None
+            current_agent = record.diagnosis.agent_id
+            recommendation = (
+                "Teach the current agent"
+                if current_agent is not None
+                else "Create and teach a new specialist"
+            )
+            decision = InboxDecision(
+                decision_id=decision_id,
+                plan_id=plan.plan_id,
+                project_id=record.project_id,
+                title="Specialist knowledge is missing",
+                reason=(
+                    f"This task requires {', '.join(record.gap.missing_capabilities)}, but GAN cannot "
+                    "proceed with a qualified specialist until the missing knowledge is reviewed and attached."
+                ),
+                task_ids=[record.task_id],
+                options=["Teach the current agent", "Create and teach a new specialist"],
+                recommendation=recommendation,
+                consequences=[
+                    "The task remains blocked until a reviewed expertise pack covers the missing capabilities.",
+                    "The Learning Director owns the teaching plan and records what the learner was taught.",
+                    "A new specialist must pass its audition before entering probation.",
+                ],
+            )
+            append(
+                self.directory / "events",
+                InboxDecisionRequestedEvent(
+                    event_id=f"evt-{decision_id}",
+                    project_id=record.project_id,
+                    timestamp=record.updated_at,
+                    actor_type="gm",
+                    actor_id="project-gm",
+                    correlation_id=record.recruitment_id,
+                    task_id=record.task_id,
+                    sequence=len(events) + 1,
+                    event_type="gm.decision_requested",
+                    payload=decision,
+                ),
+                self.max_segment_bytes,
+            )
+            replayed, committed = self._replay()
+            self._sync(replayed, committed)
+            return decision
 
     def record_runtime_evaluation(
         self,
@@ -2767,7 +2846,9 @@ class ProjectStore:
             event_type: Literal["task.blocked_knowledge", "task.knowledge_resolved"] = (
                 "task.blocked_knowledge" if blocked else "task.knowledge_resolved"
             )
-            expected = {"QUEUED", "READY", "RUNNING"} if blocked else {"BLOCKED_KNOWLEDGE"}
+            expected = (
+                {"QUEUED", "READY", "RUNNING", "NEEDS_HUMAN"} if blocked else {"BLOCKED_KNOWLEDGE"}
+            )
             if task.state not in expected:
                 return task
             identity = hashlib.sha256(f"{task_id}\0{event_type}\0{detail}".encode()).hexdigest()[

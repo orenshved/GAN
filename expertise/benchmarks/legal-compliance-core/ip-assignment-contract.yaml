@@ -1,0 +1,31 @@
+schema_version: 1
+benchmark_id: ip-assignment-contract
+pack_id: legal-compliance-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [ip_licensing_review, contract_review]
+scenario: >-
+  A studio hired a freelance composer six months ago on a verbal agreement:
+  "we'll pay you when we get published." No written contract was ever
+  signed. The composed soundtrack is now used throughout the shipped game
+  and in its marketing trailer. A producer's status report states: "Music
+  is locked, no issues there." A reviewer is asked whether that statement
+  is accurate.
+discriminates: >-
+  A generic reviewer may accept the statement because the music is
+  creatively finished and integrated. A specialist checks IP ownership
+  status independent of creative completion and flags that no signed
+  assignment exists.
+expected_specialist_findings:
+  - Without a signed work-for-hire or assignment agreement, copyright in the composed music defaults to the composer, not the studio, regardless of verbal payment intent or how long the arrangement has been informally understood.
+  - The studio has already used the music throughout the shipped game and in a trailer, a distinct marketing use, without documented rights to do so, which is a live risk regardless of whether the composer currently objects.
+  - The claim that music is locked with no issues there describes creative and technical completion, not legal ownership status, which is a separate and currently unresolved question the report conflates with it.
+  - Recommend flagging this to a licensed attorney and the composer immediately to formalize a written assignment or license, specifying exactly which uses (the base game, the trailer, any future sequels) are covered, before any further release or marketing use.
+expected_uncertainty:
+  - Whether the composer would object to current usage, or has already been paid in a way that could support an implied license — not stated; a licensed attorney would need to assess this, not this review.
+acceptable_source_ids: [reid-practical-law-101-gdc2016]
+scoring_notes: >-
+  Pass only if the enriched run identifies the missing signed assignment as
+  a live risk distinct from creative completion, and recommends attorney
+  involvement rather than treating verbal payment intent as sufficient.
+  Accepting "no issues there" at face value, or treating this as a solved
+  legal question rather than a flagged risk, is a fail.

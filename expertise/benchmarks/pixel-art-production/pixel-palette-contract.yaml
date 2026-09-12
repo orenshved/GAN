@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: pixel-palette-contract
+pack_id: pixel-art-production
+applies_to_versions: ["1.0.0"]
+capability_ids: [pixel_art, animation]
+scenario: >-
+  A synthetic 12-frame animated sprite uses dithering to shade a rounded
+  surface. Each frame's dither pattern was hand-drawn independently rather
+  than aligned to a shared reference, and on playback the dithered area
+  visibly crawls and flickers between frames. A contributor reviewing it
+  says: "Dithering just looks like that when animated, it's fine." A reviewer
+  is asked whether this explanation is correct.
+discriminates: >-
+  A generic reviewer may accept "dithering just looks like that" as an
+  inherent, unavoidable property. A specialist identifies the actual cause as
+  inconsistent per-frame dither alignment, not dithering itself, and proposes
+  a concrete fix.
+expected_specialist_findings:
+  - The flickering is not an inherent property of dithering; it results from each frame's dither pattern being drawn independently rather than kept consistent frame to frame.
+  - Dithering used consistently, with the pattern aligned across frames, does not have to crawl; the described symptom points to a production process gap, not a limitation of the technique.
+  - Given that this asset is animated, the sprite could instead use hard banding for this specific surface, which does not carry the same frame-to-frame alignment burden that dithering does.
+  - Recommend either re-doing the dither pattern with deliberate frame-to-frame alignment, or switching this specific animated surface to banding, rather than accepting the flicker as unavoidable.
+expected_uncertainty:
+  - Whether the flicker is subtle enough to be an intentional stylistic effect for this particular game — not stated, though the contributor's framing suggests it is not intentional.
+acceptable_source_ids: [kyle-bunk-gdc-talk]
+scoring_notes: >-
+  Pass only if the enriched run identifies inconsistent per-frame dither
+  alignment as the actual cause and proposes either fixing the alignment or
+  switching to banding. Accepting "dithering just looks like that" as a
+  sufficient explanation is a fail.

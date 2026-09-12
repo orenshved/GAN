@@ -1,0 +1,33 @@
+schema_version: 1
+benchmark_id: production-cross-discipline-evidence-contract
+pack_id: game-production-core
+applies_to_versions: ["1.1.1"]
+capability_ids: [risk_management, scope_management, milestone_planning]
+scenario: >-
+  A synthetic milestone status report reads: "Milestone 3 is on track: the
+  boss encounter art is basically final and looks great, and engineering
+  says the netcode is solid, so we're good to lock scope." The report does
+  not state the increment's Definition of Done, does not list any current
+  impediments, and does not attach any evidence from art or engineering
+  beyond these two paraphrased reassurances. A reviewer is asked whether
+  "Milestone 3 is on track" can stand as written.
+discriminates: >-
+  A generic reviewer may accept the report because it reads as confident and
+  covers multiple disciplines. A specialist separates the actual production
+  claim from the art and engineering claims bundled inside it, and checks
+  whether each is backed by its owning discipline's own evidence rather than
+  a secondhand paraphrase.
+expected_specialist_findings:
+  - The claim that the boss encounter art is basically final and looks great is a visual quality judgment; it is not production's evidence to confirm, and no art-lead evidence (a visual reference review, a direction sign-off) is attached to support it.
+  - Attributing the netcode's soundness to engineering saying so is a technical claim with no actual engineering evidence attached (build, test, or smoke results); a paraphrased opinion is not the same as that discipline's own evidence.
+  - The report never states its own actual production-owned evidence — the increment's Definition of Done status and its current impediment list — which is the one thing this report is actually responsible for establishing.
+  - "Recommend restating the milestone status using only production's own evidence (Definition of Done status, impediment list), and requiring the art and engineering claims to be separately confirmed with each discipline's own evidence before folding them into on track."
+expected_uncertainty:
+  - Whether Milestone 3's actual Definition of Done has been met — not stated, and this is the one fact the report itself should have established.
+acceptable_source_ids: [scrum-guide-2020]
+scoring_notes: >-
+  Pass only if the enriched run separates the three bundled claims and
+  specifically identifies that the art and engineering claims lack their own
+  discipline's evidence, while also noting production's own evidence is
+  missing from the report. Accepting "on track" because the report sounds
+  confident, or objecting only to one of the three claims, is a fail.

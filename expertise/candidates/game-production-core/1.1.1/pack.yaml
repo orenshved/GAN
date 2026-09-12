@@ -1,0 +1,269 @@
+# K4 Part C: cross-disciplinary boundary-recognition benchmark.
+# state: draft — NOT installed, NOT reviewed, NOT trusted for routing.
+# See docs/K4_LEAD_METHODOLOGY_ONTOLOGY_REVIEW.md and
+# .ai/handoffs/claude-to-codex.md.
+#
+# Every benchmark in this program so far tests "generic vs specialist depth
+# within one domain." This version adds a different, complementary kind of
+# scrutiny: whether production-lead recognizes when a status report bundles
+# a genuine production claim (is the increment's Definition of Done met, are
+# impediments tracked) together with other disciplines' quality claims (art
+# looks good, engineering says it's solid) and mistakes inclusion in the
+# report for confirmation. No new source: this is a direct corollary of the
+# Scrum Guide's own accountability structure, where each accountability's
+# claims are backed by that accountability's own work, not asserted on its
+# behalf by another. One item added to state this explicitly; sources,
+# methods, and all other items are unchanged from 1.1.0.
+schema_version: 1
+pack_id: game-production-core
+name: Game Production Core
+version: 1.1.1
+supersedes_version: 1.1.0
+description: >-
+  Sprint-scoped production planning, explicit completion criteria, and
+  visible risk/impediment tracking for game production, grounded in the
+  Scrum Guide's generic framework plus a shipped-title producer's concrete,
+  game-specific practices: single-discipline sprint meetings, relative task
+  sizing, actively protected sustainable pace, and structured onboarding.
+  New in this version: recognizing when a status report's claim actually
+  belongs to another discipline and requires that discipline's own evidence,
+  rather than being treated as confirmed by inclusion in a production
+  report. `dependency_management` remains the thinnest capability — neither
+  source covers multi-team dependency *scheduling* specifically, only
+  impediment surfacing and onboarding-driven dependency reduction; a
+  dedicated cross-discipline coordination source is still a candidate for a
+  future version.
+state: draft
+domain_ids: [production, game_production]
+capability_ids:
+  [
+    production_planning,
+    milestone_planning,
+    scope_management,
+    risk_management,
+    dependency_management,
+  ]
+sources:
+  - schema_version: 1
+    source_id: scrum-guide-2020
+    title: The Scrum Guide
+    author: Ken Schwaber and Jeff Sutherland
+    publisher: Scrum.org
+    uri: https://scrumguides.org/scrum-guide.html
+    source_type: standard
+    retrieved_at: "2026-09-11T00:00:00Z"
+    published_at: "2020-11-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: slow_changing
+    fresh_until: "2027-03-11T00:00:00Z"
+    license: Creative Commons Attribution Share-Alike 4.0 International (CC BY-SA 4.0)
+    applicable_capability_ids:
+      [
+        production_planning,
+        milestone_planning,
+        scope_management,
+        risk_management,
+        dependency_management,
+      ]
+  - schema_version: 1
+    source_id: sandercock-production-secrets
+    title: "Learning the production secrets of Return to Monkey Island"
+    author: Jenn Sandercock (quoted; reported by Game Developer staff)
+    publisher: Game Developer (gamedeveloper.com)
+    uri: https://www.gamedeveloper.com/marketing/learning-the-production-secrets-of-i-return-to-monkey-island
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2023-03-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard web article copyright; no open content license found. Cited for attribution; no article text reproduced beyond short direct quotes already public in the article, and every item below is original distilled wording, not a restatement of the quotes. Speaker credential verified directly on the speaker's own site (jennsand.com): Lead Producer on the shipped, commercially released Return to Monkey Island, 15+ years in the games industry, 8 shipped commercial games."
+    applicable_capability_ids:
+      [
+        production_planning,
+        milestone_planning,
+        scope_management,
+        risk_management,
+        dependency_management,
+      ]
+methods:
+  - schema_version: 1
+    method_id: sprint-scoped-production-planning
+    title: Sprint-scoped production planning
+    purpose: Plan and track game production work in fixed-length increments with an inspectable backlog and explicit exit criteria, instead of open-ended scope against a bare date.
+    applicable_capability_ids:
+      [production_planning, milestone_planning, scope_management]
+    steps:
+      - Define the Sprint Goal and the Sprint Backlog — exactly which backlog items the increment commits to.
+      - Set a fixed increment length and a Definition of Done the increment must meet before it can be called complete.
+      - Track progress against the backlog continuously and surface blocking impediments as they appear, not only at the review.
+      - At the retrospective, record what changes for the next increment's planning, distinct from what shipped in this one.
+    evidence_requirements:
+      - The current backlog for the increment and its Definition of Done.
+      - The increment's actual start/end and what was delivered against the plan.
+    source_ids: [scrum-guide-2020]
+  - schema_version: 1
+    method_id: risk-and-impediment-review
+    title: Risk and impediment review
+    purpose: Surface production risks and cross-discipline blockers explicitly and often, instead of discovering them at a milestone deadline.
+    applicable_capability_ids: [risk_management, dependency_management]
+    steps:
+      - Identify current impediments blocking committed work, including cross-discipline dependencies such as art blocked on an engineering pipeline.
+      - Distinguish an increment-level impediment (blocks the current commitment) from a longer-range risk (threatens a later milestone).
+      - Record each impediment's owner and whether it is visibly tracked or still informal.
+      - Re-inspect open impediments at the next check-in rather than letting them go stale between updates.
+    evidence_requirements:
+      - The current impediment/risk list with an owner per item.
+      - Whether each impediment has been re-inspected since it was raised.
+    source_ids: [scrum-guide-2020]
+  - schema_version: 1
+    method_id: sprint-discipline-and-estimation-review
+    title: Sprint discipline and estimation review
+    purpose: Keep sprint-planning meetings focused and estimation practical by limiting meeting scope to a single discipline and using relative sizing instead of precise hour estimates.
+    applicable_capability_ids: [production_planning, scope_management]
+    steps:
+      - Limit each sprint-planning or check-in meeting to a single discipline's own work and a small attendee count, rather than mixing multiple disciplines into one meeting.
+      - Use a relative sizing scale, for example extra-small through extra-large, for task estimates instead of demanding precise hour or day estimates upfront.
+      - Allow size estimates to be revised as a task's actual scope becomes clearer, rather than treating the initial estimate as fixed.
+      - Confirm meeting attendees are the people who actually need to make decisions about the discussed work, not a broad audience kept only for visibility.
+    evidence_requirements:
+      - The actual attendee list and discipline composition of a sprint meeting under review.
+      - The estimation scale being used and evidence that estimates are revisited, not fixed at first guess.
+    source_ids: [sandercock-production-secrets]
+  - schema_version: 1
+    method_id: sustainable-pace-onboarding-review
+    title: Sustainable pace and onboarding review
+    purpose: Confirm a production plan actively protects sustainable working hours and gives new or remote team members a structured path to becoming productive, rather than assuming these will happen informally.
+    applicable_capability_ids: [risk_management, dependency_management]
+    steps:
+      - Check whether the plan actively discourages routine overtime rather than silently tolerating or expecting it as normal.
+      - Look for a simple daily practice, such as a brief end-of-day check-out of completed work, that makes actual pace visible to leads without requiring overtime to hit a milestone.
+      - For new or remote hires, confirm a structured onboarding path exists, with specific tasks for day one, week one, and month one, rather than an unstructured ramp-up.
+      - Confirm new hires have a specific peer point of contact for questions, independent of their manager and independent of discipline.
+    evidence_requirements:
+      - Whether overtime is discouraged in practice, not just in policy language.
+      - The actual onboarding task list or schedule given to a recent new hire, if one exists.
+    source_ids: [sandercock-production-secrets]
+  - schema_version: 1
+    method_id: cross-discipline-claim-boundary-review
+    title: Cross-discipline claim boundary review
+    purpose: Check that a production status report's claims about other disciplines' work are backed by that discipline's own evidence, rather than being treated as confirmed by inclusion in the production report itself.
+    applicable_capability_ids:
+      [risk_management, scope_management, milestone_planning]
+    steps:
+      - Separate a status report into its actual production claim (does the increment meet its Definition of Done, are impediments tracked and owned) from any other discipline's quality or technical claim mentioned alongside it (art looks good, engineering says it's solid, the mechanic feels right).
+      - For each non-production claim, check whether the owning discipline's own evidence is actually attached, or whether the report is merely repeating that discipline's verbal reassurance as if it were confirmed.
+      - Confirm the report states its own actual production-owned evidence (the Definition of Done status and the current impediment list) explicitly, rather than substituting other disciplines' reassurances for it.
+      - Flag a status report that reads as "on track" primarily because of other disciplines' unverified claims, while its own production-owned evidence is thin or absent.
+    evidence_requirements:
+      - The report's own production-owned evidence (Definition of Done status, impediment list) stated explicitly and separately from other disciplines' claims.
+      - Whether each non-production claim in the report is backed by that discipline's own evidence, or only asserted.
+    source_ids: [scrum-guide-2020]
+items:
+  - schema_version: 1
+    item_id: production-explicit-done
+    title: Increments need an explicit Definition of Done
+    kind: professional_knowledge
+    statement: A milestone or increment is only "done" when it meets an explicit, shared Definition of Done; without one, "done" silently means something different to each discipline reporting on it.
+    domain_ids: [production, game_production]
+    capability_ids: [production_planning, milestone_planning]
+    source_ids: [scrum-guide-2020]
+    method_ids: [sprint-scoped-production-planning]
+    freshness_class: slow_changing
+    confidence: 0.95
+  - schema_version: 1
+    item_id: production-scope-change-via-backlog
+    title: Scope changes belong in backlog refinement, not mid-increment
+    kind: standard
+    statement: New or changed scope should enter the backlog and be prioritized there; pulling new work into an already-committed increment without adjusting its goal undermines the increment's own exit criteria.
+    domain_ids: [production]
+    capability_ids: [scope_management, production_planning]
+    source_ids: [scrum-guide-2020]
+    method_ids: [sprint-scoped-production-planning]
+    freshness_class: slow_changing
+    confidence: 0.92
+  - schema_version: 1
+    item_id: production-date-without-done-is-not-a-plan
+    title: A milestone date without a Definition of Done is not a plan
+    kind: anti_pattern
+    statement: Naming a ship date without an explicit, shared completion criterion is a deadline, not a production plan; it hides disagreement about what "finished" means until the date arrives.
+    domain_ids: [production]
+    capability_ids: [milestone_planning, risk_management]
+    source_ids: [scrum-guide-2020]
+    method_ids: [sprint-scoped-production-planning]
+    freshness_class: slow_changing
+    confidence: 0.93
+  - schema_version: 1
+    item_id: production-impediment-owner-and-recheck
+    title: Impediments need an owner and a re-inspection point
+    kind: professional_knowledge
+    statement: A risk or cross-discipline dependency that is logged once but never re-inspected functions the same as an unlogged one; it needs an explicit owner and a recurring check-in until it is resolved.
+    domain_ids: [production]
+    capability_ids: [risk_management, dependency_management]
+    source_ids: [scrum-guide-2020]
+    method_ids: [risk-and-impediment-review]
+    freshness_class: slow_changing
+    confidence: 0.9
+  - schema_version: 1
+    item_id: production-single-discipline-meetings-stay-focused
+    title: Single-discipline sprint meetings stay focused
+    kind: professional_knowledge
+    statement: Limiting a sprint-planning or check-in meeting to one discipline's own work and a small attendee count keeps the discussion relevant to everyone present; mixing multiple disciplines into one meeting means most attendees sit through work that is not theirs.
+    domain_ids: [production, game_production]
+    capability_ids: [production_planning, scope_management]
+    source_ids: [sandercock-production-secrets]
+    method_ids: [sprint-discipline-and-estimation-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: production-relative-sizing-is-revisable
+    title: Relative sizing estimates are meant to be revised
+    kind: standard
+    statement: A relative-sizing estimate, such as extra-small through extra-large, is a starting judgment, not a fixed commitment; treating an early size estimate as unchangeable defeats the purpose of using a rough scale instead of a precise one.
+    domain_ids: [production]
+    capability_ids: [production_planning, milestone_planning]
+    source_ids: [sandercock-production-secrets]
+    method_ids: [sprint-discipline-and-estimation-review]
+    freshness_class: stable
+    confidence: 0.83
+  - schema_version: 1
+    item_id: production-sustainable-pace-is-active
+    title: Sustainable pace is actively protected, not assumed
+    kind: professional_knowledge
+    statement: Avoiding routine overtime requires active practices, such as leads modeling reasonable hours and a simple daily visibility check on completed work, rather than a policy statement alone; without an active practice, crunch tends to become the default under schedule pressure.
+    domain_ids: [production]
+    capability_ids: [risk_management, production_planning]
+    source_ids: [sandercock-production-secrets]
+    method_ids: [sustainable-pace-onboarding-review]
+    freshness_class: stable
+    confidence: 0.86
+  - schema_version: 1
+    item_id: production-structured-onboarding-path
+    title: New hires need a structured, staged onboarding path
+    kind: standard
+    statement: A specific task list for a new or remote hire's first day, first week, and first month gets them productive faster and more reliably than an unstructured ramp-up, and should be paired with a peer contact independent of their manager for day-to-day questions.
+    domain_ids: [production]
+    capability_ids: [dependency_management, production_planning]
+    source_ids: [sandercock-production-secrets]
+    method_ids: [sustainable-pace-onboarding-review]
+    freshness_class: stable
+    confidence: 0.84
+  - schema_version: 1
+    item_id: production-claims-need-owning-disciplines-evidence
+    title: A status report's non-production claims need the owning discipline's own evidence
+    kind: professional_knowledge
+    statement: A production status report often bundles the actual production claim (Definition of Done status, tracked impediments) together with other disciplines' quality or technical claims; each of those other claims still needs that discipline's own evidence to stand, and repeating a verbal reassurance inside a production report does not substitute for it.
+    domain_ids: [production, game_production]
+    capability_ids: [risk_management, scope_management, milestone_planning]
+    source_ids: [scrum-guide-2020]
+    method_ids: [cross-discipline-claim-boundary-review]
+    freshness_class: slow_changing
+    confidence: 0.88
+evaluation_ids:
+  [
+    production-planning-contract,
+    production-risk-contract,
+    production-sprint-discipline-contract,
+    production-sustainable-pace-contract,
+    production-cross-discipline-evidence-contract,
+  ]
+created_at: "2026-09-12T00:00:00Z"

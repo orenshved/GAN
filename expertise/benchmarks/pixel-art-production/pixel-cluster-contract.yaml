@@ -1,0 +1,27 @@
+schema_version: 1
+benchmark_id: pixel-cluster-contract
+pack_id: pixel-art-production
+applies_to_versions: ["1.0.0"]
+capability_ids: [pixel_art]
+scenario: >-
+  A synthetic knight sprite has a clean, readable silhouette. Its armor
+  surface is covered in dozens of individually placed off-palette pixels
+  meant to suggest scratches and wear, scattered with no grouping or
+  pattern to them. A reviewer comments: "Great, it has a lot of detail, ship
+  it." A second reviewer is asked whether this assessment is sound.
+discriminates: >-
+  A generic reviewer may accept "lots of detail" as a positive assessment. A
+  specialist checks whether the added pixels form coherent clusters or are
+  scattered noise, and recognizes the difference matters for readability.
+expected_specialist_findings:
+  - The scattered scratch pixels do not form coherent clusters; each one is effectively isolated, which reads as visual noise rather than intentional wear detail.
+  - The phrase "a lot of detail" describes quantity, not whether the detail is legible; isolated single-pixel marks typically degrade readability instead of adding to it, especially at native pixel scale or smaller display sizes.
+  - The clean silhouette established at the base level is being undermined by the noisy surface treatment layered on top of it.
+  - Recommend regrouping the wear marks into a small number of deliberate clusters, or removing most of them, rather than approving the sprite as-is.
+expected_uncertainty:
+  - What the sprite looks like at the game's actual on-screen display size — not stated, and noise may read differently at different scales.
+acceptable_source_ids: [saint11-pixel-art-tutorials, kyle-bunk-gdc-talk]
+scoring_notes: >-
+  Pass only if the enriched run identifies the scattered pixels specifically
+  as non-clustered noise and distinguishes that from genuine detail. Accepting
+  "lots of detail" as sufficient justification is a fail.

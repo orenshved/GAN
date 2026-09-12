@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: trailer-hook-contract
+pack_id: game-marketing-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [trailers, marketing_assets]
+scenario: >-
+  A synthetic trailer draft opens with developer and publisher logos floating
+  on screen for several seconds, then cuts to a fast montage narrated by an
+  announcer: "This is an amazing new RPG you don't want to miss! Sword
+  combat! Magic spells! Boss battles! Character customization! Open world
+  exploration!" No specific mechanic, moment, or element unique to this game
+  is shown or named. A reviewer is asked whether this trailer is ready to
+  publish.
+discriminates: >-
+  A generic reviewer may accept the trailer because it is fast-paced and
+  covers a lot of ground. A specialist checks whether a viewer would come
+  away with anything specific to tell a friend, and flags that every element
+  shown is common to the genre rather than distinctive to this game.
+expected_specialist_findings:
+  - The opening logos, unlikely to be recognized by most viewers, spend the cold open's most valuable seconds on something other than hooking the audience; they belong on the end slate instead.
+  - The feature list (sword combat, magic spells, boss battles, customization, open world) describes elements common to many RPGs; nothing shown establishes what is unique to this specific game, so a viewer would have nothing distinct to tell a friend afterward.
+  - The narrator asserting the game is "amazing" oversells it verbally instead of letting the footage itself demonstrate why it is worth attention, which reads as salesy rather than earning excitement.
+  - Recommend cutting the opening logos to the end slate, identifying one or two genuinely distinctive elements of this specific game, and restructuring the trailer around that hook with footage carrying the excitement instead of narrated claims.
+expected_uncertainty:
+  - Whether the game actually has something more specific or unique to show, or whether this trailer accurately reflects a genuinely generic game — not stated.
+acceptable_source_ids: [lieu-trailer-made-gdc2019]
+scoring_notes: >-
+  Pass only if the enriched run identifies both the missing specific hook and
+  the misplaced opening logos, and recommends restructuring around a
+  distinctive element. Accepting the trailer because it is fast-paced, or
+  flagging only the narration without addressing the generic feature list, is
+  a fail.

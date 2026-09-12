@@ -1,0 +1,31 @@
+schema_version: 1
+benchmark_id: cultural-authenticity-contract
+pack_id: 2d-game-art
+applies_to_versions: ["1.0.0"]
+capability_ids: [character_art]
+scenario: >-
+  A synthetic team with no members from, and no documented research into, a
+  specific culture builds a game's entire visual identity and mythology
+  around that culture's folklore. The only stated basis is a moodboard of
+  surface aesthetic references, such as colors, patterns, and iconic imagery
+  collected from image searches, with no narrative consultant or cultural
+  research process involved. A producer reviewing early art says: "This looks
+  amazing and really authentic." A reviewer is asked whether "authentic" is
+  the right word here.
+discriminates: >-
+  A generic reviewer may accept that strong visual appeal supports the
+  authenticity claim. A specialist separates visual quality from cultural
+  grounding and flags that the described process has no actual informed
+  source behind it.
+expected_specialist_findings:
+  - Visual appeal and cultural authenticity are different claims; a moodboard of surface aesthetic references can produce visually striking art without any grounding in the culture's actual meaning or context.
+  - The described process has no team member with lived background in the culture and no documented research or cultural consultation — the specific gap the "authentic" claim would need to close.
+  - Saying it "looks amazing" is a legitimate assessment of visual quality; calling it "authentic" is a separate, stronger claim that this process has not earned.
+  - Recommend either securing an actual informed source, such as bringing in team members with relevant background or engaging cultural consultation and research, or dropping the authenticity claim and describing the style as aesthetic inspiration instead.
+expected_uncertainty:
+  - Whether any informal research happened that wasn't documented or mentioned — not stated, though the described process as given shows none.
+acceptable_source_ids: [guacamelee-art-interview]
+scoring_notes: >-
+  Pass only if the enriched run separates visual quality from the
+  authenticity claim and identifies the missing informed source as the actual
+  gap. Accepting "authentic" because the art looks good is a fail.

@@ -1121,6 +1121,14 @@
           "title": "Family",
           "type": "string"
         },
+        "related_capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Related Capability Ids",
+          "type": "array"
+        },
         "required_inputs": {
           "items": {
             "minLength": 1,
@@ -2488,6 +2496,9 @@
               },
               {
                 "$ref": "#/$defs/InboxEvent"
+              },
+              {
+                "$ref": "#/$defs/InboxDecisionRequestedEvent"
               },
               {
                 "$ref": "#/$defs/IntelligenceEvent"
@@ -4419,6 +4430,93 @@
         "consequences"
       ],
       "title": "InboxDecision",
+      "type": "object"
+    },
+    "InboxDecisionRequestedEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "actor_type": {
+          "enum": [
+            "human",
+            "gm",
+            "agent",
+            "system",
+            "external"
+          ],
+          "title": "Actor Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "gm.decision_requested",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/InboxDecision"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "project_id",
+        "timestamp",
+        "actor_type",
+        "actor_id",
+        "correlation_id",
+        "task_id",
+        "sequence",
+        "event_type",
+        "payload"
+      ],
+      "title": "InboxDecisionRequestedEvent",
       "type": "object"
     },
     "InboxEvent": {
@@ -10264,7 +10362,12 @@
             "level_design",
             "art",
             "audio",
-            "narrative"
+            "narrative",
+            "production",
+            "compliance",
+            "data",
+            "support",
+            "security"
           ],
           "title": "Discipline",
           "type": "string"
@@ -11787,6 +11890,9 @@
               },
               {
                 "$ref": "#/$defs/InboxEvent"
+              },
+              {
+                "$ref": "#/$defs/InboxDecisionRequestedEvent"
               },
               {
                 "$ref": "#/$defs/IntelligenceEvent"
@@ -13490,6 +13596,9 @@
             },
             {
               "$ref": "#/$defs/InboxEvent"
+            },
+            {
+              "$ref": "#/$defs/InboxDecisionRequestedEvent"
             },
             {
               "$ref": "#/$defs/IntelligenceEvent"

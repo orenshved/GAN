@@ -1,7 +1,7 @@
 schema_version: 1
 benchmark_id: ux-source-provenance
 pack_id: game-ux-core
-applies_to_versions: ["1.0.0"]
+applies_to_versions: ["1.0.0", "1.1.0"]
 capability_ids: [accessibility_ux, controller_navigation, interaction_design]
 scenario: >-
   A synthetic console game menu is under accessibility review. A contributor

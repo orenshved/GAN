@@ -1,0 +1,246 @@
+# New candidate pack (K15 of the K5-K15 expansion, the final stage). state:
+# draft - NOT installed, NOT reviewed, NOT trusted for routing. Unlike
+# K5-K14, this is not a game-development discipline, it is a meta-role
+# governing how other GAN agents learn, retain, and transfer knowledge,
+# for a new `learning-director` agent proposed in docs/AI_WORK_SPLIT.md.
+# Capability set: a new, proposed `agent_learning` family
+# (`instructional_design`, `knowledge_retention`, `agent_onboarding`) -
+# none of these exist in capabilities/ontology/initial.json yet, proposed
+# to Codex, not created unilaterally, same precedent as K6's `legal`
+# family and K14's `security` family. This is only the sourceable content
+# half of K15; the runtime "how does teaching actually happen" mechanism
+# is explicitly Codex's call per docs/AI_WORK_SPLIT.md and is not built
+# here. The `agent_onboarding` source (Sandercock) is deliberately reused
+# from game-production-core@1.1.1, where docs/AI_WORK_SPLIT.md itself
+# flagged it as a directly relevant precedent; every item below is newly
+# and independently distilled for this pack's own onboarding-for-agents
+# question, not copied from that pack's production-plan framing.
+# See docs/AI_WORK_SPLIT.md and .ai/handoffs/claude-to-codex.md.
+schema_version: 1
+pack_id: learning-strategy-core
+name: Learning Strategy Core
+version: 1.0.0
+description: >-
+  Cognitive-load-aware instructional design (worked examples, split
+  attention, the expertise reversal effect) grounded in a peer-reviewed
+  systematized review of Cognitive Load Theory, paired with an honest,
+  evidence-weighted account of what structured practice actually explains
+  about expertise development, grounded in a peer-reviewed critical review
+  of the deliberate-practice literature that documents where the popular
+  version of that research overstates its own evidence, and staged
+  onboarding discipline for a newly joined agent, grounded in a shipped
+  AAA Lead Producer's own account of structured new-hire onboarding.
+state: draft
+domain_ids: [agent_learning, learning_strategy]
+capability_ids: [instructional_design, knowledge_retention, agent_onboarding]
+sources:
+  - schema_version: 1
+    source_id: ghanbari-cognitive-load-theory-review-2020
+    title: "A Systematized Review of Cognitive Load Theory in Health Sciences Education and a Perspective From Cognitive Neuroscience"
+    author: Sahar Ghanbari, Fariba Haghani, Majid Barekatain, and Alireza Jamali
+    publisher: Journal of Education and Health Promotion
+    uri: https://pmc.ncbi.nlm.nih.gov/articles/PMC7482702/
+    source_type: paper
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2020-01-01T00:00:00Z"
+    authority: peer_reviewed
+    freshness_class: stable
+    license: "Published under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0), confirmed on the article's own PMC page. No text reproduced regardless of the permissive license; every item below is original distilled wording. This is a systematized, peer-reviewed review of the underlying research literature, including John Sweller's original Cognitive Load Theory, not a single practitioner's opinion, published in a peer-reviewed journal and hosted on PubMed Central."
+    applicable_capability_ids: [instructional_design]
+  - schema_version: 1
+    source_id: hambrick-deliberate-practice-review-2020
+    title: "Is the Deliberate Practice View Defensible? A Review of Evidence and Discussion of Issues"
+    author: David Z. Hambrick, Brooke N. Macnamara, and Frederick L. Oswald
+    publisher: Frontiers in Psychology
+    uri: https://pmc.ncbi.nlm.nih.gov/articles/PMC7461852/
+    source_type: paper
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2020-08-18T00:00:00Z"
+    authority: peer_reviewed
+    freshness_class: stable
+    license: "Published under a Creative Commons Attribution License (CC BY), confirmed on the article's own PMC page. No text reproduced regardless of the permissive license; every item below is original distilled wording. David Z. Hambrick is a Professor of Psychology at Michigan State University, Brooke N. Macnamara at Case Western Reserve University, and Frederick L. Oswald at Rice University, established researchers in the psychology of individual differences and expertise, publishing in a peer-reviewed journal."
+    applicable_capability_ids: [knowledge_retention]
+  - schema_version: 1
+    source_id: sandercock-production-secrets
+    title: "Learning the production secrets of Return to Monkey Island"
+    author: Jenn Sandercock (quoted; reported by Game Developer staff)
+    publisher: Game Developer (gamedeveloper.com)
+    uri: https://www.gamedeveloper.com/marketing/learning-the-production-secrets-of-i-return-to-monkey-island
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2023-03-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard web article copyright; no open content license found. Cited for attribution; no article text reproduced beyond short direct quotes already public in the article, and every item below is original distilled wording, not a restatement of the quotes. Speaker credential verified directly on the speaker's own site (jennsand.com): Lead Producer on the shipped, commercially released Return to Monkey Island, 15+ years in the games industry, 8 shipped commercial games."
+    applicable_capability_ids: [agent_onboarding]
+methods:
+  - schema_version: 1
+    method_id: cognitive-load-aware-teaching-design-review
+    title: Cognitive load aware teaching design review
+    purpose: Check that how a new concept or skill is taught to an agent respects working memory's real limits and the learner's actual existing expertise, rather than following one fixed teaching method regardless of context.
+    applicable_capability_ids: [instructional_design]
+    steps:
+      - Check whether new material is sequenced from simple to complex and from low-fidelity to high-fidelity practice, rather than presenting full task complexity immediately, since intrinsic load, the difficulty inherent to a task from how much its components depend on each other, is best managed by incremental exposure, not by simplifying the content's actual substance.
+      - Check whether a worked example, a full demonstration of a typical problem being solved end to end, precedes any request for independent problem-solving on a genuinely new task type, since presenting an unsolved problem before a learner has any solution template to draw on adds load that has nothing to do with learning the target skill.
+      - Check whether related visual and verbal information, a diagram and its explanation, an interface and its instructions, are physically or temporally integrated rather than presented separately, since forcing a learner to mentally cross-reference two separated sources consumes working memory that could otherwise go toward the actual material, this is the split-attention effect.
+      - Check whether the same teaching method is being reused for a learner who has already automated the relevant schema, rather than adapted for their now-higher expertise, since a method that helps a novice, heavy scaffolding, worked examples, redundant explanation, can measurably slow down or actively hinder someone who already has a working model, this is the expertise reversal effect.
+    evidence_requirements:
+      - Whether new material is sequenced by increasing complexity and fidelity, or presented at full difficulty immediately.
+      - Whether the learner's existing expertise level was accounted for in choosing the teaching method, rather than one method applied uniformly regardless of prior experience.
+    source_ids: [ghanbari-cognitive-load-theory-review-2020]
+  - schema_version: 1
+    method_id: durable-skill-and-knowledge-development-review
+    title: Durable skill and knowledge development review
+    purpose: Check that a claim or plan about building an agent's skill through practice matches what the evidence actually supports, rather than the popularized, overstated version of deliberate practice research.
+    applicable_capability_ids: [knowledge_retention]
+    steps:
+      - Check whether a claim that more practice or repetition alone will produce expertise is treated as the complete explanation, rather than one contributing factor among several, since the strongest available meta-analytic evidence puts structured practice's share of performance variance at roughly 14 to 40 percent depending on the domain, with the rest explained by factors such as general ability, developmental timing, and the diversity of prior experience.
+      - Check whether practice referenced in a specific plan is actually structured, with a clear target skill and a feedback mechanism, rather than simply repeated exposure or unstructured repetition, since the evidence for the stronger, more selective form of practice does not transfer to repetition without those structural elements.
+      - Check whether a plan for improving a specific skill names a mechanism for closing the loop, identifying where performance actually fell short and correcting specifically that, rather than only scheduling more repetitions of the same activity, since undirected repetition has documented, weaker evidence behind it than practice that specifically targets an identified weakness.
+      - Be skeptical of any claim asserting a fixed, universal amount or ratio of practice needed to reach a level of skill, since the underlying research this kind of claim is usually drawn from has itself been shown to shift its own definitions and inclusion criteria across publications, a documented pattern that undermines treating any single number as a reliable target.
+    evidence_requirements:
+      - Whether a practice or repetition recommendation specifies what feedback mechanism will identify and correct actual shortfalls, not just more repetition of the same task.
+      - Whether a claim about how much practice is needed cites a specific, checkable evidence basis, rather than a popularized rule of thumb.
+    source_ids: [hambrick-deliberate-practice-review-2020]
+  - schema_version: 1
+    method_id: structured-agent-onboarding-review
+    title: Structured agent onboarding review
+    purpose: Check that a newly joined agent or subagent has a staged, supported ramp-up path with early visibility into its progress, rather than being handed the full scope of its role with no structure.
+    applicable_capability_ids: [agent_onboarding]
+    steps:
+      - Check whether a new agent or subagent joining a task has a structured onboarding path with specific expectations for its first task, its first few tasks, and its first sustained period of work, rather than being given the full scope of its role immediately with no staged ramp-up.
+      - Check whether a new agent has a specific point of contact for questions that is independent of whoever assigned it the task, since routing every question back through the same assigning authority creates a bottleneck and discourages asking smaller clarifying questions early, when they are cheapest to resolve.
+      - Check whether the onboarding path's early tasks are chosen specifically to build confidence and orientation, real but genuinely scoped-down work, rather than either trivial busywork disconnected from the actual role or the same full-complexity work an experienced agent would be given.
+      - Check whether there is a lightweight daily or per-task checkpoint that makes actual progress and blockers visible early, rather than only being discovered at a milestone review, since a structured checkpoint surfaces a stuck or confused new agent while the fix is still cheap.
+    evidence_requirements:
+      - Whether a documented staged onboarding path exists for a new agent, with specific early-stage tasks, rather than immediate full-scope assignment.
+      - Whether a new agent has an identified point of contact separate from its assigning authority.
+    source_ids: [sandercock-production-secrets]
+items:
+  - schema_version: 1
+    item_id: sequence-new-material-from-simple-to-complex
+    title: Sequence new material from simple to complex, not full difficulty immediately
+    kind: professional_knowledge
+    statement: New material should be sequenced from simple to complex and from low-fidelity to high-fidelity practice, rather than presented at full task complexity immediately, since intrinsic load, the difficulty inherent to a task from how much its components depend on each other, is best managed by incremental exposure, not by simplifying the content's actual substance.
+    domain_ids: [agent_learning, learning_strategy]
+    capability_ids: [instructional_design]
+    source_ids: [ghanbari-cognitive-load-theory-review-2020]
+    method_ids: [cognitive-load-aware-teaching-design-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: worked-examples-should-precede-independent-problem-solving
+    title: Worked examples should precede independent problem-solving on new task types
+    kind: professional_knowledge
+    statement: A worked example, a full demonstration of a typical problem being solved end to end, should precede any request for independent problem-solving on a genuinely new task type, presenting an unsolved problem before a learner has any solution template to draw on adds load that has nothing to do with learning the target skill itself.
+    domain_ids: [agent_learning, learning_strategy]
+    capability_ids: [instructional_design]
+    source_ids: [ghanbari-cognitive-load-theory-review-2020]
+    method_ids: [cognitive-load-aware-teaching-design-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: integrate-related-visual-and-verbal-information
+    title: Integrate related visual and verbal information rather than separating it
+    kind: anti_pattern
+    statement: Related visual and verbal information, a diagram and its explanation, an interface and its instructions, should be physically or temporally integrated rather than presented separately, forcing a learner to mentally cross-reference two separated sources consumes working memory that could otherwise go toward the actual material being taught, this is the split-attention effect.
+    domain_ids: [agent_learning, learning_strategy]
+    capability_ids: [instructional_design]
+    source_ids: [ghanbari-cognitive-load-theory-review-2020]
+    method_ids: [cognitive-load-aware-teaching-design-review]
+    freshness_class: stable
+    confidence: 0.83
+  - schema_version: 1
+    item_id: novice-friendly-teaching-can-hinder-experienced-learners
+    title: Teaching methods that help novices can actively hinder experienced learners
+    kind: anti_pattern
+    statement: A teaching method that helps a novice, heavy scaffolding, worked examples, redundant explanation, can measurably slow down or actively hinder someone who has already automated the relevant schema, reusing the same teaching method regardless of a learner's actual expertise level ignores this well-documented expertise reversal effect.
+    domain_ids: [agent_learning, learning_strategy]
+    capability_ids: [instructional_design]
+    source_ids: [ghanbari-cognitive-load-theory-review-2020]
+    method_ids: [cognitive-load-aware-teaching-design-review]
+    freshness_class: stable
+    confidence: 0.84
+  - schema_version: 1
+    item_id: structured-practice-explains-only-part-of-performance-variance
+    title: Structured practice explains only part of performance variance, not all of it
+    kind: professional_knowledge
+    statement: The strongest available meta-analytic evidence puts structured practice's share of performance variance at roughly 14 to 40 percent depending on the domain, with the remainder explained by factors such as general ability, developmental timing, and the diversity of prior experience, treating more practice or repetition alone as the complete explanation for expertise overstates what the evidence actually supports.
+    domain_ids: [agent_learning, learning_strategy]
+    capability_ids: [knowledge_retention]
+    source_ids: [hambrick-deliberate-practice-review-2020]
+    method_ids: [durable-skill-and-knowledge-development-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: practice-needs-a-clear-target-and-feedback-mechanism
+    title: Practice needs a clear target and a feedback mechanism to match the evidence
+    kind: professional_knowledge
+    statement: The evidentiary support behind structured practice applies to practice with a clear target skill and a feedback mechanism for correcting shortfalls, not to repeated exposure or unstructured repetition in general, a repetition schedule that lacks both of these does not carry the same evidence behind it.
+    domain_ids: [agent_learning, learning_strategy]
+    capability_ids: [knowledge_retention]
+    source_ids: [hambrick-deliberate-practice-review-2020]
+    method_ids: [durable-skill-and-knowledge-development-review]
+    freshness_class: stable
+    confidence: 0.84
+  - schema_version: 1
+    item_id: undirected-repetition-has-weaker-evidence-than-targeted-practice
+    title: Undirected repetition has weaker evidence than feedback-targeted practice
+    kind: anti_pattern
+    statement: A plan for improving a specific skill should name a mechanism for identifying where performance actually fell short and correcting specifically that, rather than only scheduling more repetitions of the same activity, undirected repetition without this feedback loop has documented, weaker evidence behind it than practice that specifically targets an identified weakness.
+    domain_ids: [agent_learning, learning_strategy]
+    capability_ids: [knowledge_retention]
+    source_ids: [hambrick-deliberate-practice-review-2020]
+    method_ids: [durable-skill-and-knowledge-development-review]
+    freshness_class: stable
+    confidence: 0.83
+  - schema_version: 1
+    item_id: fixed-universal-practice-quantity-claims-deserve-skepticism
+    title: Fixed, universal practice-quantity claims deserve skepticism
+    kind: anti_pattern
+    statement: A claim asserting a fixed, universal amount or ratio of practice needed to reach a level of skill should be treated with skepticism, since the underlying research this kind of claim is usually drawn from has itself been shown to shift its own definitions and inclusion criteria across publications, a documented pattern that undermines treating any single number as a reliable target.
+    domain_ids: [agent_learning, learning_strategy]
+    capability_ids: [knowledge_retention]
+    source_ids: [hambrick-deliberate-practice-review-2020]
+    method_ids: [durable-skill-and-knowledge-development-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: new-agents-need-a-staged-onboarding-path
+    title: New agents need a staged onboarding path, not immediate full-scope assignment
+    kind: professional_knowledge
+    statement: A new agent or subagent joining a task should have a structured onboarding path with specific expectations for its first task, its first few tasks, and its first sustained period of work, rather than being given the full scope of its role immediately with no staged ramp-up.
+    domain_ids: [agent_learning, learning_strategy]
+    capability_ids: [agent_onboarding]
+    source_ids: [sandercock-production-secrets]
+    method_ids: [structured-agent-onboarding-review]
+    freshness_class: stable
+    confidence: 0.86
+  - schema_version: 1
+    item_id: new-agents-need-a-point-of-contact-independent-of-assigning-authority
+    title: New agents need a point of contact independent of their assigning authority
+    kind: professional_knowledge
+    statement: A new agent should have a specific point of contact for questions that is independent of whoever assigned it the task, routing every question back through the same assigning authority creates a bottleneck and discourages asking smaller clarifying questions early, when they are cheapest to resolve.
+    domain_ids: [agent_learning, learning_strategy]
+    capability_ids: [agent_onboarding]
+    source_ids: [sandercock-production-secrets]
+    method_ids: [structured-agent-onboarding-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: early-onboarding-checkpoints-surface-problems-while-cheap-to-fix
+    title: Early onboarding checkpoints surface problems while they are still cheap to fix
+    kind: professional_knowledge
+    statement: A lightweight daily or per-task checkpoint that makes actual progress and blockers visible early should exist during onboarding, rather than relying only on a milestone review to discover problems, a structured early checkpoint surfaces a stuck or confused new agent while the fix is still cheap.
+    domain_ids: [agent_learning, learning_strategy]
+    capability_ids: [agent_onboarding]
+    source_ids: [sandercock-production-secrets]
+    method_ids: [structured-agent-onboarding-review]
+    freshness_class: stable
+    confidence: 0.85
+evaluation_ids:
+  [
+    teaching-method-expertise-mismatch-contract,
+    practice-quantity-overclaim-contract,
+  ]
+created_at: "2026-09-12T00:00:00Z"

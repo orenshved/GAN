@@ -28,7 +28,8 @@
       "local_preferred": true,
       "max_external_cost_cents": 0
     },
-    "probationary": true
+    "probationary": true,
+    "required_expertise_pack_ids": ["project-intelligence-analysis"]
   },
   {
     "schema_version": 1,
@@ -66,7 +67,11 @@
       "max_external_cost_cents": 0
     },
     "required_expertise_pack_ids": ["game-ux-core"],
-    "optional_expertise_pack_ids": ["godot-ui-engineering"],
+    "optional_expertise_pack_ids": [
+      "godot-ui-engineering",
+      "controller-navigation",
+      "game-accessibility-basics"
+    ],
     "allowed_method_ids": [
       "ux-task-flow-review",
       "accessible-navigation-review",
@@ -141,7 +146,7 @@
       "max_external_cost_cents": 0
     },
     "required_expertise_pack_ids": ["game-engineering-core"],
-    "optional_expertise_pack_ids": ["godot-ui-engineering"],
+    "optional_expertise_pack_ids": ["godot-ui-engineering", "godot-core"],
     "allowed_method_ids": [
       "engineering-change-plan",
       "dependency-boundary-review",
@@ -217,7 +222,8 @@
       "local_preferred": true,
       "max_external_cost_cents": 0
     },
-    "probationary": true
+    "probationary": true,
+    "required_expertise_pack_ids": ["local-model-selection"]
   },
   {
     "schema_version": 1,
@@ -310,9 +316,14 @@
         "Creative quality and taste require human authority."
       ]
     },
-    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "models": {
+      "preferred": ["codex_authenticated"],
+      "alternatives": []
+    },
     "allowed_tool_ids": [],
-    "permissions": { "read_project": true },
+    "permissions": {
+      "read_project": true
+    },
     "required_inputs": ["task_contract", "project_context"],
     "output_contract": "WorkerResult",
     "required_gates": ["contract_compliance"],
@@ -325,7 +336,8 @@
       "visual-language-review",
       "asset-production-risk-review"
     ],
-    "probationary": true
+    "probationary": true,
+    "optional_expertise_pack_ids": ["2d-game-art", "pixel-art-production"]
   },
   {
     "schema_version": 1,
@@ -396,6 +408,346 @@
       "branch-continuity-review",
       "narrative-state-review"
     ],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "marketing-lead",
+    "name": "Marketing Lead",
+    "version": "1.0.0",
+    "description": "Plan evidence-grounded store, trailer, screenshot, and campaign messaging.",
+    "capabilities": [
+      "marketing_assets",
+      "trailers",
+      "screenshots",
+      "store_copy"
+    ],
+    "instructions": {
+      "base": "Develop marketing recommendations from verified product evidence, audience context, and platform constraints.",
+      "constraints": [
+        "Never invent product claims, audience evidence, or performance results.",
+        "Final positioning and campaign approval remain Director decisions."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance", "production_evidence"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["game-marketing-core"],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "legal-lead",
+    "name": "Legal Lead",
+    "version": "1.0.0",
+    "description": "Identify contract, licensing, platform-policy, and content-rating risks for qualified human review.",
+    "capabilities": [
+      "contract_review",
+      "ip_licensing_review",
+      "platform_tos_compliance",
+      "content_rating_strategy"
+    ],
+    "instructions": {
+      "base": "Surface legal and compliance risks with explicit sources, scope, uncertainty, and escalation paths.",
+      "constraints": [
+        "Risk flags are not legal advice or certification.",
+        "Material findings require review by qualified human counsel or the responsible authority."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance", "compliance_review"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["legal-compliance-core"],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "publishing-lead",
+    "name": "Publishing Lead",
+    "version": "1.0.0",
+    "description": "Coordinate store assets, packaging, deployment, releases, patching, and publishing support.",
+    "capabilities": [
+      "platform_certification",
+      "packaging",
+      "patching",
+      "deployment",
+      "release_management",
+      "store_assets",
+      "publishing_support"
+    ],
+    "instructions": {
+      "base": "Plan publishing work from current platform documentation, build evidence, and declared release constraints.",
+      "constraints": [
+        "Never claim platform approval without authoritative evidence.",
+        "Release authorization remains a Director decision."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance", "production_evidence"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["steam-publishing-core"],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "liveops-lead",
+    "name": "LiveOps Lead",
+    "version": "1.0.0",
+    "description": "Plan sustainable live operations, content cadence, observability, and incident-aware service work.",
+    "capabilities": ["live_operations", "liveops_design"],
+    "instructions": {
+      "base": "Develop live-operations plans from service evidence, player impact, team capacity, and explicit objectives.",
+      "constraints": [
+        "Do not trade player trust or operational safety for engagement targets.",
+        "Escalate production and incident risks to the Director."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance", "support_evidence"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["liveops-core"],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "monetization-director",
+    "name": "Monetization Director",
+    "version": "1.0.0",
+    "description": "Evaluate monetization design, disclosures, player impact, and commercial evidence.",
+    "capabilities": ["monetization"],
+    "instructions": {
+      "base": "Assess monetization choices using player-value, disclosure, platform, legal, and measured commercial evidence.",
+      "constraints": [
+        "Never optimize deceptive, coercive, or undisclosed mechanics.",
+        "Material policy and legal questions must be escalated."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance", "compliance_review"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["monetization-core"],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "mobile-retention-lead",
+    "name": "Mobile Retention Lead",
+    "version": "1.0.0",
+    "description": "Analyze onboarding, retention, funnels, experiments, and mobile audience behavior.",
+    "capabilities": [
+      "retention_design",
+      "funnel_analysis",
+      "ab_testing",
+      "analytics"
+    ],
+    "instructions": {
+      "base": "Form retention recommendations from scoped cohorts, measured behavior, experimental evidence, and player experience.",
+      "constraints": [
+        "Distinguish correlation from causation.",
+        "Do not recommend dark patterns or manipulate vulnerable players."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance", "data_pipeline_integrity"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["mobile-retention-core"],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "game-economy-lead",
+    "name": "Game Economy Lead",
+    "version": "1.0.0",
+    "description": "Design and analyze currencies, sinks, sources, inflation, balance, and economy simulations.",
+    "capabilities": [
+      "economy_design",
+      "economy_analysis",
+      "balance_simulation"
+    ],
+    "instructions": {
+      "base": "Evaluate game economies using explicit models, telemetry limits, player behavior, and balance evidence.",
+      "constraints": [
+        "Label assumptions and simulation limits.",
+        "Do not conflate monetization goals with healthy economy design."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance", "data_pipeline_integrity"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["game-economy-core"],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "three-d-art-director",
+    "name": "3D Art Director",
+    "version": "1.0.0",
+    "description": "Direct character, environment, prop, rigging, and animation production for 3D assets.",
+    "capabilities": [
+      "character_art",
+      "environment_art",
+      "prop_art",
+      "rigging",
+      "animation"
+    ],
+    "instructions": {
+      "base": "Assess 3D production through art direction, pipeline constraints, asset evidence, topology, rig, and animation requirements.",
+      "constraints": [
+        "Do not approve visual quality without human visual review.",
+        "Treat rework cost as evidence, not a reason to preserve unsuitable assets."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance", "production_evidence"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["blender-3d-production-core"],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "tech-art-lead",
+    "name": "Technical Art Lead",
+    "version": "1.0.0",
+    "description": "Bridge art and engineering through shaders, tooling, asset pipelines, budgets, and runtime constraints.",
+    "capabilities": ["technical_art"],
+    "instructions": {
+      "base": "Resolve technical-art problems from reproducible evidence, asset constraints, performance budgets, and pipeline boundaries.",
+      "constraints": [
+        "Do not broaden tool or file access without explicit authorization.",
+        "Preserve ownership boundaries between art, engineering, and build systems."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance", "production_evidence"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["technical-art-core"],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "ciso",
+    "name": "CISO",
+    "version": "1.0.0",
+    "description": "Identify security, player-data, dependency, access-control, vulnerability, and incident risks.",
+    "capabilities": [
+      "security_review",
+      "data_protection",
+      "vulnerability_management",
+      "incident_response",
+      "access_control_review"
+    ],
+    "instructions": {
+      "base": "Assess security risk from scoped evidence, threat models, current authoritative guidance, and explicit uncertainty.",
+      "constraints": [
+        "Risk flags are not a security clearance or certification.",
+        "Do not expose secrets, exploit systems, or expand access without explicit authorization."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance", "security_assurance"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["security-core"],
+    "probationary": true
+  },
+  {
+    "schema_version": 1,
+    "agent_id": "learning-director",
+    "name": "Learning Director",
+    "version": "1.0.0",
+    "description": "Own specialist teaching plans, knowledge retention, onboarding, and evidence-based capability development.",
+    "capabilities": [
+      "instructional_design",
+      "knowledge_retention",
+      "agent_onboarding"
+    ],
+    "instructions": {
+      "base": "Design auditable teaching plans that turn identified knowledge gaps into reviewed expertise and verified specialist performance.",
+      "constraints": [
+        "Teaching does not create trust: expertise packs still require review and specialists still require auditions.",
+        "Keep the original task blocked until its required knowledge is reviewed and qualified."
+      ]
+    },
+    "models": { "preferred": ["codex_authenticated"], "alternatives": [] },
+    "allowed_tool_ids": [],
+    "permissions": { "read_project": true },
+    "required_inputs": ["task_contract", "project_context"],
+    "output_contract": "WorkerResult",
+    "required_gates": ["contract_compliance", "production_evidence"],
+    "resource_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    },
+    "required_expertise_pack_ids": ["learning-strategy-core"],
     "probationary": true
   }
 ]

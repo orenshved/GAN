@@ -1,7 +1,7 @@
 schema_version: 1
 benchmark_id: qa-method-contract
 pack_id: game-qa-core
-applies_to_versions: ["1.0.0"]
+applies_to_versions: ["1.0.0", "1.1.0", "1.2.0", "1.2.1"]
 capability_ids: [functional_testing, visual_regression, ux_testing]
 scenario: >-
   A synthetic task claims: "The new inventory screen is done. It looks good, it

@@ -1,7 +1,7 @@
 schema_version: 1
 benchmark_id: ux-method-contract
 pack_id: game-ux-core
-applies_to_versions: ["1.0.0"]
+applies_to_versions: ["1.0.0", "1.1.0"]
 capability_ids: [usability_analysis, interaction_design, onboarding_ux]
 scenario: >-
   A synthetic 2D puzzle game has a first-run tutorial. The build exposes a scene

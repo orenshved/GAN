@@ -1,0 +1,181 @@
+# New candidate pack (K9 of the K5-K15 expansion). state: draft — NOT
+# installed, NOT reviewed, NOT trusted for routing. Capability set: the
+# single capability proposed for a new `monetization-director` agent in
+# docs/AI_WORK_SPLIT.md (`monetization`, `post_launch_commercial`).
+# `economy_design`/`economy_analysis` are related but deliberately NOT
+# declared here — those are earmarked for K11 (Game Economy Lead) and
+# covering them in this pack would preempt that stage's own sourcing pass.
+#
+# CRITICAL FRAMING, carried through every method and item below: this pack
+# evaluates monetization design against player-value and fairness evidence,
+# not revenue metrics alone, and explicitly treats platform/jurisdiction
+# compliance questions (loot box regulation, disclosure law) as Legal's
+# domain to confirm, never resolved on this pack's own authority — mirroring
+# the human-authority framing already established for `legal-compliance-core`
+# and `art-lead`'s "creative quality requires human authority."
+# See docs/AI_WORK_SPLIT.md and .ai/handoffs/claude-to-codex.md.
+schema_version: 1
+pack_id: monetization-core
+name: Monetization Core
+version: 1.0.0
+description: >-
+  Monetization model tradeoff review (hype vs. value-growth design, and the
+  documented gap between healthy financial metrics and real community harm)
+  grounded in a shipped, commercially successful mobile game's own first-person
+  account of a monetization crisis and course-correction (Vladimir
+  Krasilnikov, CPO at Pixonic — War Robots), and loot-box odds-disclosure
+  compliance review grounded in Apple's own official App Store guideline.
+  Every method and item is scoped as risk-flagging for player-value and
+  fairness, with platform/jurisdiction compliance questions treated as
+  Legal's domain to confirm, not resolved here.
+state: draft
+domain_ids: [monetization, game_monetization]
+capability_ids: [monetization]
+sources:
+  - schema_version: 1
+    source_id: krasilnikov-dark-side-of-gacha-gdc2019
+    title: "Monetization Design: The Dark Side of Gacha"
+    author: Vladimir Krasilnikov
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=LnCOkQ-f8AQ
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2019-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a ~32-minute talk); no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Vladimir Krasilnikov, Chief Product Officer at Pixonic with 7+ years in games at the time of the talk, presenting Pixonic's own documented revenue and community-response data for the shipped, commercially successful mobile shooter War Robots (100+ million installs across platforms, released 2014)."
+    applicable_capability_ids: [monetization]
+  - schema_version: 1
+    source_id: apple-loot-box-odds-disclosure-guideline
+    title: "App Review Guidelines — Section 3.1.1 (In-App Purchase: Loot Boxes)"
+    author: Apple Inc.
+    publisher: Apple Inc.
+    uri: https://developer.apple.com/app-store/review/guidelines/
+    source_type: official_documentation
+    retrieved_at: "2026-09-12T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-12T00:00:00Z"
+    license: "No explicit open license found on the page (checked live); standard Apple copyright applies by default. Cited for attribution and reference only, and not reproduced beyond the single already-public requirement sentence noted for context; every item below is original distilled wording."
+    applicable_capability_ids: [monetization]
+methods:
+  - schema_version: 1
+    method_id: monetization-model-tradeoff-review
+    title: Monetization model tradeoff review
+    purpose: Check that a monetization design choice states which of two fundamentally different growth strategies it is optimizing for, and that its actual community and reputational impact is being assessed alongside its financial metrics, not instead of them.
+    applicable_capability_ids: [monetization]
+    steps:
+      - Identify which growth model a proposed monetization feature is actually optimizing for, a short-term revenue spike that will decay, or slower, sustained growth, and confirm this is a stated, deliberate choice rather than an unexamined default.
+      - Check whether random-reward mechanics rely on obscuring the real price of a desired item through indirect sale, or on inserting artificial randomness noise specifically to mask an underlying pattern; name these techniques explicitly when present, rather than describing them only as randomization.
+      - Confirm that a monetization change's actual community and reputational impact is being assessed, not only its retention, conversion, and revenue metrics, since a documented real case showed all three metrics can look healthy while a change still causes serious community and team-morale harm.
+      - Check whether a currency or reward system avoids both letting value stack up indefinitely and letting earned value simply expire with nothing offered in return.
+    evidence_requirements:
+      - Which growth model the feature under review is optimizing for, stated explicitly.
+      - The metrics being tracked for the decision, and whether community or reputational signals are included alongside financial ones.
+    source_ids: [krasilnikov-dark-side-of-gacha-gdc2019]
+  - schema_version: 1
+    method_id: loot-box-disclosure-compliance-review
+    title: Loot box disclosure compliance review
+    purpose: Check that a randomized-purchase mechanic discloses the odds of each outcome to the player before purchase, and flag platform- or jurisdiction-specific compliance questions for Legal rather than resolving them independently.
+    applicable_capability_ids: [monetization]
+    steps:
+      - Identify whether the mechanic under review offers randomized virtual items for purchase; if so, check whether the odds of each outcome type are disclosed to the player before the purchase is made, not only after.
+      - Check that the disclosed odds match what the system actually implements, since a disclosed odds table that does not match real drop rates is a distinct and more serious problem than no disclosure at all.
+      - Treat platform-specific or jurisdiction-specific requirements, which vary, as a compliance question for Legal to confirm, not something this review resolves on its own authority.
+      - Flag price-discrimination patterns in personalized offers, such as different players seeing different prices for the same item, as a fairness question worth surfacing explicitly, even where no disclosure requirement technically applies.
+    evidence_requirements:
+      - Whether pre-purchase odds disclosure is present and matches the actual implemented rates.
+      - Whether the specific platform or jurisdiction's requirements have been confirmed with Legal rather than assumed.
+    source_ids: [apple-loot-box-odds-disclosure-guideline]
+items:
+  - schema_version: 1
+    item_id: hype-model-vs-value-growth-model
+    title: Monetization features tend toward a hype model or a value-growth model
+    kind: professional_knowledge
+    statement: Monetization features tend to fall into one of two broad patterns, a hype model producing a high initial revenue spike that decays quickly, or a value-growth model that sacrifices a fast spike for slower, more sustained revenue; which pattern a feature will produce is a real design choice with real tradeoffs, not an accident, and should be identified explicitly before it ships.
+    domain_ids: [monetization, game_monetization]
+    capability_ids: [monetization]
+    source_ids: [krasilnikov-dark-side-of-gacha-gdc2019]
+    method_ids: [monetization-model-tradeoff-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: indirect-sale-obscures-true-price
+    title: Indirect sale obscures an item's true price from the player
+    kind: anti_pattern
+    statement: An indirect sale design, where a player spends money on randomized openings rather than purchasing a specific desired item directly, obscures that item's true price from the player, since the player does not know in advance how many openings will be needed; this is a documented, deliberate technique, not an incidental side effect of randomization, and should be named as such when it is used.
+    domain_ids: [monetization, game_monetization]
+    capability_ids: [monetization]
+    source_ids: [krasilnikov-dark-side-of-gacha-gdc2019]
+    method_ids: [monetization-model-tradeoff-review]
+    freshness_class: stable
+    confidence: 0.86
+  - schema_version: 1
+    item_id: artificial-randomness-noise-is-a-documented-technique
+    title: Artificial randomness noise to mask patterns is a documented technique
+    kind: anti_pattern
+    statement: Deliberately inserting artificial randomness or noise into an offer or reward system specifically to prevent players from recognizing an underlying pattern is a documented monetization technique, distinct from randomness used for its own gameplay value; when present, it should be identified explicitly rather than described only as randomization.
+    domain_ids: [monetization, game_monetization]
+    capability_ids: [monetization]
+    source_ids: [krasilnikov-dark-side-of-gacha-gdc2019]
+    method_ids: [monetization-model-tradeoff-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: healthy-metrics-can-coexist-with-real-community-harm
+    title: Healthy metrics can coexist with real, documented community harm
+    kind: professional_knowledge
+    statement: A monetization change's retention, conversion, and revenue metrics can all look healthy at the same time the change is causing serious, documented harm to community trust and team morale; a monetization review needs to check for community and reputational signals specifically, since financial metrics alone will not surface this kind of harm.
+    domain_ids: [monetization, game_monetization]
+    capability_ids: [monetization]
+    source_ids: [krasilnikov-dark-side-of-gacha-gdc2019]
+    method_ids: [monetization-model-tradeoff-review]
+    freshness_class: stable
+    confidence: 0.9
+  - schema_version: 1
+    item_id: currency-systems-should-avoid-hoarding-and-total-loss
+    title: Currency systems should avoid both indefinite hoarding and total value loss
+    kind: standard
+    statement: A currency or token system designed for a specific redemption purpose should avoid both extremes, letting value stack up indefinitely with no reason to spend it, and letting earned value simply expire with nothing offered in return; a documented, effective middle path uses time-limited value with an explicit compensation mechanism when the time limit is reached.
+    domain_ids: [monetization, game_monetization]
+    capability_ids: [monetization]
+    source_ids: [krasilnikov-dark-side-of-gacha-gdc2019]
+    method_ids: [monetization-model-tradeoff-review]
+    freshness_class: stable
+    confidence: 0.84
+  - schema_version: 1
+    item_id: loot-box-odds-need-pre-purchase-disclosure
+    title: Loot box odds need disclosure to the player before purchase
+    kind: professional_knowledge
+    statement: Major storefronts require that a randomized-purchase mechanic disclose the odds of each possible outcome to the player before the purchase is made, not only after; a monetization design that offers randomized items for money should be checked against this requirement explicitly, with platform- or jurisdiction-specific variations confirmed with Legal rather than assumed.
+    domain_ids: [monetization, game_monetization]
+    capability_ids: [monetization]
+    source_ids: [apple-loot-box-odds-disclosure-guideline]
+    method_ids: [loot-box-disclosure-compliance-review]
+    freshness_class: version_sensitive
+    confidence: 0.91
+  - schema_version: 1
+    item_id: disclosed-odds-must-match-actual-rates
+    title: Disclosed odds must match the system's actual configured rates
+    kind: anti_pattern
+    statement: A disclosed odds table that does not match the rates a system actually implements is a more serious problem than having no disclosure at all, since it converts a transparency requirement into an active misrepresentation; disclosed odds should be checked against the system's actual configured rates, not assumed correct because a disclosure step happened once.
+    domain_ids: [monetization, game_monetization]
+    capability_ids: [monetization]
+    source_ids: [apple-loot-box-odds-disclosure-guideline]
+    method_ids: [loot-box-disclosure-compliance-review]
+    freshness_class: version_sensitive
+    confidence: 0.89
+  - schema_version: 1
+    item_id: personalized-price-discrimination-is-a-fairness-question
+    title: Personalized price discrimination is a fairness question worth surfacing
+    kind: professional_knowledge
+    statement: Personalized offers that show different players different prices or discounts for the same item, even when not subject to a specific disclosure requirement, raise a fairness question worth surfacing explicitly once players are likely to compare notes and notice the difference; a design that would be difficult to justify if players discovered it deserves scrutiny before launch, not after a complaint.
+    domain_ids: [monetization, game_monetization]
+    capability_ids: [monetization]
+    source_ids: [krasilnikov-dark-side-of-gacha-gdc2019]
+    method_ids: [loot-box-disclosure-compliance-review]
+    freshness_class: stable
+    confidence: 0.83
+evaluation_ids:
+  [monetization-metrics-vs-community-contract, loot-box-disclosure-contract]
+created_at: "2026-09-12T00:00:00Z"

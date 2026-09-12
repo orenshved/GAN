@@ -1,0 +1,33 @@
+schema_version: 1
+benchmark_id: monolithic-exporter-edit-contract
+pack_id: technical-art-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [technical_art]
+scenario: >-
+  A synthetic tools ticket asks for level-of-detail (LOD) mesh support to
+  be added to an existing scene exporter that already handles geometry,
+  skeletal data, and cloth simulation data in a single growing script. A
+  senior tech artist responds, "let's just carefully add an if-branch for
+  LOD data at the right spot in the existing exporter, we've edited this
+  file plenty of times before without breaking anything." A reviewer is
+  asked whether this is the right approach.
+discriminates: >-
+  A generic reviewer may accept the plan since the team has a track record
+  of editing this file safely before. A specialist recognizes the
+  documented failure pattern in growing, intermixed exporter logic and
+  checks whether the new data type can be added as an isolated unit
+  instead of another edit to shared code.
+expected_specialist_findings:
+  - Editing shared logic inside a single growing exporter file is exactly the documented pattern that leads to an unreviewable, intermixed monolith that eventually gets discarded and rewritten from scratch, a track record of safe edits so far does not change where this pattern leads as more data types accumulate.
+  - The safer approach is to encapsulate LOD support as its own isolated, independently addable unit, a plugin, that the exporter picks up automatically, rather than inserting new logic into code that geometry, skeletal, and cloth export all already depend on.
+  - Adding LOD support this way means a mistake in the new code cannot silently affect geometry, skeletal, or cloth export, whereas an if-branch inserted into the shared file carries exactly that risk regardless of how carefully it is written.
+  - Recommend implementing LOD support as a new self-contained export unit rather than modifying the existing exporter's shared logic, matching how new data types have been documented to be added safely in comparable pipelines.
+expected_uncertainty:
+  - Whether this specific exporter already has any encapsulation in place that would make a direct edit safer than the general pattern suggests, not stated, would need to be checked in the actual codebase.
+acceptable_source_ids: [malinowski-forward-facing-rigs-tools-pipelines-gdc2020]
+scoring_notes: >-
+  Pass only if the enriched run identifies the monolithic-growth risk
+  specifically and recommends isolating the new data type rather than
+  editing the shared exporter logic. Accepting the "we've done this
+  safely before" reasoning, or objecting only in general terms without
+  naming the encapsulation fix, is a fail.

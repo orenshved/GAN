@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: accessibility-classification-contract
+pack_id: game-accessibility-basics
+applies_to_versions: ["1.0.0"]
+capability_ids: [accessibility_ux, accessibility_qa]
+scenario: >-
+  A synthetic bug report says only "the pause menu isn't accessible," with no
+  further detail. The team implements screen-reader narration for all pause
+  menu labels and closes the report as fixed. A follow-up player message
+  later reveals the actual original complaint: the "Resume" and "Quit"
+  buttons are distinguished only by icon color (green versus red), which a
+  colorblind player could not tell apart. A reviewer is asked whether the
+  narration fix actually addressed the report.
+discriminates: >-
+  A generic reviewer may accept "we added narration, it's accessible now" at
+  face value. A specialist classifies both the fix and the actual complaint
+  by POUR principle and notices they don't match.
+expected_specialist_findings:
+  - Screen-reader narration addresses a Perceivable/Robust concern for players who cannot see the screen or rely on assistive technology to read it aloud.
+  - The actual reported barrier, distinguishing two buttons by color alone, is also a Perceivable concern, but a different one — colorblind-safe signaling, not screen-reader access.
+  - Fixing one Perceivable concern does not resolve a different Perceivable concern; "the pause menu isn't accessible" was underspecified, and the fix happened to target the wrong sub-issue.
+  - Recommend adding a shape, icon, or label distinction between Resume and Quit independent of color, and reopening the report until that specific gap is closed.
+expected_uncertainty:
+  - Whether the original reporter meant only the color issue, or something broader — the initial report was too vague to be certain.
+acceptable_source_ids: [wcag-pour-intro]
+scoring_notes: >-
+  Pass only if the enriched run recognizes that narration and colorblind-safe
+  signaling are both Perceivable concerns but distinct ones, and that fixing
+  one does not resolve the other. Accepting the narration fix as having
+  addressed "isn't accessible" is a fail.

@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: loot-box-disclosure-contract
+pack_id: monetization-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [monetization]
+scenario: >-
+  A loot box feature is ready to ship with a store description showing a 2%
+  odds figure for its rare item, displayed to players before purchase. The
+  actual configured drop table in the game's data returns the rare item at
+  a 0.5% rate, a discrepancy that occurred because the odds documentation
+  was written during early design and never updated after the drop rates
+  were rebalanced. A reviewer is asked whether this feature is ready to
+  ship.
+discriminates: >-
+  A generic reviewer may accept the feature because pre-purchase odds
+  disclosure is genuinely present. A specialist checks the disclosed figure
+  against the actual configured rate and flags the mismatch as a distinct,
+  more serious problem than missing disclosure would be.
+expected_specialist_findings:
+  - Pre-purchase odds disclosure is present, which is the documented baseline requirement, but the disclosed 2% figure does not match the actual configured 0.5% drop rate, which is a distinct and more serious problem than missing disclosure entirely.
+  - A stale odds disclosure that does not match the real rate converts what should be a transparency mechanism into an active misrepresentation to players, worse than shipping with a technical fault and no disclosure at all.
+  - The root cause, documentation written during early design and never updated after rebalancing, points to a process gap where disclosed odds need to be checked against the actual data configuration at ship time, not assumed correct because a disclosure step happened once earlier in development.
+  - Recommend blocking the ship until the disclosed odds are corrected to match the actual 0.5% rate, and treating any specific legal or regulatory exposure from having nearly shipped inaccurate odds as a question for Legal to assess, not resolved by this review.
+expected_uncertainty:
+  - Whether this discrepancy already reached any live players before being caught — not stated.
+acceptable_source_ids: [apple-loot-box-odds-disclosure-guideline]
+scoring_notes: >-
+  Pass only if the enriched run identifies the odds mismatch specifically,
+  distinguishes it from a simple missing-disclosure problem, and blocks
+  shipping until corrected. Accepting the feature because disclosure text
+  is present, or flagging only that odds seem low without checking them
+  against the disclosed figure, is a fail.

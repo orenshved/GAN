@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: steam-release-staging-contract
+pack_id: steam-publishing-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [patching, deployment, platform_certification]
+scenario: >-
+  A synthetic release plan for an already-shipped game states: "Hotfix is
+  ready, we'll upload it straight to the default branch tonight so it's
+  live for players by morning." No beta branch testing is mentioned, and no
+  one has flagged the account authorization step Steam requires to promote
+  a build to the live default branch. A reviewer is asked whether this plan
+  is ready to execute.
+discriminates: >-
+  A generic reviewer may accept the plan because it is fast and the fix is
+  presumably already verified locally. A specialist checks the plan against
+  Steam's own documented staging and authorization requirements and flags
+  both gaps.
+expected_specialist_findings:
+  - The plan skips beta branch testing entirely and goes straight to the default branch; Steam's build system is specifically designed to let a team test on a protected beta branch first, and skipping that step means the first real test of the hotfix happens in front of live players.
+  - The plan does not account for the additional account authorization Steam requires to promote a build to the live default branch for an already-released game; discovering this requirement at 2 a.m. when trying to ship is a documented, avoidable risk.
+  - The word ready in this plan describes the fix being coded and locally verified, not that it has been staged and tested through Steam's own release mechanism, which is a separate and currently unaddressed step.
+  - Recommend uploading the hotfix to a password-protected beta branch first, testing it there, and confirming the authorization step is completed ahead of time, before committing to a same-night live promotion.
+expected_uncertainty:
+  - Whether the hotfix has been tested on any build of the game at all, beyond the developer's local environment — not stated.
+acceptable_source_ids: [steamworks-builds-docs]
+scoring_notes: >-
+  Pass only if the enriched run identifies both the missing beta-branch
+  staging step and the missing authorization planning as separate issues.
+  Accepting the plan because the fix is presumably correct, or flagging
+  only one of the two gaps, is a fail.

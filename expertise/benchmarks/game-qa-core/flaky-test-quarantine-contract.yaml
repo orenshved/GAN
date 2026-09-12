@@ -1,0 +1,33 @@
+schema_version: 1
+benchmark_id: flaky-test-quarantine-contract
+pack_id: game-qa-core
+applies_to_versions: ["1.2.0", "1.2.1"]
+capability_ids: [automated_testing, functional_testing]
+scenario: >-
+  A pull request is blocked because an automated test, "test_skeleton_patrol_ai,"
+  fails. That test has a documented history of failing intermittently for
+  the past six weeks across many unrelated pull requests, has no assigned
+  owner, and has never been quarantined. Based solely on this one failure,
+  the PR's author is told: "fix the AI bug your change introduced." A
+  reviewer is asked whether that instruction is justified.
+discriminates: >-
+  A generic reviewer may accept the failure at face value as proof this PR
+  introduced a regression. A specialist checks the test's own reliability
+  history before attributing the failure to this specific change, and
+  separately flags the six-week-old ungoverned flakiness as its own process
+  gap.
+expected_specialist_findings:
+  - A test with a documented history of unrelated intermittent failure should not be treated as confirming a regression on the strength of a single failure; the test's own reliability needs to be checked, and the result reproduced or investigated, before concluding this specific change caused it.
+  - The test has been failing intermittently for six weeks with no assigned owner and no quarantine decision; that is itself a process gap that should have been addressed already, independent of whatever caused today's failure.
+  - Recommend rerunning the test in isolation, or checking whether it has failed on other recent unrelated changes, before concluding this PR introduced a regression.
+  - Recommend separately quarantining the test or assigning an owner with a fix deadline, so it stops blocking unrelated work on unclear signal going forward.
+expected_uncertainty:
+  - Whether this specific failure is an instance of the test's known flakiness or an actual new regression introduced by this change — not distinguishable without a rerun or investigation.
+acceptable_source_ids: [masella-sot-automated-testing-gdc2019]
+scoring_notes: >-
+  Pass only if the enriched run declines to accept the single failure as
+  proof of a regression without checking the test's reliability history, and
+  separately names the ungoverned six-week flakiness as a process gap needing
+  a quarantine or fix-owner decision. Accepting "fix the AI bug your change
+  introduced" at face value, or flagging only that the test is "annoying"
+  without addressing the regression-attribution question, is a fail.

@@ -1,0 +1,156 @@
+# New candidate pack (K2 remainder, revisited under the broader sourcing
+# strategy). state: draft — NOT installed, NOT reviewed, NOT trusted for
+# routing.
+#
+# Deferred in K2 under the old written-standard-only sourcing model: this
+# pack's capabilities (project_analysis, dependency_analysis, matching the
+# existing `project-intelligence` agent in agents/builtin/roster.json) are
+# about analyzing an unfamiliar codebase, a genuine engineering craft with no
+# WCAG/Scrum-Guide equivalent. Built per
+# GAN_CLAUDE_RESEARCH_SOURCING_STRATEGY.md's practitioner-evidence model,
+# same as pixel-art-production and 2d-game-art, though the credentialed
+# source here is a published author/speaker rather than a GDC talk.
+#
+# Cross-verification note: the dependency-analysis source references "the
+# Mikado Method" as a named technique. That method is independently
+# documented in a separate, traditionally published book (Ellnestam &
+# Brolund, Manning Publications) by different authors, confirmed to exist via
+# search rather than assumed — it is named here as context for why the
+# technique has independent grounding, not cited as a separately-read source,
+# since its actual chapter content was not read for this pack.
+schema_version: 1
+pack_id: project-intelligence-analysis
+name: Project Intelligence Analysis
+version: 1.0.0
+description: >-
+  Hotspot prioritization (complexity crossed with git-history change
+  frequency) and dependency-graph comprehension for auditing an unfamiliar
+  or legacy codebase, distilled from a published author and established
+  speaker specializing in legacy-code practice.
+state: draft
+domain_ids: [engineering, project_intelligence]
+capability_ids: [project_analysis, dependency_analysis]
+sources:
+  - schema_version: 1
+    source_id: understandlegacycode-hotspots
+    title: Focus refactoring on what matters with Hotspots Analysis
+    author: Nicolas Carlo
+    publisher: understandlegacycode.com
+    uri: https://understandlegacycode.com/blog/focus-refactoring-with-hotspots-analysis/
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: 'Standard copyright ("Copyright (c) 2019-2026, Nicolas Carlo", verified directly on the page); no open content license found. Cited for attribution; no article text reproduced, every item below is original distilled wording. Author credential verified: Nicolas Carlo, founder of the Software Crafters Montreal community, author of a published legacy-code resource, and an established speaker with dozens of talks specifically on this topic.'
+    applicable_capability_ids: [project_analysis, dependency_analysis]
+  - schema_version: 1
+    source_id: understandlegacycode-dependency-graphs
+    title: Safely restructure your codebase with Dependency Graphs
+    author: Nicolas Carlo
+    publisher: understandlegacycode.com
+    uri: https://understandlegacycode.com/blog/safely-restructure-codebase-with-dependency-graphs/
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard copyright; no open content license found. Cited for attribution; no article text reproduced. Same author credential as the hotspots-analysis source above."
+    applicable_capability_ids: [dependency_analysis, project_analysis]
+methods:
+  - schema_version: 1
+    method_id: hotspot-prioritization-review
+    title: Hotspot prioritization review
+    purpose: Prioritize where to focus investigation or improvement effort in an unfamiliar codebase by combining code complexity with git-history change frequency, rather than by complexity or activity alone.
+    applicable_capability_ids: [project_analysis, dependency_analysis]
+    steps:
+      - Identify the codebase's highest-complexity files, for example by cyclomatic complexity or an equivalent static-analysis measure.
+      - Identify the codebase's most frequently changed files over a representative recent period, using version-control history.
+      - Compare both dimensions per file; treat files that are both complex and frequently changed as the priority, not files that are merely complex.
+      - Explicitly deprioritize complex-but-stable code; code that never changes is not currently costing ongoing effort, regardless of how hard it might be to read.
+    evidence_requirements:
+      - The actual complexity measurements and change-frequency data used, not an impression that code "looks messy."
+      - The specific time window used for the change-frequency history.
+    source_ids: [understandlegacycode-hotspots]
+  - schema_version: 1
+    method_id: dependency-graph-comprehension-review
+    title: Dependency graph comprehension review
+    purpose: Build and read a dependency graph of an unfamiliar codebase to find genuine structural risks, such as circular dependencies and disproportionately connected modules, rather than relying on a linear read-through of files.
+    applicable_capability_ids: [dependency_analysis]
+    steps:
+      - Start with a simple sketch of major module dependencies rather than immediately reaching for a comprehensive automated tool.
+      - Look specifically for circular dependencies between modules; a cycle in the dependency graph indicates entanglement that will resist safe incremental change.
+      - Look for a module with disproportionately many incoming or outgoing connections; a dense cluster of dependencies often indicates a module that has absorbed too many responsibilities.
+      - When incremental restructuring is planned, record each newly discovered prerequisite dependency as it is found, rather than trying to plan the entire restructuring up front.
+      - Share the dependency graph with the team, for example in a pull request description, rather than keeping the analysis as private working notes.
+    evidence_requirements:
+      - The actual dependency graph or matrix produced for the codebase or module under review.
+      - Any circular dependencies or unusually dense clusters identified, named explicitly.
+    source_ids: [understandlegacycode-dependency-graphs]
+items:
+  - schema_version: 1
+    item_id: pia-prioritize-complexity-times-churn
+    title: Prioritize by complexity crossed with change frequency, not either alone
+    kind: professional_knowledge
+    statement: The parts of a codebase most worth investigating or improving are the ones that are both complex and frequently changed; complexity alone can describe code that is stable and not currently costing anyone anything, while frequent change alone can describe simple code that is not actually risky.
+    domain_ids: [engineering]
+    capability_ids: [project_analysis, dependency_analysis]
+    source_ids: [understandlegacycode-hotspots]
+    method_ids: [hotspot-prioritization-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: pia-stable-complexity-not-a-priority
+    title: Complex-but-stable code is not automatically a priority
+    kind: anti_pattern
+    statement: Code that is difficult to read but rarely or never changes is not currently costing ongoing development effort; treating all complex code as equally urgent, regardless of how often it actually changes, misdirects limited investigation or refactoring effort.
+    domain_ids: [engineering]
+    capability_ids: [project_analysis]
+    source_ids: [understandlegacycode-hotspots]
+    method_ids: [hotspot-prioritization-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: pia-circular-dependency-is-findable
+    title: A circular dependency is a specific, findable structural risk
+    kind: professional_knowledge
+    statement: A cycle in a codebase's dependency graph, where two or more modules depend on each other directly or transitively, is a concrete, identifiable structural problem, distinct from a vaguer impression that the code feels tangled; it should be named and traced specifically, not just noted as a general concern.
+    domain_ids: [engineering]
+    capability_ids: [dependency_analysis]
+    source_ids: [understandlegacycode-dependency-graphs]
+    method_ids: [dependency-graph-comprehension-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: pia-dense-cluster-signals-absorbed-responsibility
+    title: A dependency cluster with too many connections signals absorbed responsibility
+    kind: standard
+    statement: A single module or class with disproportionately many incoming or outgoing dependencies compared to the rest of the codebase is a concrete signal that it has absorbed responsibilities that belong elsewhere, findable directly from the dependency graph's structure rather than only from reading its code.
+    domain_ids: [engineering]
+    capability_ids: [dependency_analysis]
+    source_ids: [understandlegacycode-dependency-graphs]
+    method_ids: [dependency-graph-comprehension-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: pia-start-with-simple-sketch
+    title: Start dependency mapping with a simple sketch, not a comprehensive tool
+    kind: heuristic
+    statement: Beginning dependency analysis with a hand-drawn or simple sketch of the major relationships, and only reaching for a comprehensive automated graphing tool once complexity exceeds what can be tracked manually, avoids over-investing tooling effort before the actual scope of the problem is understood.
+    domain_ids: [engineering]
+    capability_ids: [dependency_analysis, project_analysis]
+    source_ids: [understandlegacycode-dependency-graphs]
+    method_ids: [dependency-graph-comprehension-review]
+    freshness_class: stable
+    confidence: 0.8
+  - schema_version: 1
+    item_id: pia-private-notes-not-shared-understanding
+    title: Private analysis notes are not the same as a shared understanding
+    kind: anti_pattern
+    statement: A dependency graph or codebase analysis kept as private working notes does not give the team a shared understanding of the risk or planned change; sharing the actual diagram, for example in a pull request description, is what makes the analysis useful for review and collective decision-making.
+    domain_ids: [engineering, production]
+    capability_ids: [project_analysis]
+    source_ids: [understandlegacycode-dependency-graphs]
+    method_ids: [dependency-graph-comprehension-review]
+    freshness_class: stable
+    confidence: 0.82
+evaluation_ids: [hotspot-prioritization-contract, dependency-graph-contract]
+created_at: "2026-09-12T00:00:00Z"

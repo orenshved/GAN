@@ -15,6 +15,15 @@ import type {
   ProjectSnapshot,
   TaskContract,
 } from "@gameagent/protocol";
+import {
+  graphView,
+  focusedNeighborhoodIds,
+  type NetworkGraphModel,
+} from "./network-graph";
+import {
+  useForceGraphLayout,
+  type ForceGraphNodeData,
+} from "./use-force-graph-layout";
 import "@xyflow/react/dist/style.css";
 
 type HistoryEvent = EventPage["events"][number];
@@ -67,6 +76,15 @@ function statusClass(state: AgentState) {
   return `agent-state agent-state-${state}`;
 }
 
+function agentInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toLocaleUpperCase();
+}
+
 export function AgentNetwork({
   snapshot,
   roster,
@@ -87,6 +105,7 @@ export function AgentNetwork({
   const [filter, setFilter] = useState<AgentFilter>("used");
   const [query, setQuery] = useState("");
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [graphMode, setGraphMode] = useState<"full" | "neighborhood">("full");
 
   const agents = useMemo<AgentView[]>(() => {
     const agentByTask = new Map<string, string>();
@@ -185,68 +204,80 @@ export function AgentNetwork({
     [agents],
   );
   const normalizedQuery = query.trim().toLocaleLowerCase();
-  const visibleAgents = agents.filter((agent) => {
-    const matchesFilter =
-      filter === "all" ||
-      (filter === "used" && agent.used) ||
-      agent.state === filter;
-    const matchesQuery =
-      !normalizedQuery ||
-      agent.agent.name.toLocaleLowerCase().includes(normalizedQuery) ||
-      agent.agent.description.toLocaleLowerCase().includes(normalizedQuery) ||
-      agent.agent.capabilities.some((capability) =>
-        capability.toLocaleLowerCase().includes(normalizedQuery),
-      );
-    return matchesFilter && matchesQuery;
-  });
-  const selectedAgent =
-    visibleAgents.find((agent) => agent.agent.agent_id === selectedAgentId) ??
-    visibleAgents[0] ??
-    null;
+  const visibleAgents = useMemo(
+    () =>
+      agents.filter((agent) => {
+        const matchesFilter =
+          filter === "all" ||
+          (filter === "used" && agent.used) ||
+          agent.state === filter;
+        const matchesQuery =
+          !normalizedQuery ||
+          agent.agent.name.toLocaleLowerCase().includes(normalizedQuery) ||
+          agent.agent.description
+            .toLocaleLowerCase()
+            .includes(normalizedQuery) ||
+          agent.agent.capabilities.some((capability) =>
+            capability.toLocaleLowerCase().includes(normalizedQuery),
+          );
+        return matchesFilter && matchesQuery;
+      }),
+    [agents, filter, normalizedQuery],
+  );
+  const selectedAgent = selectedAgentId
+    ? (visibleAgents.find(
+        (agent) => agent.agent.agent_id === selectedAgentId,
+      ) ?? null)
+    : null;
   const selectedKnowledge = knowledge?.profiles.find(
     (profile) => profile.agent_id === selectedAgent?.agent.agent_id,
   );
 
   const graph = useMemo(() => {
-    const center = { x: 440, y: 270 };
-    const nodes: Node<{ label: ReactNode }>[] = [
+    const nodes: Node<ForceGraphNodeData & { label: ReactNode }>[] = [
       {
         id: "project-root",
-        position: center,
-        className: "agent-map-root",
+        position: { x: 0, y: 0 },
+        className: `agent-map-root${selectedAgentId === null ? " selected" : ""}`,
         data: {
+          forceRole: "root",
           label: (
             <div className="agent-node-label agent-root-label">
               <span className="agent-node-mark">GAN</span>
-              <strong>{snapshot.project.project.name}</strong>
-              <small>{visibleAgents.length} relevant agents</small>
+              <strong>GM</strong>
+              <small>
+                {snapshot.project.project.name} · {visibleAgents.length} agents
+              </small>
             </div>
           ),
         },
       },
     ];
     const edges: Edge[] = [];
-    visibleAgents.forEach((view, index) => {
-      const angle =
-        (Math.PI * 2 * index) / Math.max(visibleAgents.length, 1) - Math.PI / 2;
-      const x = center.x + Math.cos(angle) * 335;
-      const y = center.y + Math.sin(angle) * 235;
+    visibleAgents.forEach((view) => {
       const agentId = `agent:${view.agent.agent_id}`;
       nodes.push({
         id: agentId,
-        position: { x, y },
-        className: `agent-map-node agent-map-node-${view.state}`,
+        position: { x: 0, y: 0 },
+        className: `agent-map-node agent-map-node-${view.state}${selectedAgentId === view.agent.agent_id ? " selected" : ""}`,
         data: {
+          forceRole: "major",
+          parentId: "project-root",
           label: (
-            <div className="agent-node-label">
-              <span className={statusClass(view.state)}>
-                {agentStateLabels[view.state]}
+            <div className="agent-node-shell">
+              <span className="agent-node-avatar" aria-hidden="true">
+                {agentInitials(view.agent.name)}
               </span>
-              <strong>{view.agent.name}</strong>
-              <small>
-                v{view.agent.version} · {view.tasks.length} task
-                {view.tasks.length === 1 ? "" : "s"}
-              </small>
+              <div className="agent-node-label">
+                <span className={statusClass(view.state)}>
+                  {agentStateLabels[view.state]}
+                </span>
+                <strong>{view.agent.name}</strong>
+                <small>
+                  v{view.agent.version} · {view.tasks.length} task
+                  {view.tasks.length === 1 ? "" : "s"}
+                </small>
+              </div>
             </div>
           ),
         },
@@ -257,20 +288,14 @@ export function AgentNetwork({
         target: agentId,
         className: `agent-map-edge agent-map-edge-${view.state}`,
       });
-      view.tasks.forEach((task, taskIndex) => {
-        const spread = (taskIndex - (view.tasks.length - 1) / 2) * 72;
-        const outwardX = Math.cos(angle) * 165;
-        const outwardY = Math.sin(angle) * 120;
-        const tangentX = -Math.sin(angle) * spread;
-        const tangentY = Math.cos(angle) * spread;
+      view.tasks.forEach((task) => {
         nodes.push({
           id: `task:${task.task_id}`,
-          position: {
-            x: x + outwardX + tangentX,
-            y: y + outwardY + tangentY,
-          },
+          position: { x: 0, y: 0 },
           className: `agent-task-node agent-task-${task.state?.toLocaleLowerCase() ?? "proposed"}`,
           data: {
+            forceRole: "endpoint",
+            parentId: agentId,
             label: (
               <div className="agent-task-label">
                 <span>{task.state ?? "PROPOSED"}</span>
@@ -289,7 +314,59 @@ export function AgentNetwork({
       });
     });
     return { nodes, edges };
-  }, [snapshot.project.project.name, visibleAgents]);
+  }, [selectedAgentId, snapshot.project.project.name, visibleAgents]);
+
+  const graphModel = useMemo<NetworkGraphModel>(
+    () => ({
+      rootId: "project-root",
+      nodes: graph.nodes.map((node) => ({
+        id: node.id,
+        role: node.data.forceRole,
+        parentId: node.data.parentId,
+      })),
+      edges: graph.edges.map((edge) => ({
+        id: edge.id,
+        source: String(edge.source),
+        target: String(edge.target),
+      })),
+    }),
+    [graph.edges, graph.nodes],
+  );
+  const focusedNodeId = selectedAgent
+    ? `agent:${selectedAgent.agent.agent_id}`
+    : "project-root";
+  const displayedGraph = useMemo(() => {
+    if (graphMode === "full") return graph;
+    const visibleIds = focusedNeighborhoodIds(graphModel, focusedNodeId);
+    const view = graphView(graphModel, visibleIds);
+    const retainedNodes = new Set(view.nodes.map((node) => node.id));
+    const retainedEdges = new Set(view.edges.map((edge) => edge.id));
+    return {
+      nodes: graph.nodes.filter((node) => retainedNodes.has(node.id)),
+      edges: graph.edges.filter((edge) => retainedEdges.has(edge.id)),
+    };
+  }, [focusedNodeId, graph, graphMode, graphModel]);
+  const forceGraph = useForceGraphLayout(
+    displayedGraph.nodes,
+    displayedGraph.edges,
+  );
+  const canvasNodes = useMemo(
+    () =>
+      visibleAgents.length
+        ? forceGraph.nodes
+        : [
+            ...forceGraph.nodes,
+            {
+              id: "empty-layout-spacer",
+              position: { x: 0, y: 430 },
+              data: { forceRole: "endpoint" as const, label: "" },
+              className: "agent-map-layout-spacer",
+              draggable: false,
+              selectable: false,
+            },
+          ],
+    [forceGraph.nodes, visibleAgents.length],
+  );
 
   if (loading)
     return (
@@ -336,9 +413,23 @@ export function AgentNetwork({
       </header>
       <div className="agent-network-toolbar">
         <span className="eyebrow">LIVE PROJECT STATE</span>
-        <span>
-          Scroll to zoom · drag nodes to reposition · select an agent to inspect
-        </span>
+        <div className="agent-network-view-controls" aria-label="Graph view">
+          <button
+            type="button"
+            aria-pressed={graphMode === "full"}
+            onClick={() => setGraphMode("full")}
+          >
+            Full network
+          </button>
+          <button
+            type="button"
+            aria-pressed={graphMode === "neighborhood"}
+            onClick={() => setGraphMode("neighborhood")}
+          >
+            Focused neighborhood
+          </button>
+          <span>Scroll to zoom · drag nodes · select to inspect</span>
+        </div>
       </div>
       <div className="agent-network-workspace">
         <aside className="agent-filter-rail" aria-label="Agent filters">
@@ -352,7 +443,10 @@ export function AgentNetwork({
                 key={key}
                 type="button"
                 aria-pressed={filter === key}
-                onClick={() => setFilter(key)}
+                onClick={() => {
+                  setFilter(key);
+                  setSelectedAgentId(null);
+                }}
               >
                 <span className={`agent-filter-dot agent-filter-dot-${key}`} />
                 <span>{filterLabels[key]}</span>
@@ -386,54 +480,44 @@ export function AgentNetwork({
           </div>
         </aside>
         <div className="agent-network-canvas">
-          {visibleAgents.length ? (
-            <>
-              <ReactFlow
-                key={filter}
-                nodes={graph.nodes}
-                edges={graph.edges}
-                fitView
-                fitViewOptions={{ padding: 0.24 }}
-                nodesConnectable={false}
-                onNodeClick={(_, node) => {
-                  if (node.id.startsWith("agent:"))
-                    setSelectedAgentId(node.id.slice("agent:".length));
-                  if (node.id.startsWith("task:"))
-                    selectTask(node.id.slice("task:".length));
-                }}
-                colorMode="dark"
-                minZoom={0.2}
-                maxZoom={2.1}
-              >
-                <Background gap={26} color="#263236" />
-                <Controls showInteractive={false} />
-              </ReactFlow>
-              <div
-                className="agent-network-legend"
-                aria-label="Agent status legend"
-              >
-                {(Object.keys(agentStateLabels) as AgentState[]).map(
-                  (state) => (
-                    <span key={state}>
-                      <i className={statusClass(state)} />{" "}
-                      {agentStateLabels[state]}
-                    </span>
-                  ),
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="agent-map-empty">
-              <strong>No specialists are engaged in this project yet.</strong>
-              <p>
-                Give GAN a production outcome to assemble a team, or explore the
-                specialists available to hire.
-              </p>
-              <button type="button" onClick={() => setFilter("all")}>
-                Explore all agents
-              </button>
+          <ReactFlow
+            key={filter}
+            nodes={canvasNodes}
+            edges={displayedGraph.edges}
+            onNodesChange={forceGraph.onNodesChange}
+            onNodeDragStart={forceGraph.onNodeDragStart}
+            onNodeDrag={forceGraph.onNodeDrag}
+            onNodeDragStop={forceGraph.onNodeDragStop}
+            fitView
+            fitViewOptions={{ padding: 0.24, maxZoom: 0.8 }}
+            nodesConnectable={false}
+            onNodeClick={(_, node) => {
+              if (forceGraph.consumeSuppressedClick()) return;
+              if (node.id === "project-root") setSelectedAgentId(null);
+              if (node.id.startsWith("agent:"))
+                setSelectedAgentId(node.id.slice("agent:".length));
+              if (node.id.startsWith("task:"))
+                selectTask(node.id.slice("task:".length));
+            }}
+            colorMode="dark"
+            minZoom={0.2}
+            maxZoom={2.1}
+          >
+            <Background gap={26} color="#263236" />
+            <Controls showInteractive={false} />
+          </ReactFlow>
+          {visibleAgents.length > 0 ? (
+            <div
+              className="agent-network-legend"
+              aria-label="Agent status legend"
+            >
+              {(Object.keys(agentStateLabels) as AgentState[]).map((state) => (
+                <span key={state}>
+                  <i className={statusClass(state)} /> {agentStateLabels[state]}
+                </span>
+              ))}
             </div>
-          )}
+          ) : null}
         </div>
         <aside className="agent-context-lens" aria-label="Agent context lens">
           <div className="agent-context-heading">
@@ -674,9 +758,32 @@ export function AgentNetwork({
               </div>
             </div>
           ) : (
-            <div className="agent-context-empty">
-              <strong>No agents match this view</strong>
-              <p>Change the filter or search to restore the network.</p>
+            <div className="agent-context-body agent-context-gm">
+              <span className="agent-state agent-state-working">
+                Orchestrator
+              </span>
+              <h3>GM</h3>
+              <p>
+                Coordinates the project, delegates work, and keeps specialist
+                activity aligned with the Director&apos;s goals.
+              </p>
+              <dl className="details agent-context-metrics">
+                <dt>Project</dt>
+                <dd>{snapshot.project.project.name}</dd>
+                <dt>Stage</dt>
+                <dd>
+                  {snapshot.project.production.stage.replaceAll("_", " ")}
+                </dd>
+                <dt>Agents in this view</dt>
+                <dd>{visibleAgents.length}</dd>
+                <dt>Active work</dt>
+                <dd>
+                  {
+                    snapshot.tasks.filter((task) => task.state === "RUNNING")
+                      .length
+                  }
+                </dd>
+              </dl>
             </div>
           )}
         </aside>

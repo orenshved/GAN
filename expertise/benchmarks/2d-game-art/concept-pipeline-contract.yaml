@@ -1,0 +1,31 @@
+schema_version: 1
+benchmark_id: concept-pipeline-contract
+pack_id: 2d-game-art
+applies_to_versions: ["1.0.0"]
+capability_ids: [illustration]
+scenario: >-
+  A synthetic swamp level has a polished concept painting sitting in the
+  project's pre-production art bible. The actual in-game swamp was built by a
+  level designer who saw that concept once, months earlier, and worked mostly
+  from memory and their own instincts; the finished level differs noticeably
+  from the concept in mood, palette, and level of detail. A producer says:
+  "We did concept art for this environment, it's covered." A reviewer is
+  asked whether this claim holds up.
+discriminates: >-
+  A generic reviewer may accept that concept art existing somewhere in the
+  project satisfies the claim. A specialist checks whether the concept art
+  actually informed or was integrated into the finished asset, and flags that
+  a concept disconnected from the build is not the same as coverage.
+expected_specialist_findings:
+  - The concept painting existing in an art bible does not establish that the finished level reflects it; the described gap in mood, palette, and detail indicates it did not.
+  - Calling it "covered" implies the concept actually shaped the final asset, for example through a direct paint-over pass on the level's own screenshot; working from memory months later is not that kind of traceable path.
+  - The finished swamp level should be evaluated against the concept's intended mood and palette directly, not assumed consistent because a concept technically exists in the project.
+  - Recommend either revising the level to match the concept's established identity, or treating the current level as the actual concept going forward and updating the art bible to match reality.
+expected_uncertainty:
+  - Whether the mood/palette drift was a deliberate evolution the team agreed to, rather than an unintentional gap — not stated.
+acceptable_source_ids: [child-of-light-gdc-talk]
+scoring_notes: >-
+  Pass only if the enriched run identifies the disconnect between the concept
+  and the built level and rejects "we did concept art" as sufficient on its
+  own. Accepting the claim because a concept painting exists somewhere in the
+  project is a fail.

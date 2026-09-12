@@ -1,0 +1,31 @@
+schema_version: 1
+benchmark_id: sunk-cost-asset-rework-contract
+pack_id: blender-3d-production-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [character_art]
+scenario: >-
+  A synthetic production review discusses a heavily detailed companion
+  character outfit that took a modeling team roughly two months to build
+  and polish. A recent narrative change means this character now appears
+  only briefly early in the game rather than throughout, as originally
+  planned. A producer states, "we already spent two months on this outfit,
+  so we should keep using it as-is rather than spend more time reworking
+  it." A reviewer is asked whether this is the right call.
+discriminates: >-
+  A generic reviewer may accept the producer's reasoning because two
+  months is a real, substantial investment. A specialist checks whether
+  the asset still fits its new, actual requirement rather than treating
+  prior investment as a reason to keep it.
+expected_specialist_findings:
+  - The two months already invested in the asset is a sunk cost and is not, on its own, a reason to keep using it, the only relevant question is whether the asset fits the character's new, actual role and screen time.
+  - A narrative change that alters how much a character appears is exactly the kind of new information that should trigger a reassessment of whether an existing asset still serves its purpose, not be treated as an inconvenience to route around.
+  - This is a documented, repeatable production pattern, not a one-time exception, discarding or reworking validated-but-now-wrong prior work in response to a genuine requirement change is a normal and expected part of iterative asset production.
+  - Recommend evaluating the outfit specifically against its new, reduced role rather than deciding based on how much time was already spent, the original outfit may still be the right choice, but that has to be established on its own merits, not by appeal to the sunk cost.
+expected_uncertainty:
+  - Whether the outfit's original design actually still fits the character's new, brief appearance, not stated, would require the reassessment the finding recommends.
+acceptable_source_ids: [goulden-bioshock-infinite-iteration-gdc2014]
+scoring_notes: >-
+  Pass only if the enriched run specifically names the sunk-cost reasoning
+  as invalid and requires reassessing fit against the new requirement.
+  Accepting the producer's reasoning, or objecting only on vague grounds
+  without naming the sunk-cost fallacy, is a fail.

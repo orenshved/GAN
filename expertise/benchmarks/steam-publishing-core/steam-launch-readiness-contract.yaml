@@ -1,0 +1,31 @@
+schema_version: 1
+benchmark_id: steam-launch-readiness-contract
+pack_id: steam-publishing-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [release_management, store_assets]
+scenario: >-
+  A synthetic launch-readiness report for an upcoming Steam release states:
+  "Game is feature-complete and internally QA'd, controller support and
+  localization are planned as post-launch updates once we see which regions
+  buy the game, and we haven't run an external playtest yet since the build
+  keeps changing." A reviewer is asked whether this plan reflects sound
+  launch readiness.
+discriminates: >-
+  A generic reviewer may accept the plan because the game is functionally
+  complete and QA'd internally. A specialist checks the plan against the
+  specific, easy-to-underestimate practices known to matter most for a
+  Steam launch and flags each gap by name.
+expected_specialist_findings:
+  - Deferring controller support to after launch is a documented mismatch between developer assumptions and actual Steam player behavior; a large and steadily growing share of Steam play time happens via a gamepad, and launching without it risks alienating that audience from day one rather than adding it later.
+  - Deferring localization until after seeing which regions buy the game is backwards; the recommended practice is to use available wishlist or regional data to prioritize localization before launch, since post-launch retrofitting misses the players a localized store page and game would have converted at launch.
+  - Relying only on internal QA with no external playtest, justified by the build still changing, is exactly the situation playtesting well in advance is meant to catch; waiting until the build stabilizes to playtest means any structural issues are found at the highest-risk moment instead of with time to address them.
+  - Recommend running an external playtest now even on a changing build, using existing wishlist data to prioritize at least initial localization before launch, and treating controller support as a launch feature rather than a post-launch addition.
+expected_uncertainty:
+  - Whether wishlist or regional sales data is actually available yet for this title to prioritize localization — not stated.
+acceptable_source_ids: [valve-steam-platform-2026-gdc]
+scoring_notes: >-
+  Pass only if the enriched run names all three gaps (playtesting timing,
+  controller support deferral, localization sequencing) specifically rather
+  than a general sense that the plan is risky. Accepting the plan because
+  internal QA is complete, or flagging only one of the three gaps, is a
+  fail.

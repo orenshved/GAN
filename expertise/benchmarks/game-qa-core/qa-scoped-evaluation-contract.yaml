@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: qa-scoped-evaluation-contract
+pack_id: game-qa-core
+applies_to_versions: ["1.1.0", "1.2.0", "1.2.1"]
+capability_ids: [functional_testing, visual_regression, accessibility_qa]
+scenario: >-
+  A synthetic QA report is titled "All menus pass visual regression" and
+  summarizes: "3 of 3 sampled menu screenshots compared clean against
+  baseline; PASS." The project actually has 40 distinct menu screens. The
+  sampling rationale for which 3 were chosen is not stated. One of the 3
+  sampled screenshots shows a 2px border-color difference from baseline, and
+  the report's per-screen notes mark that one "pass (negligible)" without
+  flagging it separately. A reviewer is asked whether the "all menus pass"
+  claim can stand.
+discriminates: >-
+  A generic reviewer may accept the report because it has a clear PASS verdict
+  and screenshots attached. A specialist applies scoped evaluation: checks
+  what was actually evaluated against what is claimed, and separately surfaces
+  the buried per-item discrepancy inside the aggregate PASS.
+expected_specialist_findings:
+  - The claim "all menus pass" covers 40 menu screens; only 3 were evaluated, and no sampling rationale is given for why those 3 represent the other 37 — the claim must be narrowed to "3 of 40 sampled menus" or the sample rationale must be disclosed and justified.
+  - The other 37 unevaluated menu screens must be explicitly reported as not evaluated, not silently folded into "all menus pass."
+  - The 2px border-color difference marked "pass (negligible)" inside the aggregate PASS is a per-item result that should be visible on its own, not absorbed into a blanket pass; "negligible" is a judgment call that needs to be stated as a decision, not hidden.
+  - The gate stays inconclusive for the full 40-menu scope pending either full coverage or a disclosed, justified sample; the one flagged screenshot needs an explicit accept/reject decision recorded, not folded into the aggregate.
+expected_uncertainty:
+  - Whether the 3 sampled screens are representative of the other 37 — unknown without a stated rationale.
+acceptable_source_ids: [wcag-em-2-0, gan-qa-policy]
+scoring_notes: >-
+  Pass only if the enriched run rejects the "all menus pass" claim as
+  overreaching its actual 3-of-40 coverage and separately flags the buried
+  per-item discrepancy. Accepting the aggregate PASS, or objecting only to the
+  2px difference without addressing the scope/sampling problem, is a fail.

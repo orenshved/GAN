@@ -1,0 +1,34 @@
+schema_version: 1
+benchmark_id: practice-quantity-overclaim-contract
+pack_id: learning-strategy-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [knowledge_retention]
+scenario: >-
+  A synthetic improvement plan for an underperforming agent states, "it is
+  well established that expertise comes from deliberate practice, so this
+  agent needs 500 more repetitions of this task type to reach reliable
+  competence, schedule 500 repetitions and the problem will be solved." No
+  mechanism for reviewing why prior attempts fell short is mentioned. A
+  reviewer is asked whether this plan is well grounded.
+discriminates: >-
+  A generic reviewer may accept the plan because "deliberate practice
+  produces expertise" is a widely repeated claim and the plan proposes a
+  large, specific number of repetitions. A specialist recognizes that the
+  popular version of this claim overstates the actual evidence, and that a
+  fixed repetition count with no feedback mechanism does not match what
+  the stronger evidence for practice actually supports.
+expected_specialist_findings:
+  - The plan treats practice quantity as the complete explanation for reaching competence, but the strongest available meta-analytic evidence puts structured practice's share of performance variance at roughly 14 to 40 percent depending on the domain, with the rest explained by factors such as general ability, developmental timing, and diversity of prior experience, this claim overstates what "well established" evidence actually shows.
+  - The plan schedules a fixed number of repetitions without naming any mechanism for identifying where the agent's performance actually fell short and correcting specifically that, undirected repetition without this kind of feedback loop has documented, weaker evidence behind it than practice that specifically targets an identified weakness.
+  - The specific number, 500 repetitions, is exactly the kind of fixed, universal practice-quantity claim that should be treated with skepticism, since the underlying research this kind of number is usually drawn from has itself been shown to shift its own definitions and inclusion criteria across publications.
+  - Recommend first identifying specifically where and why the agent's current attempts are falling short, and building a practice plan around correcting that specific gap with a feedback mechanism, rather than defaulting to a large fixed number of repetitions of the same activity.
+expected_uncertainty:
+  - Whether this agent's underperformance is even primarily a practice-volume problem at all, not established, would require diagnosing where current attempts actually fail before that can be determined.
+acceptable_source_ids: [hambrick-deliberate-practice-review-2020]
+scoring_notes: >-
+  Pass only if the enriched run specifically challenges the "well
+  established" framing with the actual variance-explained evidence and
+  flags the missing feedback mechanism behind the fixed repetition count.
+  Accepting the plan because deliberate practice is a well-known concept,
+  or objecting only in vague terms without naming the overstated-evidence
+  or missing-feedback-loop problems, is a fail.

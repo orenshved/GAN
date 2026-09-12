@@ -1,0 +1,132 @@
+# New candidate pack (K3). state: draft — NOT installed, NOT reviewed, NOT
+# trusted for routing. No owning agent currently requires this pack; it is
+# meant as a specialized add-on other Leads (e.g. a console-certification
+# specialist) can combine with game-ux-core, per the addendum's own
+# pack-dependency example (console-ui-lead = game-ux-core + controller-
+# navigation + accessibility-games + console-platform-patterns).
+# See docs/K3_ENGINE_ART_ACCESSIBILITY_MODEL.md and
+# .ai/handoffs/claude-to-codex.md.
+#
+# Sources are two specific Xbox Accessibility Guideline pages (107: Input;
+# 112: consistent navigation), read in full, not just the guidelines index
+# already cited by game-ux-core. Same licensing note as game-ux-core:
+# Microsoft Learn's Terms of Use grant personal/non-commercial use only, no
+# open content license stated for these pages — recorded honestly, no
+# guideline text reproduced.
+schema_version: 1
+pack_id: controller-navigation
+name: Controller Navigation
+version: 1.0.0
+description: >-
+  Input-demand and multi-input focus-order review for gamepad, keyboard, and
+  alternate-input navigation, grounded in Xbox Accessibility Guidelines 107
+  and 112. Deliberately narrower than game-ux-core's general evidence
+  discipline — this pack is the input-specific specialization meant to
+  combine with it.
+state: draft
+domain_ids: [ux, accessibility]
+capability_ids: [controller_navigation, accessibility_ux]
+sources:
+  - schema_version: 1
+    source_id: xag-107-input
+    title: "Xbox Accessibility Guideline 107: Input"
+    author: Xbox Accessibility Guidelines contributors
+    publisher: Microsoft
+    uri: https://learn.microsoft.com/en-us/gaming/accessibility/xbox-accessibility-guidelines/107
+    source_type: official_documentation
+    retrieved_at: "2026-09-11T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-11T00:00:00Z"
+    license: "Microsoft Learn Terms of Use: personal/non-commercial use of the source text; cited for attribution only, no guideline text reproduced here."
+    applicable_capability_ids: [controller_navigation, accessibility_ux]
+  - schema_version: 1
+    source_id: xag-112-navigation
+    title: "Xbox Accessibility Guideline 112: Consistent UI Navigation"
+    author: Xbox Accessibility Guidelines contributors
+    publisher: Microsoft
+    uri: https://learn.microsoft.com/en-us/gaming/accessibility/xbox-accessibility-guidelines/112
+    source_type: official_documentation
+    retrieved_at: "2026-09-11T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-11T00:00:00Z"
+    license: "Microsoft Learn Terms of Use: personal/non-commercial use of the source text; cited for attribution only, no guideline text reproduced here."
+    applicable_capability_ids: [controller_navigation, accessibility_ux]
+methods:
+  - schema_version: 1
+    method_id: multi-input-navigation-review
+    title: Multi-input navigation review
+    purpose: Verify that a UI is fully navigable through every supported input type with a consistent, predictable focus order, rather than assuming one input method suffices.
+    applicable_capability_ids: [controller_navigation, accessibility_ux]
+    steps:
+      - Identify every input type the platform supports (analog stick, D-pad, mouse, keyboard, touch) and confirm each can independently complete every required action.
+      - Trace the focus order through the UI and confirm it follows the visual layout or the logical structure consistently, not an arbitrary tab order.
+      - Check whether focus loops correctly at the boundaries of linear menus, wrapping from last to first, and does not loop in multi-directional grid menus.
+      - Confirm interaction prompts, such as "A to select" or "B to back," stay consistent across screens rather than changing meaning per context.
+    evidence_requirements:
+      - The specific input types the platform and game actually support.
+      - Runtime capture or observation of the focus order across at least one linear and one grid-structured menu, if both exist.
+    source_ids: [xag-112-navigation]
+  - schema_version: 1
+    method_id: input-demand-review
+    title: Input demand review
+    purpose: Evaluate whether a control scheme's actual physical demands — speed, complexity, duration — exclude players, separately from whether individual buttons can be remapped.
+    applicable_capability_ids: [controller_navigation, accessibility_ux]
+    steps:
+      - Identify controls that require rapid repeated presses, simultaneous multi-button combinations, or prolonged holds.
+      - For each, ask whether remapping alone resolves the barrier, or whether the underlying demand persists regardless of which button is assigned.
+      - Where the demand cannot be removed, check for an alternative such as a toggle, an auto-hold, reduced game speed, or an accessible bypass.
+      - Treat "remappable" and "accessible" as different claims — remapping is necessary but not sufficient.
+    evidence_requirements:
+      - The specific controls under review and their timing, complexity, or duration demands.
+      - Whether an alternative exists for each identified demand.
+    source_ids: [xag-107-input]
+items:
+  - schema_version: 1
+    item_id: nav-remap-not-sufficient
+    title: Remapping alone does not resolve speed, complexity, or duration barriers
+    kind: professional_knowledge
+    statement: Reassigning a control to a different button does not remove barriers caused by how fast, how complex, or how long an input must be held; those are separate demands needing their own accommodation, such as toggles, auto-hold, or adjustable game speed, even once remapping is available.
+    domain_ids: [ux, accessibility]
+    capability_ids: [controller_navigation, accessibility_ux]
+    source_ids: [xag-107-input]
+    method_ids: [input-demand-review]
+    freshness_class: version_sensitive
+    confidence: 0.93
+  - schema_version: 1
+    item_id: nav-focus-order-consistent
+    title: Focus order must match visual or logical structure, consistently
+    kind: standard
+    statement: Focus should move through a UI in an order that matches either its visual layout or its logical meaning, applied the same way across every screen; a focus order that changes its own rule between screens disorients players relying on non-visual navigation.
+    domain_ids: [ux, game_ui]
+    capability_ids: [controller_navigation, accessibility_ux]
+    source_ids: [xag-112-navigation]
+    method_ids: [multi-input-navigation-review]
+    freshness_class: version_sensitive
+    confidence: 0.92
+  - schema_version: 1
+    item_id: nav-single-input-not-enough
+    title: A single supported input method is not automatically enough
+    kind: anti_pattern
+    statement: Supporting only the primary intended input, such as an analog stick or mouse, and treating alternate-input support as optional excludes players who cannot use that primary method at all; every required action needs a working alternate-input path, not just a remapping option within the same input type.
+    domain_ids: [ux, accessibility]
+    capability_ids: [controller_navigation, accessibility_ux]
+    source_ids: [xag-107-input]
+    method_ids: [input-demand-review]
+    freshness_class: version_sensitive
+    confidence: 0.91
+  - schema_version: 1
+    item_id: nav-linear-loops-grid-does-not
+    title: Linear menus loop, grid menus don't
+    kind: standard
+    statement: A linear menu, where focus moves only up and down or only left and right, should wrap focus from the last item back to the first and vice versa; a multi-directional grid menu should not, since looping in a grid breaks the spatial logic the player relies on.
+    domain_ids: [game_ui]
+    capability_ids: [controller_navigation]
+    source_ids: [xag-112-navigation]
+    method_ids: [multi-input-navigation-review]
+    freshness_class: version_sensitive
+    confidence: 0.89
+evaluation_ids:
+  [controller-input-demand-contract, controller-focus-order-contract]
+created_at: "2026-09-11T00:00:00Z"

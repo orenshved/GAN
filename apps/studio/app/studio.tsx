@@ -55,7 +55,7 @@ type View =
   | "Production"
   | "Disciplines"
   | "QA"
-  | "Needs Oren"
+  | "Needs Director"
   | "Workers"
   | "Network"
   | "Project Intelligence"
@@ -73,7 +73,7 @@ const navigationGroups: ReadonlyArray<{
     label: "Production",
     items: [
       { view: "Production" },
-      { view: "Needs Oren" },
+      { view: "Needs Director" },
       { view: "QA" },
       { view: "Network", label: "Dependencies" },
     ],
@@ -103,7 +103,7 @@ const viewLabels: Record<View, string> = {
   Production: "Production",
   Disciplines: "Discipline checks",
   QA: "QA",
-  "Needs Oren": "Needs Oren",
+  "Needs Director": "Needs Director",
   Workers: "Agent work",
   Network: "Dependencies",
   "Project Intelligence": "Project understanding",
@@ -112,6 +112,21 @@ const viewLabels: Record<View, string> = {
   Providers: "Providers",
   Activity: "Activity",
   Settings: "Settings",
+};
+const navigationIcons: Record<View, string> = {
+  "Director Desk": "⌂",
+  Production: "▦",
+  Disciplines: "✓",
+  QA: "✓",
+  "Needs Director": "!",
+  Workers: "◎",
+  Network: "⑂",
+  "Project Intelligence": "▤",
+  Agents: "✦",
+  Models: "⬡",
+  Providers: "◌",
+  Activity: "⌁",
+  Settings: "⚙",
 };
 type Connection = { websocketUrl: string };
 type HistoryEvent = EventPage["events"][number];
@@ -326,7 +341,10 @@ function Desk(connection: Connection) {
   const selectTask = (id: string) => setSelection({ type: "task", id });
   const events = history.data?.events ?? [];
   return (
-    <div className={`workspace ${selection ? "inspector-open" : ""}`}>
+    <div
+      className={`workspace ${selection ? "inspector-open" : ""}`}
+      data-view={view}
+    >
       <a className="skip-link" href="#studio-main">
         Skip to project content
       </a>
@@ -363,10 +381,26 @@ function Desk(connection: Connection) {
               {group.items.map((item) => (
                 <button
                   key={item.view}
+                  className="nav-item"
+                  data-view={item.view}
                   aria-current={view === item.view ? "page" : undefined}
                   onClick={() => setView(item.view)}
                 >
-                  {item.label ?? item.view}
+                  <span className="nav-icon" aria-hidden="true">
+                    {item.view === "Network" ? (
+                      <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M6 6l6 5 6-5M6 18l6-7 6 7" />
+                        <circle cx="6" cy="6" r="2" />
+                        <circle cx="6" cy="18" r="2" />
+                        <circle cx="18" cy="6" r="2" />
+                        <circle cx="18" cy="18" r="2" />
+                        <circle cx="12" cy="11" r="2" />
+                      </svg>
+                    ) : (
+                      navigationIcons[item.view]
+                    )}
+                  </span>
+                  <span>{item.label ?? item.view}</span>
                 </button>
               ))}
             </section>
@@ -383,13 +417,19 @@ function Desk(connection: Connection) {
       </aside>
       <div className="work-area">
         <header className="topbar">
-          <span>
+          <span className="topbar-breadcrumb">
             {snapshot?.project.project.name ?? "Game Agent Network"}{" "}
             <span className="separator">/</span> {viewLabels[view]}
           </span>
+          <span
+            className={`topbar-status ${streamState === "Live" ? "connected" : ""}`}
+          >
+            <span className="topbar-status-dot" aria-hidden="true" />
+            {streamState === "Live" ? "Live local workspace" : streamState}
+          </span>
         </header>
         <main className="desk" id="studio-main" tabIndex={-1}>
-          <div className="page-heading">
+          <div className="page-heading" data-view={view}>
             <div>
               <p className="eyebrow">PRODUCTION WORKSPACE</p>
               <h1>{viewLabels[view]}</h1>
@@ -437,7 +477,7 @@ function Desk(connection: Connection) {
           )}
           {snapshot && (
             <>
-              {view === "Needs Oren" && (
+              {view === "Needs Director" && (
                 <DecisionInbox
                   key={activeProjectId}
                   snapshot={snapshot}
@@ -855,7 +895,7 @@ function DirectorOverview({
             {pendingDecisions.length > 0 && (
               <button
                 className="text-button"
-                onClick={() => navigate("Needs Oren")}
+                onClick={() => navigate("Needs Director")}
               >
                 Review decisions →
               </button>
@@ -882,7 +922,7 @@ function DirectorOverview({
               )}
               {pendingDecisions.slice(0, 3).map((decision) => (
                 <li key={decision.decision_id}>
-                  <button onClick={() => navigate("Needs Oren")}>
+                  <button onClick={() => navigate("Needs Director")}>
                     <strong>{decision.title}</strong>
                     <span>{decision.reason}</span>
                   </button>
@@ -1287,7 +1327,7 @@ function DecisionCard({
 }
 
 const descriptions: Record<Exclude<View, "Director Desk">, string> = {
-  "Needs Oren": "Make the choices that only you can make.",
+  "Needs Director": "Make the choices that only you can make.",
   Workers: "See what specialist agents are doing and what they returned.",
   Production:
     "See who is working, what is blocked, and how current work connects.",
@@ -3645,6 +3685,11 @@ function QAPanel({
             "art",
             "audio",
             "narrative",
+            "production",
+            "compliance",
+            "data",
+            "support",
+            "security",
           ].map((item) => (
             <button
               key={item}

@@ -363,6 +363,18 @@ class KnowledgeRouter:
             if relevant and engine_matches:
                 selected.append(pack)
         selected = list({(pack.pack_id, pack.version): pack for pack in selected}.values())
+        covered_capabilities = {
+            capability_id for pack in selected for capability_id in pack.capability_ids
+        }
+        uncovered_capabilities = sorted(
+            (set(capability_ids) & set(agent.capabilities)) - covered_capabilities
+        )
+        if required and uncovered_capabilities:
+            missing.append(
+                "Required expertise is unavailable or unreviewed for capabilities: "
+                + ", ".join(uncovered_capabilities)
+                + "."
+            )
 
         query_text = " ".join([task_text, *capability_ids, project_engine or ""])
         query_terms = _tokens(query_text)

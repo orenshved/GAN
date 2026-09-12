@@ -1,0 +1,198 @@
+# New candidate pack (K11 of the K5-K15 expansion). state: draft - NOT
+# installed, NOT reviewed, NOT trusted for routing. Capability set: the
+# capabilities proposed for a new `game-economy-lead` agent in
+# docs/AI_WORK_SPLIT.md, drawn from the existing, previously-unowned
+# `economy_design` (`game_design`) and `economy_analysis`,
+# `balance_simulation` (`product_data`). Deliberately distinct from
+# `monetization-core`'s `monetization` capability (K9) and from
+# `game-design-core`'s general `balance_design` (combat/mechanics balance).
+# See docs/AI_WORK_SPLIT.md and .ai/handoffs/claude-to-codex.md.
+schema_version: 1
+pack_id: game-economy-core
+name: Game Economy Core
+version: 1.0.0
+description: >-
+  Sink/faucet flow-monitoring and transaction-anomaly-detection discipline
+  grounded in NetEase's own internal methodology for monitoring and
+  intervening in the live economies of NetEase's shipped MMORPGs (Yongcheng
+  Liu and Qinfang Ying, GDC 2020), and economic-integrity design discipline,
+  protecting a level playing field against disguised real-money trading,
+  unsafe exploit response, and customer-support restoration risk, grounded
+  in Path of Exile co-creator Chris Wilson's own account of running one of
+  the industry's most trade-driven online game economies.
+state: draft
+domain_ids: [economy, game_economy]
+capability_ids: [economy_design, economy_analysis, balance_simulation]
+sources:
+  - schema_version: 1
+    source_id: netease-inflation-monitoring-gdc2020
+    title: "How to Reduce In-Game Inflation by Monitoring Your Economic Systems"
+    author: Yongcheng Liu and Qinfang Ying
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=T55AXQEUybA
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2020-11-06T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a 22-minute talk); no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Yongcheng Liu and Qinfang Ying, presenting NetEase Games' own internal methodology for monitoring and intervening in the in-game economies of NetEase's own shipped MMORPGs, including the trade-driven MMORPG Justice Online, in a session in GDC's official 2020 Virtual Talk track; independently verified via GDC's own published talk listing and coverage in Game Developer (formerly Gamasutra)."
+    applicable_capability_ids: [economy_analysis, balance_simulation]
+  - schema_version: 1
+    source_id: wilson-protecting-economic-integrity-2026
+    title: "Protecting Your Online RPG's Economic Integrity"
+    author: Chris Wilson
+    publisher: Chris Wilson (independent YouTube channel)
+    uri: https://www.youtube.com/watch?v=ZEnAU9H41kA
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2026-01-03T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a 21-minute talk); no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Chris Wilson, co-founder of Grinding Gear Games and one of the original creators of Path of Exile, which he ran as Game Director until late 2023; independently verified via multiple industry outlets covering Path of Exile's development and Grinding Gear Games' leadership."
+    applicable_capability_ids: [economy_design]
+methods:
+  - schema_version: 1
+    method_id: sink-faucet-flow-monitoring-review
+    title: Sink and faucet flow monitoring review
+    purpose: Check that a currency's economic health is judged from issuance versus collection flow over time, not from a single point-in-time stock snapshot, so an inflation trend is caught while it is still forming.
+    applicable_capability_ids: [economy_analysis, balance_simulation]
+    steps:
+      - Check that each currency's daily issuance, its faucet output, is tracked against its daily collection, its sink intake, rather than net stock alone, since a persistent gap between the two compounds into a much larger stock swing before it becomes visible in prices.
+      - For a currency produced or collected through more than one channel, break the flow down by individual channel rather than by currency alone, since a stock anomaly that looks identical on an aggregate chart can have entirely different root causes depending on which specific channel actually moved.
+      - Check whether currencies with different acquisition paths, such as one obtained primarily by purchase and one obtained primarily by played time, are modeled and monitored separately rather than folded into one aggregate, since collapsing them together obscures which lever an intervention should actually pull.
+      - Confirm that supply monitoring includes currency held by inactive or lapsed players, not only actively circulating balances, since a successful win-back or marketing campaign can release a large stock of previously idle currency all at once and this shows up as a genuine inflation trigger.
+    evidence_requirements:
+      - Daily issuance versus collection for each currency, broken down by individual channel, not just an aggregate stock total.
+      - Whether the monitoring model accounts for currency balances held by inactive or lapsed accounts.
+    source_ids: [netease-inflation-monitoring-gdc2020]
+  - schema_version: 1
+    method_id: economic-integrity-and-fairness-policy-review
+    title: Economic integrity and fairness policy review
+    purpose: Check that a design or operational decision preserves a level playing field where progression and items are earned through in-game play, rather than through real money, fame, or an unrelated economy's holdings.
+    applicable_capability_ids: [economy_design]
+    steps:
+      - Check whether any mechanism lets a player convert real-world money, real-world fame or audience, or holdings from an unrelated economy or an earlier season into in-economy progression or items faster than normal play would allow, since pay-for-advantage purchases, streamer or community item gifting, and cross-season or cross-economy carryover are all functionally equivalent to real-money trading even when no cash literally changes hands.
+      - Check what policy governs restoring lost or stolen items and progression through customer support, since a restoration policy is a standing invitation for players to fabricate a hack or theft claim in order to duplicate their own items, and support staff can rarely verify what actually happened at the level of detail required to tell a real theft from a staged one.
+      - Check that the response to a discovered exploit is a full economy-wide fix or rollback rather than one scoped only to the accounts believed to be affected, since a partial response leaves open the chance that exploited items already reached other players through ordinary trading, and inconsistent treatment across accounts is itself perceived as unfair.
+      - Check whether any operational decision grants a bypass, a head start, or an exception to a specific player or group ahead of the normal earn path, however small or well-intentioned it seems, since even a short, unintentional head start is a genuine integrity breach rather than a negligible edge case.
+    evidence_requirements:
+      - A written statement of what does and does not count as pay-for-advantage in this economy, including edge cases such as early access and streamer or community gifting.
+      - The customer-support policy for restoring lost, stolen, or duplicated items and progression, and who is authorized to approve an exception to it.
+    source_ids: [wilson-protecting-economic-integrity-2026]
+  - schema_version: 1
+    method_id: economic-anomaly-and-manipulation-detection-review
+    title: Economic anomaly and manipulation detection review
+    purpose: Check that suspicious trading activity is identified from transaction network structure and price behavior, not from transaction size alone, so genuine high-volume players are not confused with manipulators.
+    applicable_capability_ids: [economy_analysis, balance_simulation]
+    steps:
+      - Track the exchange rate between currencies with different acquisition paths over time using price and volume data comparable to a trading chart, since a currency whose exchange rate is moving sharply, rather than staying roughly stable, signals a supply and demand imbalance well before it would show up in a top-line stock chart.
+      - When a large-volume trade on a specific item or currency is detected, classify its likely intent before responding, such as an offline currency-for-cash conversion, a legitimate large purchase, or an attempt to corner the market on a specific item, since a blanket large-volume-means-bad response would also catch legitimate high-spend players.
+      - Build a player-to-player transaction network, with players as nodes and trades as weighted edges, rather than relying on per-transaction alerts alone, since graph-level patterns such as an isolated, dense cluster of repeated back-and-forth transfers between one player and many others, disconnected from the wider trading population, are a documented exploit signature that individual transaction thresholds miss.
+      - Distinguish a genuine high-volume trader from a market manipulator or a bot-driven currency-selling operation by cross-referencing trade-network position and account behavior pattern, rather than by transaction size alone, since professional farming operations can otherwise look identical to a legitimate high-spend player in raw volume terms.
+    evidence_requirements:
+      - The exchange-rate trend for each currency pair over time, not just a single current rate.
+      - The player-to-player transaction network for any flagged high-volume account, not just its aggregate trade volume.
+    source_ids: [netease-inflation-monitoring-gdc2020]
+items:
+  - schema_version: 1
+    item_id: faucet-collection-flow-signals-inflation-before-stock-does
+    title: Issuance-versus-collection flow signals inflation before stock does
+    kind: professional_knowledge
+    statement: Monitoring a currency by its total stock alone hides the trend that is actually forming, tracking daily issuance against daily collection is the leading indicator, since a persistent gap between the two compounds into a much larger stock swing well before it becomes visible in item prices.
+    domain_ids: [economy, game_economy]
+    capability_ids: [economy_analysis, balance_simulation]
+    source_ids: [netease-inflation-monitoring-gdc2020]
+    method_ids: [sink-faucet-flow-monitoring-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: per-channel-flow-breakdown-required-for-correct-diagnosis
+    title: Per-channel flow breakdown is required for correct diagnosis
+    kind: professional_knowledge
+    statement: A stock-level anomaly that looks identical on an aggregate chart can have entirely different root causes depending on which specific issuance or collection channel actually moved, so diagnosing and fixing an imbalance requires breaking currency flow down by individual channel, not just by currency as a whole.
+    domain_ids: [economy, game_economy]
+    capability_ids: [economy_analysis]
+    source_ids: [netease-inflation-monitoring-gdc2020]
+    method_ids: [sink-faucet-flow-monitoring-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: currencies-with-different-acquisition-paths-need-separate-monitoring
+    title: Currencies with different acquisition paths need separate monitoring
+    kind: professional_knowledge
+    statement: Currencies obtained through different paths, such as one acquired primarily by purchase and one acquired primarily by played time, behave differently and respond to different levers, folding them into a single aggregate monitoring view obscures which lever an intervention should actually pull, so each should be modeled and monitored on its own.
+    domain_ids: [economy, game_economy]
+    capability_ids: [economy_analysis, balance_simulation]
+    source_ids: [netease-inflation-monitoring-gdc2020]
+    method_ids: [sink-faucet-flow-monitoring-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: sleeping-money-reactivation-is-a-hidden-inflation-trigger
+    title: Sleeping money reactivation is a hidden inflation trigger
+    kind: anti_pattern
+    statement: Currency held by inactive or lapsed players is often excluded from supply monitoring because it is not currently circulating, but a successful win-back or marketing campaign can release this stock all at once, so supply monitoring needs to include balances held by inactive accounts, not only currently active ones, or the trigger goes undetected until prices already move.
+    domain_ids: [economy, game_economy]
+    capability_ids: [economy_analysis]
+    source_ids: [netease-inflation-monitoring-gdc2020]
+    method_ids: [sink-faucet-flow-monitoring-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: disguised-real-money-trading-is-not-limited-to-cash
+    title: Disguised real-money trading is not limited to cash changing hands
+    kind: professional_knowledge
+    statement: A mechanism that lets a player convert real-world money, real-world fame, or holdings from an unrelated economy into in-economy progression faster than normal play would allow is functionally equivalent to real-money trading even when no cash changes hands, pay-for-advantage purchases, streamer or community item gifting, and cross-season or cross-economy item carryover all violate the same level-playing-field principle that real-money-trading policies exist to protect.
+    domain_ids: [economy, game_economy]
+    capability_ids: [economy_design]
+    source_ids: [wilson-protecting-economic-integrity-2026]
+    method_ids: [economic-integrity-and-fairness-policy-review]
+    freshness_class: stable
+    confidence: 0.9
+  - schema_version: 1
+    item_id: item-restoration-policy-is-an-exploit-surface
+    title: An item restoration policy is an exploit surface
+    kind: anti_pattern
+    statement: A policy that lets customer support restore lost or stolen items and progression creates a standing incentive for players to fabricate a hack or theft claim in order to duplicate their own items, since support staff can rarely verify what actually happened at the level of detail required, the reliably safe policy is no restorations under any circumstance, with account security treated as a shared responsibility instead.
+    domain_ids: [economy, game_economy]
+    capability_ids: [economy_design]
+    source_ids: [wilson-protecting-economic-integrity-2026]
+    method_ids: [economic-integrity-and-fairness-policy-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: exploit-response-must-be-economy-wide-not-partial
+    title: Exploit response must be economy-wide, not partial
+    kind: professional_knowledge
+    statement: Responding to a discovered exploit with a fix or rollback scoped only to the accounts believed to be affected risks leaving already-circulated exploited items in the wider economy through ordinary trading, and treating some accounts differently than others is itself perceived as unfair, the safer response is a full economy-wide rollback or fix, even though it costs uninvolved players some progress.
+    domain_ids: [economy, game_economy]
+    capability_ids: [economy_design]
+    source_ids: [wilson-protecting-economic-integrity-2026]
+    method_ids: [economic-integrity-and-fairness-policy-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: transaction-network-topology-reveals-exploits-thresholds-miss
+    title: Transaction network topology reveals exploits that thresholds miss
+    kind: professional_knowledge
+    statement: Building a player-to-player transaction network, with players as nodes and trades as weighted edges, surfaces exploit signatures that per-transaction volume thresholds miss entirely, a documented example is an isolated, dense cluster of repeated back-and-forth transfers between one player and many others, disconnected from the wider trading population, which individual large-trade alerts alone did not catch.
+    domain_ids: [economy, game_economy]
+    capability_ids: [economy_analysis, balance_simulation]
+    source_ids: [netease-inflation-monitoring-gdc2020]
+    method_ids: [economic-anomaly-and-manipulation-detection-review]
+    freshness_class: stable
+    confidence: 0.86
+  - schema_version: 1
+    item_id: trade-volume-alone-does-not-identify-manipulation
+    title: Trade volume alone does not identify manipulation
+    kind: anti_pattern
+    statement: Flagging every large-volume trade as suspicious would also catch legitimate high-spend players and professional item-farming operations acting within the rules, distinguishing a genuine high-volume trader from market manipulation or a bot-driven currency-selling operation requires cross-referencing trade-network position and account behavior pattern, not transaction size alone.
+    domain_ids: [economy, game_economy]
+    capability_ids: [economy_analysis, balance_simulation]
+    source_ids: [netease-inflation-monitoring-gdc2020]
+    method_ids: [economic-anomaly-and-manipulation-detection-review]
+    freshness_class: stable
+    confidence: 0.85
+evaluation_ids:
+  [economy-inflation-diagnosis-contract, disguised-rmt-recognition-contract]
+created_at: "2026-09-12T00:00:00Z"

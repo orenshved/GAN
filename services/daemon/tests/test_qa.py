@@ -47,6 +47,11 @@ def test_gate_catalog_covers_all_evidence_classes() -> None:
         "art",
         "audio",
         "narrative",
+        "production",
+        "compliance",
+        "data",
+        "support",
+        "security",
     }
     assert {
         evidence_class for gate in GATES for evidence_class in gate.required_evidence_classes

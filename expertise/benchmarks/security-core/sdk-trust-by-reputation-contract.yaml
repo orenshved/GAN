@@ -1,0 +1,33 @@
+schema_version: 1
+benchmark_id: sdk-trust-by-reputation-contract
+pack_id: security-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [vulnerability_management]
+scenario: >-
+  A synthetic integration proposal recommends adding a popular third-party
+  analytics SDK to a game's next build. The proposal states, "this SDK is
+  used by thousands of other shipped games, so it's clearly safe to
+  integrate directly without a separate review, we'd just be slowing
+  ourselves down for no reason." A reviewer is asked whether skipping a
+  separate vetting step is reasonable here.
+discriminates: >-
+  A generic reviewer may accept the proposal because widespread adoption
+  by thousands of other games sounds like strong evidence of safety. A
+  specialist recognizes that popularity is not a substitute for formal
+  vetting and checks for the specific missing steps, a bill-of-materials
+  entry, integrity validation, and provider-recommended configuration,
+  rather than treating reputation alone as sufficient.
+expected_specialist_findings:
+  - Wide adoption by other games is not evidence that this specific SDK, at this specific version, is safe to integrate, attackers have successfully compromised trusted vendors and injected malicious updates into widely used SDKs before, so popularity does not close off that risk.
+  - The proposal skips a formal vetting step entirely, no mention is made of adding the SDK and its version to a current software bill of materials, or of validating its integrity before integration.
+  - Even if this SDK is genuinely safe as distributed, the proposal says nothing about configuring it according to its own provider's security recommendations, a well-vetted SDK left at default configuration can still introduce real risk, particularly around what data it collects and where it sends it.
+  - Recommend treating this SDK the same as any other new third-party component, add it and its version to the bill of materials, validate its integrity, and confirm its configuration follows the provider's security recommendations, rather than skipping review on the basis of its popularity.
+expected_uncertainty:
+  - Whether this specific SDK has any known prior compromise history, not stated, would need to be checked directly as part of the vetting process being recommended.
+acceptable_source_ids: [owasp-game-security-framework-v0-5-1]
+scoring_notes: >-
+  Pass only if the enriched run rejects "widely used, so it's safe" as
+  sufficient justification and names at least the bill-of-materials and
+  configuration-review gaps specifically. Accepting the proposal because
+  of its popularity, or objecting only in vague terms without naming a
+  specific missing vetting step, is a fail.

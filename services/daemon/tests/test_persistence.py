@@ -100,6 +100,25 @@ def test_repository_benchmark_scenarios_are_complete_and_valid():
         pack = ExpertisePack.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
         manifests[(pack.pack_id, pack.version)] = pack
 
+    capability_ids = {
+        item["capability_id"]
+        for item in json.loads((ROOT / "capabilities/ontology/initial.json").read_text())
+    }
+    tool_ids = {
+        item["tool_id"] for item in json.loads((ROOT / "tools/builtin/registry.json").read_text())
+    }
+    candidate_paths = list(candidate_root.glob("*/*/pack.yaml"))
+    for path in candidate_paths:
+        pack = manifests[(path.parent.parent.name, path.parent.name)]
+        assert pack.pack_id == path.parent.parent.name
+        assert pack.version == path.parent.name
+        assert pack.state == "draft"
+        assert pack.reviewed_at is None
+        assert set(pack.capability_ids) <= capability_ids
+        assert set(pack.required_tool_ids) <= tool_ids
+        if pack.supersedes_version is not None:
+            assert (pack.pack_id, pack.supersedes_version) in manifests
+
     scenario_files = [
         (
             path,

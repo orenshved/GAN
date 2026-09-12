@@ -1,7 +1,7 @@
 schema_version: 1
 benchmark_id: godot-ui-method-contract
 pack_id: godot-ui-engineering
-applies_to_versions: ["1.0.0", "1.1.0", "1.1.1", "1.1.2"]
+applies_to_versions: ["1.0.0", "1.1.2"]
 capability_ids: [ui_engineering, godot_development]
 scenario: >-
   A synthetic Godot scene defines a pause menu as a Control with three Button

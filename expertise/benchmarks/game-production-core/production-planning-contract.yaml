@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: production-planning-contract
+pack_id: game-production-core
+applies_to_versions: ["1.0.0", "1.1.0", "1.1.1"]
+capability_ids: [production_planning, milestone_planning, scope_management]
+scenario: >-
+  A synthetic producer announces in a team channel: "Beta ships in 6 weeks."
+  There is no written backlog for the 6 weeks and no stated Definition of
+  Done. Halfway through the announcement, the producer adds: "Also, since
+  there's time, let's add a co-op mode." No one adjusts the 6-week date. A
+  reviewer is asked whether this is an adequate production plan.
+discriminates: >-
+  A generic reviewer may accept the 6-week date as a plan and treat "let's add
+  co-op" as a normal scope addition. A specialist flags the missing Definition
+  of Done as the real gap and treats the co-op addition as scope creep that
+  should go through backlog prioritization and a goal/date adjustment, not be
+  silently absorbed into the existing commitment.
+expected_specialist_findings:
+  - A date alone is a deadline, not a plan; there is no stated Definition of Done, so "Beta ships" could mean different things to different disciplines when the date arrives.
+  - Adding co-op mode mid-announcement, with no adjustment to the date or explicit backlog re-prioritization, is scope creep entering outside the normal refinement process.
+  - Recommend stating the Definition of Done for Beta first, then treating co-op as a backlog item to be prioritized against existing scope — either the date moves, other scope is cut, or co-op is deferred, but it should be a visible decision, not an aside.
+  - Neither the original 6-week commitment nor the co-op addition can be assessed as achievable without a backlog to weigh them against.
+expected_uncertainty:
+  - Whether the team has the capacity to absorb co-op mode without displacing other committed scope — not stated.
+acceptable_source_ids: [scrum-guide-2020]
+scoring_notes: >-
+  Pass only if the enriched run flags both the missing Definition of Done and
+  the co-op addition as undecided scope creep requiring an explicit
+  trade-off. Accepting "6 weeks" as sufficient, or accepting the co-op
+  addition without flagging the missing re-prioritization, is a fail.

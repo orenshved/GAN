@@ -1,0 +1,275 @@
+# New candidate pack (K14 of the K5-K15 expansion). state: draft - NOT
+# installed, NOT reviewed, NOT trusted for routing. Capability set: the
+# proposed new `security` capability family for a new `ciso` agent in
+# docs/AI_WORK_SPLIT.md (`security_review`, `data_protection`,
+# `vulnerability_management`, `incident_response`, `access_control_review`)
+# - none of these exist in capabilities/ontology/initial.json yet. This
+# family is PROPOSED to Codex, not created unilaterally, mirroring exactly
+# how K6's `legal` family capability ids were used in `legal-compliance-core`
+# before Codex decided on them. Every method/item here is risk-flagging
+# discipline only, never a security clearance or certification, the same
+# human-authority framing already established for `legal-compliance-core`
+# and `monetization-core`.
+# See docs/AI_WORK_SPLIT.md and .ai/handoffs/claude-to-codex.md.
+schema_version: 1
+pack_id: security-core
+name: Security Core
+version: 1.0.0
+description: >-
+  Security-risk identification for player-data handling, backend/network
+  exposure, and third-party SDK/dependency risk, grounded in the OWASP
+  Game Security Framework's own purpose-built verification standard for
+  video games, paired with Amazon GameLift's own official architecture
+  guidance for denial-of-service resilience (Hok Peng Leung, Head of
+  Software Development for Amazon GameLift), and a currently-serving
+  gaming CISO's own account of the live threat landscape (Temi Adebambo,
+  Chief Information Security Officer for Microsoft Gaming). Every finding
+  is a risk flag for further review, never a security clearance or
+  certification, the same human-authority discipline already established
+  for legal-compliance-core and monetization-core.
+state: draft
+domain_ids: [security, game_security]
+capability_ids:
+  [
+    security_review,
+    data_protection,
+    vulnerability_management,
+    incident_response,
+    access_control_review,
+  ]
+sources:
+  - schema_version: 1
+    source_id: owasp-game-security-framework-v0-5-1
+    title: "OWASP Game Security Framework (GSF) v0.5.1"
+    author: OWASP Foundation
+    publisher: OWASP Foundation
+    uri: https://owasp.org/www-project-gamesec-framework/OGSF
+    source_type: standard
+    retrieved_at: "2026-09-12T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    license: "OWASP Foundation project documentation is published under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) per OWASP's standard licensing model, confirmed via sibling OWASP projects (ASVS, MASVS, Top10) rather than a page-specific footer for this in-development sub-project, which carried no license notice of its own in the fetched content. No text reproduced regardless; every item below is original distilled wording. This is an in-development draft standard (v0.5.1), flagged here as version_sensitive since its requirements may still change before a stable release."
+    applicable_capability_ids:
+      [
+        security_review,
+        vulnerability_management,
+        data_protection,
+        access_control_review,
+        incident_response,
+      ]
+  - schema_version: 1
+    source_id: leung-gamelift-ddos-protection-aws-blog
+    title: "Protecting Multiplayer Game Servers from DDoS Attacks Using Amazon GameLift"
+    author: Hok Peng Leung
+    publisher: Amazon Web Services (AWS for Games Blog)
+    uri: https://aws.amazon.com/blogs/gametech/protect-multiplayer-game-servers-from-ddos-attacks-using-amazon-gamelift-2/
+    source_type: official_documentation
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2017-01-09T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    license: "No open content license found on the page (checked live); standard AWS terms apply by default. Cited for attribution and reference only, no text reproduced, every item below is original distilled wording. Author credential verified: Hok Peng Leung, Head of Software Development for Amazon GameLift at the time of writing, publishing officially on AWS's own for-games blog."
+    applicable_capability_ids:
+      [vulnerability_management, incident_response, access_control_review]
+  - schema_version: 1
+    source_id: adebambo-microsoft-gaming-ciso-ai-era-security-2025
+    title: "Microsoft Gaming CISO on AI-Era Security Threats"
+    author: Temi Adebambo (as told to The New Tab)
+    publisher: The New Tab
+    uri: https://www.thenewtab.com/news/ai-gaming-cybersecurity-threats-ciso-temi-adebambo-microsoft
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2025-11-23T00:00:00Z"
+    authority: industry_reference
+    freshness_class: slow_changing
+    license: "No open content license found on the page (checked live); standard copyright applies by default. Cited for attribution and reference only, no text reproduced, every item below is original distilled wording. Speaker credential verified: Temi Adebambo, Chief Information Security Officer for Microsoft Gaming, overseeing security for Microsoft's gaming portfolio including Xbox, Call of Duty, and World of Warcraft across 500 million-plus users, two decades of cybersecurity experience previously at Amazon Web Services and Deloitte; independently corroborated via other 2025-2026 coverage of the same role and interview circuit."
+    applicable_capability_ids:
+      [security_review, data_protection, access_control_review]
+methods:
+  - schema_version: 1
+    method_id: security-architecture-and-supply-chain-review
+    title: Security architecture and supply chain review
+    purpose: Check that a game's core architecture is built on an authoritative-server foundation with a game-specific threat model, and that third-party engines, libraries, and SDKs are formally vetted and correctly configured rather than trusted by reputation alone. Findings here are risk flags for further review, not a security clearance or certification.
+    applicable_capability_ids: [security_review, vulnerability_management]
+    steps:
+      - Check whether the game's core architecture treats the server as authoritative for game-critical state rather than trusting client-reported state, since most other game-specific security properties depend on this as a foundation, and check whether the threat model is tailored to the game's actual abuse cases, cheating, economy exploitation, and griefing, rather than a generic web-application threat model that misses these patterns.
+      - Check whether a new third-party engine, library, or SDK goes through a formal vetting process before integration, rather than being added on trust because the vendor is well known or the component is widely used elsewhere.
+      - Check whether the project maintains a current software bill of materials listing exactly which third-party components and versions are integrated, since an out-of-date inventory cannot be reliably checked against a newly disclosed vulnerability.
+      - Check whether each third-party SDK is actually configured according to its own provider's security recommendations, rather than left at default settings, since a well-vetted SDK can still introduce real risk if misconfigured, particularly around what data it collects and where it sends it.
+    evidence_requirements:
+      - Whether a documented threat model exists that names game-specific abuse cases, not only generic application security concerns.
+      - A current inventory of integrated third-party components and versions, and evidence each was vetted before integration.
+    source_ids: [owasp-game-security-framework-v0-5-1]
+  - schema_version: 1
+    method_id: player-data-and-access-control-review
+    title: Player data and access control review
+    purpose: Check that player data collection, storage, and administrative access are structured around minimization, masking, and enforced identity controls, and that account-takeover-style threats are treated as an active, ongoing risk rather than a login-screen afterthought. Findings here are risk flags for further review, not a security clearance or certification.
+    applicable_capability_ids: [data_protection, access_control_review]
+    steps:
+      - Check whether sensitive player data is encrypted at rest and collected under a data-minimization principle, only what is actually needed for a specific purpose, rather than gathered broadly on the assumption that more data might be useful later.
+      - Check whether administrative interfaces mask or otherwise protect personally identifiable information by default, requiring an explicit, logged authorization step to view it unmasked, rather than exposing it in full to any staff member who has interface access at all.
+      - Check whether authentication for player accounts includes protections against credential-based attacks specifically, multi-factor authentication, password strength checked against known-breach databases, and secure session token handling, since stolen or guessed credentials being used to take over an account or penetrate the broader environment is a documented, active threat pattern in live game services.
+      - Check whether regular players are structurally prevented from reaching administrative functionality, rather than merely not being shown a UI path to it, since an access boundary that depends only on hiding an option in the interface is not actually an access control.
+    evidence_requirements:
+      - What data-minimization and at-rest-encryption practices apply to sensitive player data.
+      - Whether administrative access to unmasked player data requires an explicit, logged authorization step.
+    source_ids:
+      [
+        owasp-game-security-framework-v0-5-1,
+        adebambo-microsoft-gaming-ciso-ai-era-security-2025,
+      ]
+  - schema_version: 1
+    method_id: network-attack-resilience-and-incident-monitoring-review
+    title: Network attack resilience and incident monitoring review
+    purpose: Check that a live multiplayer service is provisioned and instrumented to absorb and detect attacks in progress, rather than relying only on preventing them from ever starting. Findings here are risk flags for further review, not a security clearance or certification.
+    applicable_capability_ids:
+      [vulnerability_management, incident_response, access_control_review]
+    steps:
+      - Check whether a live multiplayer service's capacity plan includes deliberately provisioned spare capacity above normal peak load, sized using real stress-test scenarios rather than a guess, since it is this spare capacity, not detection and response alone, that actually absorbs the traffic volume of a denial-of-service attack in the critical first minutes.
+      - Check whether resource-creation actions available to an individual player, such as creating new game sessions, are rate-limited per player, since without a limit a single player, or a small number of compromised accounts acting together, can exhaust shared server resources meant for the entire player base.
+      - Check whether a player's connection is validated against a legitimately issued session token before it is accepted, rather than accepted on the basis of the request alone, since without this validation an attacker can hijack another player's already-reserved server slot.
+      - Check whether security-relevant events, such as failed authentication attempts, account takeovers, and unusual economic activity, are logged to a secure, centrally aggregated location with defined alerting, using tamper-evident or immutable storage for anything that might later be needed for an investigation, rather than being left in local, uncorrelated logs.
+    evidence_requirements:
+      - The stress-test basis, if any, for the service's provisioned spare capacity above normal peak load.
+      - Whether security-relevant events are aggregated to a central, monitored location with defined alerting, or only logged locally.
+    source_ids:
+      [
+        leung-gamelift-ddos-protection-aws-blog,
+        owasp-game-security-framework-v0-5-1,
+      ]
+items:
+  - schema_version: 1
+    item_id: authoritative-server-model-is-the-architectural-foundation
+    title: An authoritative server model is the architectural foundation for game security
+    kind: professional_knowledge
+    statement: Treating the server as authoritative for game-critical state, rather than trusting what a client reports, is the architectural foundation that most other game-specific security properties depend on, and a security review needs a threat model tailored to the game's actual abuse cases, cheating, economy exploitation, and griefing, not a generic web-application threat model that misses these patterns entirely.
+    domain_ids: [security, game_security]
+    capability_ids: [security_review]
+    source_ids: [owasp-game-security-framework-v0-5-1]
+    method_ids: [security-architecture-and-supply-chain-review]
+    freshness_class: version_sensitive
+    confidence: 0.86
+  - schema_version: 1
+    item_id: third-party-components-need-formal-vetting-not-trust-by-reputation
+    title: Third-party components need formal vetting, not trust by reputation
+    kind: anti_pattern
+    statement: A new third-party engine, library, or SDK should go through a formal vetting process before integration regardless of how well-known the vendor is or how widely the component is used elsewhere, since attackers have successfully compromised trusted vendors and injected malicious updates into widely used SDKs, and trusting a component purely by reputation leaves that exact path open.
+    domain_ids: [security, game_security]
+    capability_ids: [vulnerability_management]
+    source_ids: [owasp-game-security-framework-v0-5-1]
+    method_ids: [security-architecture-and-supply-chain-review]
+    freshness_class: version_sensitive
+    confidence: 0.85
+  - schema_version: 1
+    item_id: a-current-software-bill-of-materials-is-required-to-act-on-a-disclosed-vulnerability
+    title: A current software bill of materials is required to act on a disclosed vulnerability
+    kind: professional_knowledge
+    statement: Without a current, accurate inventory of exactly which third-party components and versions are integrated into a game, a newly disclosed vulnerability in a popular library cannot be reliably checked against what is actually shipped, a software bill of materials that is out of date is functionally the same as having none when a real disclosure requires an immediate answer.
+    domain_ids: [security, game_security]
+    capability_ids: [vulnerability_management]
+    source_ids: [owasp-game-security-framework-v0-5-1]
+    method_ids: [security-architecture-and-supply-chain-review]
+    freshness_class: version_sensitive
+    confidence: 0.84
+  - schema_version: 1
+    item_id: sdk-configuration-not-just-selection-determines-real-risk
+    title: SDK configuration, not just selection, determines real risk
+    kind: anti_pattern
+    statement: A thoroughly vetted third-party SDK can still introduce real risk if it is left at default configuration rather than configured according to the provider's own security recommendations, particularly around what data it collects and where that data is sent, vetting which SDK to integrate and configuring it securely are two separate steps and both are required.
+    domain_ids: [security, game_security]
+    capability_ids: [vulnerability_management]
+    source_ids: [owasp-game-security-framework-v0-5-1]
+    method_ids: [security-architecture-and-supply-chain-review]
+    freshness_class: version_sensitive
+    confidence: 0.83
+  - schema_version: 1
+    item_id: player-data-should-be-minimized-and-encrypted-at-rest
+    title: Player data should be minimized and encrypted at rest, not collected broadly
+    kind: professional_knowledge
+    statement: Sensitive player data should be collected under a data-minimization principle, only what is actually needed for a specific purpose, and encrypted at rest, rather than gathered broadly on the assumption that more data might be useful later, broader collection only broadens what is exposed if a system is ever compromised.
+    domain_ids: [security, game_security]
+    capability_ids: [data_protection]
+    source_ids: [owasp-game-security-framework-v0-5-1]
+    method_ids: [player-data-and-access-control-review]
+    freshness_class: version_sensitive
+    confidence: 0.85
+  - schema_version: 1
+    item_id: administrative-interfaces-should-mask-pii-by-default
+    title: Administrative interfaces should mask PII by default
+    kind: professional_knowledge
+    statement: Administrative interfaces should mask or otherwise protect personally identifiable information by default, requiring an explicit, logged authorization step to view it unmasked, rather than exposing it in full to any staff member who has interface access at all, this limits how much real player data is actually exposed if a single staff account is compromised or misused.
+    domain_ids: [security, game_security]
+    capability_ids: [data_protection, access_control_review]
+    source_ids: [owasp-game-security-framework-v0-5-1]
+    method_ids: [player-data-and-access-control-review]
+    freshness_class: version_sensitive
+    confidence: 0.85
+  - schema_version: 1
+    item_id: credential-based-account-attacks-require-dedicated-protections
+    title: Credential-based account attacks require dedicated protections, not generic login security
+    kind: professional_knowledge
+    statement: Stolen or guessed player credentials being used to take over accounts or penetrate the broader environment is a documented, active threat pattern in live game services, protecting against it specifically requires multi-factor authentication, password strength checked against known-breach databases, and secure session token handling, not just the presence of a login screen.
+    domain_ids: [security, game_security]
+    capability_ids: [access_control_review]
+    source_ids: [adebambo-microsoft-gaming-ciso-ai-era-security-2025]
+    method_ids: [player-data-and-access-control-review]
+    freshness_class: slow_changing
+    confidence: 0.85
+  - schema_version: 1
+    item_id: hiding-an-option-in-the-ui-is-not-an-access-control
+    title: Hiding an option in the UI is not an access control
+    kind: anti_pattern
+    statement: Preventing regular players from reaching administrative functionality by simply not showing them a UI path to it is not a real access control, since it depends entirely on the player never finding or guessing the underlying request, a genuine access boundary has to be enforced structurally, independent of what the interface happens to display.
+    domain_ids: [security, game_security]
+    capability_ids: [access_control_review]
+    source_ids: [owasp-game-security-framework-v0-5-1]
+    method_ids: [player-data-and-access-control-review]
+    freshness_class: version_sensitive
+    confidence: 0.86
+  - schema_version: 1
+    item_id: spare-capacity-from-real-stress-tests-is-what-absorbs-an-attack
+    title: Spare capacity sized from real stress tests is what absorbs an attack
+    kind: professional_knowledge
+    statement: A live multiplayer service's capacity plan should include deliberately provisioned spare capacity above normal peak load, sized using real stress-test scenarios rather than a guess, since it is this spare capacity, not detection and response alone, that actually absorbs the traffic volume of a denial-of-service attack in the critical first minutes.
+    domain_ids: [security, game_security]
+    capability_ids: [vulnerability_management, incident_response]
+    source_ids: [leung-gamelift-ddos-protection-aws-blog]
+    method_ids: [network-attack-resilience-and-incident-monitoring-review]
+    freshness_class: version_sensitive
+    confidence: 0.84
+  - schema_version: 1
+    item_id: per-player-resource-limits-prevent-a-single-account-from-exhausting-capacity
+    title: Per-player resource limits prevent a single account from exhausting shared capacity
+    kind: professional_knowledge
+    statement: Resource-creation actions available to an individual player, such as creating new game sessions, should be rate-limited per player, without such a limit a single player, or a small number of compromised accounts acting together, can exhaust shared server resources meant for the entire player base.
+    domain_ids: [security, game_security]
+    capability_ids: [vulnerability_management, access_control_review]
+    source_ids: [leung-gamelift-ddos-protection-aws-blog]
+    method_ids: [network-attack-resilience-and-incident-monitoring-review]
+    freshness_class: version_sensitive
+    confidence: 0.84
+  - schema_version: 1
+    item_id: session-token-validation-prevents-connection-slot-hijacking
+    title: Session token validation prevents connection-slot hijacking
+    kind: anti_pattern
+    statement: A player's connection should be validated against a legitimately issued session token before it is accepted, rather than accepted on the basis of the request alone, without this validation step an attacker can hijack another player's already-reserved server slot.
+    domain_ids: [security, game_security]
+    capability_ids: [access_control_review, vulnerability_management]
+    source_ids: [leung-gamelift-ddos-protection-aws-blog]
+    method_ids: [network-attack-resilience-and-incident-monitoring-review]
+    freshness_class: version_sensitive
+    confidence: 0.83
+  - schema_version: 1
+    item_id: security-events-need-centralized-tamper-evident-logging
+    title: Security events need centralized, tamper-evident logging, not local-only logs
+    kind: professional_knowledge
+    statement: Security-relevant events, such as failed authentication attempts, account takeovers, and unusual economic activity, need to be logged to a secure, centrally aggregated location with defined alerting rather than left in local, uncorrelated logs, and anything that might later be needed for an investigation should use tamper-evident or immutable storage so its integrity cannot later be questioned.
+    domain_ids: [security, game_security]
+    capability_ids: [incident_response]
+    source_ids: [owasp-game-security-framework-v0-5-1]
+    method_ids: [network-attack-resilience-and-incident-monitoring-review]
+    freshness_class: version_sensitive
+    confidence: 0.85
+evaluation_ids:
+  [sdk-trust-by-reputation-contract, ui-hidden-admin-access-contract]
+created_at: "2026-09-12T00:00:00Z"

@@ -38,7 +38,7 @@ def test_workspace_dependencies_do_not_inherit_greenlight_infrastructure():
 
 def test_studio_does_not_import_fixtures_or_own_production_state():
     for file in (ROOT / "apps/studio/app").glob("*.tsx"):
-        text = file.read_text()
+        text = file.read_text(encoding="utf-8")
         assert "fixtures" not in text
         assert "localStorage" not in text
         assert "adapters/" not in text

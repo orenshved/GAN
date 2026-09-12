@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: asset-pipeline-contract
+pack_id: game-art-direction
+applies_to_versions: ["1.0.0", "1.1.0", "1.1.1"]
+capability_ids: [asset_tracking, art_direction]
+scenario: >-
+  A synthetic weekly production status report states "environment art is on
+  track." A hero prop asset for the same environment has been sitting in the
+  "blockout" pipeline stage for three weeks; blockout is expected to take
+  about two days for a prop of this type. No owner is listed for the asset
+  and there is no note explaining the delay. A reviewer is asked whether the
+  "on track" claim can stand.
+discriminates: >-
+  A generic reviewer may accept "on track" because it comes from an aggregate
+  status report. A specialist checks individual asset pipeline stages against
+  their expected durations and flags the stalled hero prop as an unaddressed
+  risk, regardless of what the aggregate summary says.
+expected_specialist_findings:
+  - The hero prop has been in blockout roughly ten times longer than expected for that stage, which is a concrete, checkable signal independent of the aggregate "on track" claim.
+  - No owner is listed for the stalled asset, so there is no one accountable for resolving or explaining the delay.
+  - The claim "environment art is on track" is not supported by this specific asset's status; it should be corrected to name the stalled prop as an exception, not folded into a blanket "on track."
+  - Recommend assigning an owner and getting a specific reason for the delay (blocked on a dependency, deprioritized, or simply behind) before the next status report repeats the claim.
+expected_uncertainty:
+  - Whether the delay is due to a blocking dependency (e.g. waiting on a reference from design) or simply falling behind — not stated.
+acceptable_source_ids: [scrum-guide-2020]
+scoring_notes: >-
+  Pass only if the enriched run rejects "on track" specifically because of
+  the stalled, unowned hero prop and calls for an owner plus a stated reason.
+  Accepting the aggregate claim, or noting the delay without tying it to the
+  missing owner/reason, is a fail.

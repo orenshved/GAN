@@ -1,0 +1,33 @@
+schema_version: 1
+benchmark_id: balance-population-targeting-contract
+pack_id: game-design-core
+applies_to_versions: ["1.1.0"]
+capability_ids: [balance_design, systems_design]
+scenario: >-
+  A synthetic patch note nerfs a character because its aggregate win rate
+  across all players is 54%. The character is unusually difficult to master,
+  and most players need dozens of games before it becomes effective. Data not
+  mentioned in the patch note shows its win rate at the lowest skill tier is
+  well below 50%, its win rate at the highest competitive tier is very high,
+  and very few players at that highest tier have logged enough games with the
+  character for the sample to be large. A reviewer is asked whether the
+  aggregate win-rate figure justifies the nerf as described.
+discriminates: >-
+  A generic reviewer may accept the aggregate win rate as sufficient
+  justification for a flat nerf applied to every player. A specialist
+  segments the same data by skill tier and by experience with the character,
+  and checks sample size before treating any single figure as a real signal.
+expected_specialist_findings:
+  - The aggregate win rate averages across skill tiers that experience this character very differently; a flat nerf would make the character even worse for exactly the low-tier players it is already underperforming for.
+  - The high win rate at the top tier is measured on a small population who have logged enough games with a hard-to-master character; without segmenting and reporting that sample size, the figure cannot be trusted as a genuine dominance signal.
+  - Because the character takes unusually long to master, most of the aggregate win-rate signal is contributed by unusually experienced players, so the aggregate figure substantially overstates the character's strength for a typical player.
+  - Recommend segmenting by skill tier and by games played on this specific character before treating any win-rate figure as evidence, and if a change is still warranted, stating explicitly which population it targets rather than applying one change uniformly.
+expected_uncertainty:
+  - Whether the sample size at the highest tier is actually large enough to treat that win rate as reliable — not stated.
+acceptable_source_ids: [street-lol-balance-gdc2017]
+scoring_notes: >-
+  Pass only if the enriched run specifically calls for segmenting the data by
+  skill tier and checking sample size before accepting the aggregate figure,
+  and flags the collateral harm a flat nerf would do to low-tier players.
+  Accepting the aggregate win rate as sufficient on its own, or recommending
+  the nerf without naming the population-targeting problem, is a fail.

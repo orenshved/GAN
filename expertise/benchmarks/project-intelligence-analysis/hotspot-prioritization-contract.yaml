@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: hotspot-prioritization-contract
+pack_id: project-intelligence-analysis
+applies_to_versions: ["1.0.0"]
+capability_ids: [project_analysis, dependency_analysis]
+scenario: >-
+  A synthetic new team member is asked to spend a week auditing an unfamiliar
+  codebase. They pick the single most structurally complex file in the
+  project by a static-analysis complexity score, which handles a rarely-used
+  legacy export format and has not been touched in two years, and produce a
+  thorough writeup of it. Meanwhile a much simpler file that implements core
+  game state and has been modified in nearly every recent commit gets no
+  attention. A lead reviewing the week's work says: "Great, you tackled the
+  hardest file first." A reviewer is asked whether this was the right use of
+  the week.
+discriminates: >-
+  A generic reviewer may accept "hardest file first" as sound prioritization.
+  A specialist checks change frequency alongside complexity and recognizes
+  that the untouched-for-two-years file is not the actual priority.
+expected_specialist_findings:
+  - Complexity alone does not establish priority; a file that has not changed in two years is not currently costing the team ongoing effort, regardless of how hard it is to read.
+  - The core game-state file, despite being simpler, is being modified constantly, which is exactly the combination — meaningful complexity together with frequent change — that should have driven the week's focus.
+  - Praising the choice to tackle the hardest file first rewards effort directed at a low-priority target; the audit should be re-scoped toward files that are both complex and frequently changed.
+  - Recommend redirecting investigation toward the core game-state file and treating the legacy export file as low priority unless it starts changing again.
+expected_uncertainty:
+  - Whether the legacy export file poses a latent risk that simply hasn't materialized yet, such as being scheduled for future work — not stated.
+acceptable_source_ids: [understandlegacycode-hotspots]
+scoring_notes: >-
+  Pass only if the enriched run identifies that complexity alone
+  misdirected the week's effort and specifically names change frequency as
+  the missing factor. Praising the choice to focus on the "hardest" file is
+  a fail.

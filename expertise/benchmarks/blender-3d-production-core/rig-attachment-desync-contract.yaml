@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: rig-attachment-desync-contract
+pack_id: blender-3d-production-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [rigging]
+scenario: >-
+  A synthetic bug report for a shipped multiplayer shooter says a
+  first-person reload animation "looks correct in the animation tool but
+  glitches during actual gameplay, with the magazine briefly snapping to a
+  strange position between frames." The attached ticket recommends the fix
+  is to add more keyframes to smooth out the animation curve. A reviewer is
+  asked whether this is the right fix.
+discriminates: >-
+  A generic reviewer may accept curve-smoothing since more keyframes sounds
+  like a reasonable fix for a "glitch." A specialist recognizes the
+  described symptom, correct in the animation tool but only snapping
+  during in-engine playback, as a known rig-hierarchy signature and checks
+  where the weapon bone is attached before touching the animation curve.
+expected_specialist_findings:
+  - The described symptom, correct in the animation tool but visibly snapping between frames specifically during in-engine playback, is a known signature of a weapon attachment bone parented too deep in the rig hierarchy, not a curve quality problem.
+  - Before adding keyframes, the rig should be checked for where the weapon or prop attachment bone actually sits, an attachment bone parented under the hand chain will interpolate back toward the hand's position between keyframes at runtime, producing exactly this kind of snap.
+  - The documented fix is architectural, a dedicated weapon-attachment bone parented under the rig's root rather than under the hand, not a curve-smoothing pass on the existing animation.
+  - Adding more keyframes to the existing animation would not address the actual cause and could mask the symptom in some cases while leaving the underlying rig architecture problem in place for the next animation that touches this weapon.
+expected_uncertainty:
+  - Whether this specific rig actually has the attachment bone in the problematic position, not confirmed by the ticket alone, would need to be checked directly in the rig hierarchy.
+acceptable_source_ids: [boehm-overwatch-first-person-animation-gdc2017]
+scoring_notes: >-
+  Pass only if the enriched run identifies the rig-hierarchy attachment
+  point as the cause specifically and rejects curve-smoothing as the fix.
+  Accepting the curve-smoothing recommendation, or vaguely suggesting
+  "check the rig" without naming the attachment-bone-placement mechanism,
+  is a fail.

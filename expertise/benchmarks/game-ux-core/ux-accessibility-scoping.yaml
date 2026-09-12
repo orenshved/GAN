@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: ux-accessibility-scoping
+pack_id: game-ux-core
+applies_to_versions: ["1.1.0"]
+capability_ids: [accessibility_ux, controller_navigation, onboarding_ux]
+scenario: >-
+  A synthetic top-down shooter's release notes claim "full accessibility
+  support": the options menu has a remap-controls screen and a subtitle
+  toggle. The game's core telegraph mechanic is a boss that flashes red before
+  an unavoidable attack and blue before a dodgeable one; there is no shape,
+  icon, or sound difference between the two warnings, only color. A reviewer
+  is asked to confirm the "full accessibility support" claim.
+discriminates: >-
+  A generic reviewer may accept "full accessibility support" because a remap
+  screen and subtitles exist. A specialist runs a mechanic-scoped accessibility
+  review: checks which guideline areas the game's actual mechanics require,
+  and finds the color-only boss telegraph is an unaddressed guideline area
+  that remap and subtitles do not cover.
+expected_specialist_findings:
+  - Remap controls and subtitles address two guideline areas (input remapping, captions) but do not establish "full accessibility support" as a blanket claim.
+  - The boss telegraph mechanic relies entirely on a red/blue color distinction with no shape, icon, or audio cue, which is exactly the kind of mechanic the colorblind-safe-signaling guideline area targets.
+  - Remapping and subtitles being present is not evidence that colorblind-safe signaling was ever evaluated for this mechanic; it is a separate, untested guideline area.
+  - The claim should be narrowed to the guideline areas actually evidenced, with the telegraph issue flagged as a concrete, mechanic-specific gap rather than left implicit inside a "full support" claim.
+expected_uncertainty:
+  - Whether other mechanics besides the boss telegraph also rely on color alone — not stated; would need a full mechanic inventory.
+acceptable_source_ids: [xbox-accessibility-guidelines, wcag-2-2]
+scoring_notes: >-
+  Pass only if the enriched run rejects the blanket "full accessibility
+  support" claim and specifically names the color-only boss telegraph as an
+  unaddressed guideline area. Accepting the claim because remap and subtitles
+  exist, or giving only a generic "add colorblind mode" note without tying it
+  to the specific telegraph mechanic, is a fail.

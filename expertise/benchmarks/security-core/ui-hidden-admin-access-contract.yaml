@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: ui-hidden-admin-access-contract
+pack_id: security-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [access_control_review]
+scenario: >-
+  A synthetic design document for a live game's in-client admin tools
+  states, "regular players can't reach any administrative commands
+  because the menu option is only rendered for accounts flagged as staff,
+  a normal player's client never even shows the option, so this is
+  already access-controlled." A reviewer is asked whether this
+  description is accurate.
+discriminates: >-
+  A generic reviewer may accept the description because regular players
+  genuinely cannot see or click the option in question. A specialist
+  checks whether the underlying command itself is actually restricted on
+  the server, rather than only hidden from the client's rendered menu.
+expected_specialist_findings:
+  - Not rendering the menu option for non-staff accounts is a UI convenience, not an access control, the underlying request or command it triggers is what actually needs to be restricted, and nothing in the description confirms that it is.
+  - A genuine access boundary has to be enforced independent of what the client interface displays, since a client can be modified or the underlying request replicated directly, hiding a button does not stop a request built and sent outside the normal menu flow.
+  - The proposal's own reasoning, "the menu option is only rendered for staff," is exactly the failure pattern this represents, depending on the player never finding or guessing the underlying request rather than the server actually refusing to execute it for unauthorized accounts.
+  - Recommend confirming that the server independently verifies staff authorization before executing any administrative command, regardless of how the request was constructed or sent, and treating the current menu-hiding behavior as a UI nicety layered on top of that, not as the access control itself.
+expected_uncertainty:
+  - Whether the server actually does perform independent authorization on these commands, not stated in the design document, would need direct confirmation before this can be closed out either way.
+acceptable_source_ids: [owasp-game-security-framework-v0-5-1]
+scoring_notes: >-
+  Pass only if the enriched run specifically identifies that UI-only
+  hiding is not a real access control and requires server-side
+  authorization enforcement independent of the client. Accepting the
+  design document's own framing at face value, or objecting only in vague
+  security terms without naming the client-vs-server enforcement gap, is
+  a fail.

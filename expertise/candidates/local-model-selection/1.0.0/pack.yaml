@@ -1,0 +1,134 @@
+# New candidate pack (K3 — first pack of the engine/art/accessibility/model
+# slice; smallest reviewable batch this pass, per docs/AI_WORK_SPLIT.md).
+# state: draft — NOT installed, NOT reviewed, NOT trusted for routing.
+# Capability set copied exactly from the existing `local-model-expert` agent
+# in agents/builtin/roster.json. This pack is deliberately professional
+# judgment layered on top of the deterministic scorer already in
+# services/daemon/gameagent/local_models.py (LocalModelExpert.recommend), not
+# a restatement of it — the runtime computes suitability_score and
+# memory_tier; this pack explains when to weigh those results against
+# task-specific tradeoffs the deterministic score cannot see (precision
+# sensitivity, concurrency headroom, architecture-specific quantization risk).
+# See docs/K2_BASELINE_PACKS.md-style rationale in the K3 handoff note and
+# .ai/handoffs/claude-to-codex.md.
+#
+# Licensing note: sources are two files from the ollama/ollama GitHub
+# repository (docs/faq.mdx, docs/gpu.mdx), covered by that repository's MIT
+# LICENSE, which explicitly extends to "this software and associated
+# documentation files" (verified by fetching the LICENSE file directly,
+# 2026-09-11) — cited in preference to the docs.ollama.com rendered site,
+# which carries no stated content license of its own.
+schema_version: 1
+pack_id: local-model-selection
+name: Local Model Selection
+version: 1.0.0
+description: >-
+  Task-fit and quantization-tradeoff judgment for selecting a local Ollama
+  model, layered on top of GAN's deterministic hardware/model scorer rather
+  than duplicating it.
+state: draft
+domain_ids: [engineering, tooling]
+capability_ids: [local_model_selection, resource_analysis]
+sources:
+  - schema_version: 1
+    source_id: ollama-faq-docs
+    title: Ollama FAQ
+    author: Ollama
+    publisher: Ollama
+    uri: https://github.com/ollama/ollama/blob/main/docs/faq.mdx
+    source_type: official_documentation
+    retrieved_at: "2026-09-11T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-03-11T00:00:00Z"
+    license: MIT License (ollama/ollama repository; github.com/ollama/ollama/blob/main/LICENSE)
+    applicable_capability_ids: [local_model_selection, resource_analysis]
+  - schema_version: 1
+    source_id: ollama-gpu-docs
+    title: Ollama GPU documentation
+    author: Ollama
+    publisher: Ollama
+    uri: https://github.com/ollama/ollama/blob/main/docs/gpu.mdx
+    source_type: official_documentation
+    retrieved_at: "2026-09-11T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-03-11T00:00:00Z"
+    license: MIT License (ollama/ollama repository; github.com/ollama/ollama/blob/main/LICENSE)
+    applicable_capability_ids: [local_model_selection, resource_analysis]
+methods:
+  - schema_version: 1
+    method_id: model-fit-review
+    title: Model fit review
+    purpose: Judge whether a candidate local model genuinely fits a task's requirements — capability, context length, and available memory headroom — rather than assuming the largest or most recently installed model is the right choice.
+    applicable_capability_ids: [local_model_selection, resource_analysis]
+    steps:
+      - Identify the task's real requirements — whether it needs tool-calling, a minimum context length, or a specific modality.
+      - Check the candidate's parameter size, quantization level, and context limit against actual available VRAM/RAM headroom, not just whether it loads successfully.
+      - Prefer a smaller model that meets the task's actual requirements over a larger one that merely fits in memory, when both are viable candidates.
+      - Flag when a candidate is only viable at a memory tier that leaves no headroom for concurrent requests or context growth.
+    evidence_requirements:
+      - The task's specific capability and context requirements.
+      - The candidate's parameter size, quantization level, and context limit compared against available hardware.
+    source_ids: [ollama-faq-docs]
+  - schema_version: 1
+    method_id: quantization-tradeoff-review
+    title: Quantization tradeoff review
+    purpose: Weigh a quantization level's memory savings against its precision cost for the specific task, instead of always defaulting to the smallest quantization that technically fits.
+    applicable_capability_ids: [local_model_selection, resource_analysis]
+    steps:
+      - Identify whether the task is precision-sensitive (code correctness, numeric or evaluation work) or tolerant of minor degradation (casual chat, brainstorming).
+      - Note that quantizing to a lower bit-width trades memory for precision, and that models with a high grouped-query-attention count can see a larger precision impact from quantization than models with a low count.
+      - For a precision-sensitive task, prefer a higher-precision quantization over a lower one even at extra memory cost, when the hardware allows it.
+      - Treat KV-cache quantization as a separate, independently tunable memory lever from model-weight quantization.
+    evidence_requirements:
+      - Whether the task is precision-sensitive, stated explicitly.
+      - The specific quantization level under consideration and the available memory margin.
+    source_ids: [ollama-faq-docs, ollama-gpu-docs]
+items:
+  - schema_version: 1
+    item_id: model-larger-is-not-automatically-better
+    title: A larger installed model is not automatically the better choice
+    kind: professional_knowledge
+    statement: When multiple installed models meet a task's capability and context requirements, the smaller one that fits comfortably in available memory is usually preferable to a larger one that only barely fits, because it leaves headroom for context growth and concurrent requests.
+    domain_ids: [engineering, tooling]
+    capability_ids: [local_model_selection, resource_analysis]
+    source_ids: [ollama-faq-docs]
+    method_ids: [model-fit-review]
+    freshness_class: version_sensitive
+    confidence: 0.88
+  - schema_version: 1
+    item_id: model-context-scales-with-concurrency
+    title: Context length scales memory with concurrency
+    kind: standard
+    statement: Parallel request handling multiplies effective context size by the number of concurrent requests, so a model sized correctly for one request can exceed available memory once concurrency is enabled; capacity planning must account for the concurrency setting, not only the base context length.
+    domain_ids: [engineering]
+    capability_ids: [resource_analysis, local_model_selection]
+    source_ids: [ollama-faq-docs]
+    method_ids: [model-fit-review]
+    freshness_class: version_sensitive
+    confidence: 0.93
+  - schema_version: 1
+    item_id: model-fits-memory-not-same-as-fits-task
+    title: Fitting in memory is not the same as fitting the task
+    kind: anti_pattern
+    statement: A model that loads successfully has only cleared a memory constraint, not a capability constraint; tool-calling support, context length, and modality must be checked separately from whether the model merely fits in available VRAM or RAM.
+    domain_ids: [engineering]
+    capability_ids: [local_model_selection]
+    source_ids: [ollama-faq-docs]
+    method_ids: [model-fit-review]
+    freshness_class: version_sensitive
+    confidence: 0.9
+  - schema_version: 1
+    item_id: model-quantization-precision-loss-varies
+    title: Quantization precision loss is task- and architecture-dependent
+    kind: professional_knowledge
+    statement: The precision cost of a given quantization level is not uniform — it is more noticeable at higher context sizes and larger for models with a high grouped-query-attention count than for models with a low one — so a quantization level that is safe for one model or task can be risky for another.
+    domain_ids: [engineering]
+    capability_ids: [local_model_selection, resource_analysis]
+    source_ids: [ollama-gpu-docs, ollama-faq-docs]
+    method_ids: [quantization-tradeoff-review]
+    freshness_class: version_sensitive
+    confidence: 0.87
+evaluation_ids: [model-selection-contract, quantization-tradeoff-contract]
+created_at: "2026-09-11T00:00:00Z"

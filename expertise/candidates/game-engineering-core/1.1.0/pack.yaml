@@ -1,0 +1,191 @@
+# Candidate successor to game-engineering-core 1.0.0.
+# state: draft — NOT installed, NOT reviewed, NOT trusted for routing.
+# Adds one external authoritative source (Robert Nystrom's "Game Programming
+# Patterns") to fix the audit's core finding: 1.0.0 had zero external
+# engineering authority and an unsupported `gameplay_engineering` capability.
+# See docs/EXPERTISE_PACK_AUDIT.md and .ai/handoffs/claude-to-codex.md.
+#
+# Licensing note on the new source: the book's prose (its .markdown/.html
+# files, per the repository LICENSE at
+# github.com/munificent/game-programming-patterns) is
+# CC BY-NC-ND 4.0 — NonCommercial, NoDerivatives. Its named patterns (Game
+# Loop, Component, State, Observer, Service Locator, Object Pool, Command,
+# etc.) are decades-old general computer-science patterns (Gang of Four and
+# earlier), not unique to this book; every item below describes those
+# patterns in original wording and cites the book as a reputable game-specific
+# exposition and further-reading reference, exactly like citing a paywalled
+# text. No prose is reproduced or derived from.
+schema_version: 1
+pack_id: game-engineering-core
+name: Game Engineering Core
+version: 1.1.0
+description: >-
+  Architecture, implementation, dependency, and verification practice for
+  game production code, grounded in recognized game-programming patterns
+  (component composition, explicit game-loop ordering, decoupled messaging)
+  alongside GAN's own contract-first and evidence invariants.
+state: draft
+supersedes_version: 1.0.0
+domain_ids: [engineering, game_engineering]
+capability_ids:
+  [
+    ui_engineering,
+    gameplay_engineering,
+    tooling,
+    build_engineering,
+    dependency_analysis,
+  ]
+sources:
+  - schema_version: 1
+    source_id: gan-engineering-invariants
+    title: Game Agent Network architecture invariants
+    author: Game Agent Network
+    publisher: Game Agent Network
+    uri: gan://architecture/invariants
+    source_type: project_document
+    retrieved_at: "2026-09-09T00:00:00Z"
+    authority: curated_practice
+    freshness_class: stable
+    applicable_capability_ids:
+      [ui_engineering, gameplay_engineering, tooling, dependency_analysis]
+  - schema_version: 1
+    source_id: gan-evidence-contract
+    title: Game Agent Network evidence contract
+    author: Game Agent Network
+    publisher: Game Agent Network
+    uri: gan://spec/product-requirements/qa-evidence
+    source_type: project_document
+    retrieved_at: "2026-09-09T00:00:00Z"
+    authority: curated_practice
+    freshness_class: stable
+    applicable_capability_ids:
+      [build_engineering, gameplay_engineering, ui_engineering]
+  - schema_version: 1
+    source_id: game-programming-patterns-book
+    title: Game Programming Patterns
+    author: Robert Nystrom
+    publisher: Robert Nystrom (genever-tech, self-published; web edition at gameprogrammingpatterns.com)
+    uri: https://gameprogrammingpatterns.com/
+    source_type: book
+    retrieved_at: "2026-09-11T00:00:00Z"
+    published_at: "2014-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "CC BY-NC-ND 4.0 for the book's prose (github.com/munificent/game-programming-patterns/blob/master/LICENSE); code samples MIT. Cited for attribution and further reading; no prose reproduced or derived from — the underlying patterns described here are general, decades-old game/software patterns, not unique expression from the book."
+    applicable_capability_ids: [gameplay_engineering, dependency_analysis]
+methods:
+  - schema_version: 1
+    method_id: engineering-change-plan
+    title: Bounded engineering change plan
+    purpose: Connect a requested behavior to the smallest safe ownership boundary and verification path.
+    applicable_capability_ids:
+      [ui_engineering, gameplay_engineering, tooling, build_engineering]
+    steps:
+      - Identify the authoritative contract and current implementation boundary.
+      - Trace dependencies and state transitions before editing.
+      - Implement the smallest coherent slice and verify its observable contract.
+    evidence_requirements:
+      - Cited project files or contracts.
+      - Deterministic checks plus runtime evidence where behavior is claimed.
+    source_ids: [gan-engineering-invariants, gan-evidence-contract]
+  - schema_version: 1
+    method_id: dependency-boundary-review
+    title: Dependency boundary review
+    purpose: Prevent infrastructure and adapter concerns from becoming domain truth.
+    applicable_capability_ids: [dependency_analysis, tooling, build_engineering]
+    steps:
+      - Map ownership and dependency direction.
+      - Identify imports or writes that cross the declared boundary.
+      - Verify the corrected boundary with automated checks.
+    evidence_requirements:
+      - Current dependency graph or source imports.
+      - A repeatable boundary test.
+    source_ids: [gan-engineering-invariants]
+  - schema_version: 1
+    method_id: game-architecture-pattern-review
+    title: Game architecture pattern review
+    purpose: Compare a gameplay subsystem's actual structure against a recognized game-programming pattern (component composition, explicit game loop, decoupled event/observer messaging, object pooling) instead of judging architecture only against abstract "good practice."
+    applicable_capability_ids: [gameplay_engineering, dependency_analysis]
+    steps:
+      - Identify the subsystem's responsibilities and how entity behavior is currently composed (deep inheritance versus independent components).
+      - Name the closest recognized pattern the intended behavior matches, and check whether the implementation follows that pattern's known trade-offs rather than an ad hoc variant.
+      - Flag deep or combinatorial inheritance hierarchies that a component-based or state-based decomposition would resolve.
+      - Separate performance-sensitive game-loop concerns (update ordering, frame timing, allocation churn) from correctness concerns; they need different evidence.
+    evidence_requirements:
+      - Cited project source files showing the current composition or inheritance structure.
+      - The specific pattern name being compared against, not a general "clean code" judgment.
+    source_ids: [game-programming-patterns-book]
+items:
+  - schema_version: 1
+    item_id: engineering-contract-first
+    title: Contracts own cross-boundary meaning
+    kind: professional_knowledge
+    statement: Change the canonical domain contract before generated clients or boundary consumers, then regenerate and verify drift.
+    domain_ids: [engineering]
+    capability_ids: [ui_engineering, tooling, dependency_analysis]
+    source_ids: [gan-engineering-invariants]
+    method_ids: [engineering-change-plan]
+    freshness_class: stable
+    confidence: 0.99
+  - schema_version: 1
+    item_id: engineering-small-slice
+    title: Prefer a coherent vertical slice
+    kind: heuristic
+    statement: A small end-to-end behavior with evidence is safer than broad disconnected scaffolding.
+    domain_ids: [engineering, production]
+    capability_ids: [gameplay_engineering, ui_engineering, build_engineering]
+    source_ids: [gan-engineering-invariants, gan-evidence-contract]
+    method_ids: [engineering-change-plan]
+    freshness_class: stable
+    confidence: 0.94
+  - schema_version: 1
+    item_id: engineering-no-structural-overclaim
+    title: Structural inspection is bounded evidence
+    kind: anti_pattern
+    statement: Readable source and configuration establish discoverability, not runtime correctness, performance, or player-facing quality.
+    domain_ids: [engineering, qa]
+    capability_ids: [dependency_analysis, build_engineering]
+    source_ids: [gan-evidence-contract]
+    method_ids: [dependency-boundary-review]
+    freshness_class: stable
+    confidence: 0.99
+  - schema_version: 1
+    item_id: engineering-component-over-inheritance
+    title: Prefer component composition over deep gameplay inheritance
+    kind: professional_knowledge
+    statement: Entities with many optional, cross-cutting behaviors (movement, health, AI, rendering) are usually better composed from independent components than a deep inheritance chain, because inheritance forces every combination of behaviors to be anticipated as a named subclass in advance.
+    domain_ids: [engineering, game_engineering]
+    capability_ids: [gameplay_engineering, ui_engineering]
+    source_ids: [game-programming-patterns-book]
+    method_ids: [game-architecture-pattern-review]
+    freshness_class: stable
+    confidence: 0.9
+  - schema_version: 1
+    item_id: engineering-game-loop-order-explicit
+    title: Game-loop update order is an explicit contract
+    kind: standard
+    statement: The order in which a game loop updates and renders entities (fixed versus variable timestep, update-then-render versus interleaved) is a deliberate architectural decision affecting determinism, and must be stated explicitly rather than left to incidental call order.
+    domain_ids: [engineering, game_engineering]
+    capability_ids: [gameplay_engineering, build_engineering]
+    source_ids: [game-programming-patterns-book]
+    method_ids: [game-architecture-pattern-review]
+    freshness_class: stable
+    confidence: 0.92
+  - schema_version: 1
+    item_id: engineering-service-locator-hides-coupling
+    title: Global service access hides coupling
+    kind: anti_pattern
+    statement: Reaching a subsystem through a globally accessible locator or singleton instead of an explicit dependency makes coupling invisible at the call site and complicates testing and lifecycle control; prefer explicit dependencies unless the pattern's documented trade-offs are a consciously accepted exception.
+    domain_ids: [engineering, game_engineering]
+    capability_ids: [gameplay_engineering, dependency_analysis]
+    source_ids: [game-programming-patterns-book]
+    method_ids: [game-architecture-pattern-review, dependency-boundary-review]
+    freshness_class: stable
+    confidence: 0.88
+evaluation_ids:
+  [
+    engineering-method-contract,
+    engineering-boundary-contract,
+    engineering-pattern-contract,
+  ]
+created_at: "2026-09-11T00:00:00Z"

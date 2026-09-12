@@ -1,0 +1,219 @@
+# New candidate pack (K7 of the K5-K15 expansion). state: draft — NOT
+# installed, NOT reviewed, NOT trusted for routing. Capability set: all
+# seven capabilities proposed for a new `publishing-lead` agent in
+# docs/AI_WORK_SPLIT.md, drawn from the existing, previously-unowned
+# `shipping` family (`platform_certification`, `packaging`, `patching`,
+# `deployment`, `release_management`, `store_assets`) plus
+# `publishing_support` (`post_launch_commercial`). Steam-specific tooling
+# knowledge is a platform-specific layer on top of these general shipping
+# capabilities, the same pattern `godot-core` is for engineering.
+#
+# `platform_certification` is the thinnest capability here — Steam has no
+# formal AAA-console-style certification gate; the closest real, documented
+# analog is the additional account authorization required to promote a build
+# to the live default branch, which is what this pack's coverage of it is
+# actually scoped to. Stated honestly rather than implied to be a full
+# certification process.
+# See docs/AI_WORK_SPLIT.md and .ai/handoffs/claude-to-codex.md.
+schema_version: 1
+pack_id: steam-publishing-core
+name: Steam Publishing Core
+version: 1.0.0
+description: >-
+  Build/branch/depot staging discipline grounded in Valve's own Steamworks
+  documentation, and launch-readiness and audience-building practice grounded
+  in a 2026 GDC talk delivered by Valve's own Steam Business and
+  Communications teams. `platform_certification` is the thinnest capability —
+  Steam has no formal certification gate; coverage here is scoped to the
+  documented default-branch promotion authorization requirement, not implied
+  to be a full certification process.
+state: draft
+domain_ids: [publishing, game_publishing]
+capability_ids:
+  [
+    platform_certification,
+    packaging,
+    patching,
+    deployment,
+    release_management,
+    store_assets,
+    publishing_support,
+  ]
+sources:
+  - schema_version: 1
+    source_id: valve-steam-platform-2026-gdc
+    title: "Steam Platform 2026: How Valve is Helping Game Developers Succeed on PC Gaming"
+    author: Tom Giardino and Kaci Aitchison Boyle
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=h1ivZzEyNFY
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2026-09-08T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-12T00:00:00Z"
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a ~32-minute talk); no transcript text reproduced, every item below is original distilled wording. Speaker credential: Tom Giardino, Steam Business team at Valve since 2012, and Kaci Aitchison Boyle, Steam Team and cross-Valve Communications — both speaking officially on behalf of the platform at GDC 2026, the same tier of authority as citing Valve's own documentation directly."
+    applicable_capability_ids:
+      [release_management, store_assets, publishing_support]
+  - schema_version: 1
+    source_id: steamworks-builds-docs
+    title: "Builds (Steamworks Documentation)"
+    author: Valve Corporation
+    publisher: Valve Corporation (Steamworks)
+    uri: https://partner.steamgames.com/doc/store/application/builds
+    source_type: official_documentation
+    retrieved_at: "2026-09-12T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-12T00:00:00Z"
+    license: "No explicit open license found on the page (checked live); standard Valve/Steamworks copyright applies by default. Cited for attribution and reference only; no text reproduced, every item below is original distilled wording."
+    applicable_capability_ids: [patching, deployment, platform_certification]
+  - schema_version: 1
+    source_id: steamworks-depots-docs
+    title: "Depots (Steamworks Documentation)"
+    author: Valve Corporation
+    publisher: Valve Corporation (Steamworks)
+    uri: https://partner.steamgames.com/doc/store/application/depots
+    source_type: official_documentation
+    retrieved_at: "2026-09-12T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-12T00:00:00Z"
+    license: "No explicit open license found on the page (checked live); standard Valve/Steamworks copyright applies by default. Cited for attribution and reference only; no text reproduced, every item below is original distilled wording."
+    applicable_capability_ids: [packaging]
+methods:
+  - schema_version: 1
+    method_id: steam-release-staging-review
+    title: Steam release staging review
+    purpose: Check that a build intended for release is staged through a protected beta branch and actually tested there before being promoted to the default branch, and that its depot organization matches the content being shipped.
+    applicable_capability_ids:
+      [patching, deployment, packaging, platform_certification]
+    steps:
+      - Confirm the build under review was uploaded to a password-protected beta branch first, not set live on the default branch directly.
+      - Confirm the beta branch was actually tested, via Steam's own beta opt-in mechanism or an equivalent, before promotion, rather than uploaded and assumed correct.
+      - For an already-released title, confirm the team has planned for the additional account authorization Steam requires to promote a new build to the live default branch, rather than discovering it as a blocker at launch time.
+      - Check that depot organization (platform-specific, language-specific, DLC-specific depots) matches the actual content being shipped, rather than bundling unrelated content into one depot.
+    evidence_requirements:
+      - The actual branch history for the build under review, including which beta branch was used and when it was promoted.
+      - The current depot configuration compared against the content it is meant to contain.
+    source_ids: [steamworks-builds-docs, steamworks-depots-docs]
+  - schema_version: 1
+    method_id: steam-launch-readiness-review
+    title: Steam launch readiness review
+    purpose: Check that a release plan includes the specific, easy-to-underestimate practices Valve's own platform team consistently flags as most consequential for Steam launches, rather than treating them as post-launch polish.
+    applicable_capability_ids:
+      [release_management, store_assets, publishing_support]
+    steps:
+      - Confirm the game has been playtested well in advance of launch, using a mechanism such as Steam Playtest, rather than for the first time at launch.
+      - Confirm cross-device save continuity is enabled, since a majority of Steam users play across more than one device.
+      - Confirm controller support is planned as a launch feature rather than deferred to after early access, given how much Steam play time happens via a gamepad.
+      - Check that localization priorities are driven by actual wishlist or regional sales data rather than assumption, and that store page assets are localized alongside the game itself.
+    evidence_requirements:
+      - The release plan's playtest schedule, save-sync status, and controller support status.
+      - The specific data used to prioritize which languages to localize first.
+    source_ids: [valve-steam-platform-2026-gdc]
+  - schema_version: 1
+    method_id: steam-audience-building-review
+    title: Steam audience building review
+    purpose: Check that a developer or publisher's Steam presence is actively maintained rather than a one-time setup, since Steam's follow and notification mechanics only work if the page reflects the studio's actual current lineup.
+    applicable_capability_ids: [publishing_support]
+    steps:
+      - Confirm a developer or publisher homepage exists and is linked to every current and announced title, not only the most recent one.
+      - Check that the homepage has been reviewed or updated within a reasonable recent window rather than left untouched since initial setup.
+      - Confirm announced but unreleased titles are represented on the homepage so existing followers are notified when they release.
+    evidence_requirements:
+      - The homepage's current content and last-updated status.
+      - Whether every shipped or announced title is actually linked to it.
+    source_ids: [valve-steam-platform-2026-gdc]
+items:
+  - schema_version: 1
+    item_id: beta-branch-before-default-branch
+    title: A build is tested on a beta branch before promotion to the default branch
+    kind: professional_knowledge
+    statement: A build should be uploaded and tested on a password-protected beta branch before being promoted to the default branch that live customers receive; uploading a new build directly to the default branch skips the staging step Steam's own build system is designed to support.
+    domain_ids: [publishing, game_publishing]
+    capability_ids: [patching, deployment]
+    source_ids: [steamworks-builds-docs]
+    method_ids: [steam-release-staging-review]
+    freshness_class: version_sensitive
+    confidence: 0.9
+  - schema_version: 1
+    item_id: default-branch-promotion-needs-extra-authorization
+    title: Promoting a build to the live default branch requires extra authorization
+    kind: professional_knowledge
+    statement: For an already-released game, setting a new build live on the default branch requires additional account authorization beyond a normal upload; teams should plan for this step in their release timeline rather than treat it as a launch-day surprise.
+    domain_ids: [publishing, game_publishing]
+    capability_ids: [deployment, platform_certification]
+    source_ids: [steamworks-builds-docs]
+    method_ids: [steam-release-staging-review]
+    freshness_class: version_sensitive
+    confidence: 0.88
+  - schema_version: 1
+    item_id: depots-should-match-actual-content-boundaries
+    title: Depot organization should match actual content boundaries
+    kind: standard
+    statement: Splitting content into separate depots by platform, language, and DLC lets Steam download only what a given customer actually needs; bundling unrelated content into a single depot forces unnecessary downloads and makes future updates harder to scope narrowly.
+    domain_ids: [publishing, game_publishing]
+    capability_ids: [packaging]
+    source_ids: [steamworks-depots-docs]
+    method_ids: [steam-release-staging-review]
+    freshness_class: version_sensitive
+    confidence: 0.87
+  - schema_version: 1
+    item_id: playtest-well-before-launch-not-at-launch
+    title: Playtest well before launch, not for the first time at launch
+    kind: professional_knowledge
+    statement: A game should be playtested well in advance of its release, using a mechanism such as Steam Playtest, so that unanticipated issues can be budgeted for in the weeks and months before launch rather than discovered at the highest-stress, highest-risk moment of the release itself.
+    domain_ids: [publishing, game_publishing]
+    capability_ids: [release_management]
+    source_ids: [valve-steam-platform-2026-gdc]
+    method_ids: [steam-launch-readiness-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: cross-device-save-continuity-is-expected-not-optional
+    title: Cross-device save continuity is expected, not optional
+    kind: standard
+    statement: Since a majority of Steam users play across more than one device, cross-device save continuity is a baseline expectation rather than a nice-to-have; losing progress when switching devices is a documented, concrete reason players disengage even from a strong demo or early access build.
+    domain_ids: [publishing, game_publishing]
+    capability_ids: [release_management]
+    source_ids: [valve-steam-platform-2026-gdc]
+    method_ids: [steam-launch-readiness-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: controller-support-is-consistently-underestimated
+    title: Developers consistently underestimate controller support's importance
+    kind: anti_pattern
+    statement: Developers consistently underestimate how much play time on Steam happens via a controller and defer controller support to after early access or launch; given how large and steadily growing gamepad usage actually is, this is a documented mismatch between developer assumptions and actual player behavior, not a safe deferral.
+    domain_ids: [publishing, game_publishing]
+    capability_ids: [release_management]
+    source_ids: [valve-steam-platform-2026-gdc]
+    method_ids: [steam-launch-readiness-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: localization-priority-should-follow-actual-demand-data
+    title: Localization priority should follow actual demand data, not assumption
+    kind: professional_knowledge
+    statement: Which languages to localize first should be driven by actual wishlist or regional sales data rather than assumption, since the languages generating the most player interest vary by title and are directly observable; store page assets should be localized alongside the game itself, not treated as a separate, lower-priority task.
+    domain_ids: [publishing, game_publishing]
+    capability_ids: [store_assets]
+    source_ids: [valve-steam-platform-2026-gdc]
+    method_ids: [steam-launch-readiness-review]
+    freshness_class: stable
+    confidence: 0.86
+  - schema_version: 1
+    item_id: developer-homepage-needs-ongoing-maintenance
+    title: A developer homepage needs ongoing maintenance, not one-time setup
+    kind: standard
+    statement: A developer or publisher homepage on Steam is not a one-time setup task; it should link every current and announced title and be reviewed periodically, since it drives follow-based notifications and visibility that only work if the page reflects the studio's actual current lineup.
+    domain_ids: [publishing, game_publishing]
+    capability_ids: [publishing_support]
+    source_ids: [valve-steam-platform-2026-gdc]
+    method_ids: [steam-audience-building-review]
+    freshness_class: stable
+    confidence: 0.84
+evaluation_ids:
+  [steam-release-staging-contract, steam-launch-readiness-contract]
+created_at: "2026-09-12T00:00:00Z"

@@ -1,0 +1,29 @@
+schema_version: 1
+benchmark_id: design-mechanics-contract
+pack_id: game-design-core
+applies_to_versions: ["1.0.0", "1.1.0"]
+capability_ids: [mechanics_design, systems_design, game_direction]
+scenario: >-
+  A synthetic design proposal reads: "Double the base damage of the Longsword
+  so it feels more powerful." No target dynamic, encounter length change, or
+  intended player experience is named. A reviewer is asked whether this
+  proposal is ready to implement.
+discriminates: >-
+  A generic reviewer may accept "more powerful" as sufficient justification
+  for a numeric buff. A specialist requires the proposal to name the intended
+  dynamic and aesthetic the change is meant to produce, and flags the risk
+  that an unstated target makes an unintended dominant strategy hard to
+  notice or roll back.
+expected_specialist_findings:
+  - The phrase "feels more powerful" names neither a dynamic (what will actually change during play, such as average encounter length or weapon pick rate) nor an aesthetic (the intended player experience, such as increased sense of Sensation or reduced Challenge) — it restates the mechanic itself as its own justification.
+  - Without a stated target, there is no way to later tell whether doubling the damage produced the intended effect or instead made the Longsword a dominant strategy that crowds out other weapon choices.
+  - The proposal should state the intended dynamic (for example, "reduce average early-game encounter length by roughly 20%") and the aesthetic it serves, before the numeric change is approved.
+  - Recommend treating the change as a hypothesis — define the target, then confirm with playtest data or simulation once implemented, rather than shipping on intuition alone.
+expected_uncertainty:
+  - Whether this buff was already tested against other weapon pick rates — not stated.
+acceptable_source_ids: [mda-framework-paper]
+scoring_notes: >-
+  Pass only if the enriched run rejects "feels more powerful" as sufficient
+  justification and requires a named dynamic/aesthetic target before
+  approval. Approving the buff as-is, or objecting only to the specific
+  number chosen, is a fail.

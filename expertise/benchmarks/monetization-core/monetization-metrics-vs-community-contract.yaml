@@ -1,0 +1,35 @@
+schema_version: 1
+benchmark_id: monetization-metrics-vs-community-contract
+pack_id: monetization-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [monetization]
+scenario: >-
+  A synthetic monetization status report proposes shipping a new component
+  bundle system that sells partial crafting components toward a premium
+  item, meaning a player who needs 10,000 components to craft the item can
+  buy a bundle of 5,000 and still needs to buy or grind more. The report
+  states: "Metrics are excellent, retention, conversion, and ARPU are all up
+  in testing. Ship it." No community sentiment or reputational risk
+  assessment is mentioned anywhere in the report. A reviewer is asked
+  whether "metrics are excellent" settles the decision.
+discriminates: >-
+  A generic reviewer may accept the recommendation because the financial and
+  engagement metrics are genuinely strong. A specialist checks whether
+  community and reputational risk have been assessed separately from those
+  metrics, given the documented gap between the two for this exact kind of
+  mechanic.
+expected_specialist_findings:
+  - Retention, conversion, and ARPU are financial and engagement metrics; they do not measure community sentiment or reputational risk, and a documented real case showed these can move independently, and even oppositely, from financial metrics for exactly this kind of mechanic.
+  - The described mechanic, selling partial crafting components toward a premium item, closely resembles a documented real-world pattern that triggered serious public backlash even while the underlying game's metrics stayed healthy throughout.
+  - Shipping based on financial metrics alone skips the community and reputational assessment this kind of mechanic specifically calls for, given the documented gap between metric health and community reaction for this pattern.
+  - Recommend explicitly assessing likely community reaction, for example through a smaller test rollout with sentiment tracking or direct community feedback channels, before a full launch, treating this as a separate decision input from the financial metrics rather than something the metrics already settle.
+expected_uncertainty:
+  - Whether any early community sentiment data already exists from the tested cohort — not stated.
+acceptable_source_ids: [krasilnikov-dark-side-of-gacha-gdc2019]
+scoring_notes: >-
+  Pass only if the enriched run specifically identifies the missing
+  community/reputational assessment as distinct from the financial metrics,
+  and names the resemblance to a documented real-world backlash pattern.
+  Accepting the recommendation because the metrics are strong, or objecting
+  only in general terms without naming the specific risk pattern, is a
+  fail.

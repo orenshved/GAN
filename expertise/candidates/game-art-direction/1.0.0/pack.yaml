@@ -1,0 +1,145 @@
+# New candidate pack (K3). state: draft — NOT installed, NOT reviewed, NOT
+# trusted for routing. Capability set copied exactly from the existing
+# `art-lead` agent in agents/builtin/roster.json.
+# See docs/K3_ENGINE_ART_ACCESSIBILITY_MODEL.md and
+# .ai/handoffs/claude-to-codex.md.
+#
+# Sourcing note: unlike WCAG/Scrum/MDA/Ollama-docs, no freely-licensed
+# game-specific art-direction standard was found (GDC Vault talks are largely
+# paywalled; most practitioner books have no free web edition). The primary
+# source here is a general graphic-design textbook, not games-specific — that
+# gap is real and stated honestly, the same treatment WCAG got in
+# game-ux-core ("no game-specific UX authority"). `asset_tracking` reuses the
+# already-verified Scrum Guide source from game-production-core, since
+# pipeline-stage tracking is a production discipline, not an art-theory one.
+schema_version: 1
+pack_id: game-art-direction
+name: Game Art Direction
+version: 1.0.0
+description: >-
+  Visual-hierarchy and cross-set consistency review for concept, environment,
+  and UI art, grounded in general graphic-design composition principles, plus
+  explicit pipeline-stage tracking for art assets grounded in the Scrum
+  Guide. Neither source is game-specific; both are applied to game art
+  deliberately, not assumed to transfer without adaptation.
+state: draft
+domain_ids: [art, game_art]
+capability_ids:
+  [art_direction, visual_development, asset_tracking, concept_art, ui_art]
+sources:
+  - schema_version: 1
+    source_id: graphic-design-fundamentals-jeffery
+    title: Graphic Design and Print Production Fundamentals
+    author: Ken Jeffery
+    publisher: BCcampus / eCampusOntario (Pressbooks)
+    uri: https://ecampusontario.pressbooks.pub/graphicdesign/
+    source_type: book
+    retrieved_at: "2026-09-11T00:00:00Z"
+    published_at: "2015-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: Creative Commons Attribution 4.0 International (CC BY 4.0) — verified directly against the book's own copyright statement.
+    applicable_capability_ids:
+      [art_direction, visual_development, concept_art, ui_art]
+  - schema_version: 1
+    source_id: scrum-guide-2020
+    title: The Scrum Guide
+    author: Ken Schwaber and Jeff Sutherland
+    publisher: Scrum.org
+    uri: https://scrumguides.org/scrum-guide.html
+    source_type: standard
+    retrieved_at: "2026-09-11T00:00:00Z"
+    published_at: "2020-11-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: slow_changing
+    fresh_until: "2027-03-11T00:00:00Z"
+    license: Creative Commons Attribution Share-Alike 4.0 International (CC BY-SA 4.0)
+    applicable_capability_ids: [asset_tracking, art_direction]
+methods:
+  - schema_version: 1
+    method_id: art-consistency-review
+    title: Art consistency review
+    purpose: Check whether an asset or concept applies a consistent set of compositional principles — balance, contrast, hierarchy, unity — rather than making ad hoc visual choices unrelated to the rest of its set.
+    applicable_capability_ids:
+      [art_direction, visual_development, concept_art, ui_art]
+    steps:
+      - Identify the intended focal point and hierarchy for the piece or screen, and check whether contrast and placement actually direct the eye there.
+      - Compare the asset against others in the same set for consistent use of balance, proportion, and rhythm — not identical, but recognizably part of the same visual language.
+      - Distinguish a deliberate departure from the established language (a boss, a rare item) from an inconsistency that reads as an error.
+      - Note any principle violated with no apparent reason, and ask whether it was a deliberate choice or an oversight.
+    evidence_requirements:
+      - The specific asset(s) under review and the set they are meant to belong to.
+      - The stated, or explicitly inferred and flagged as inferred, intended focal point and hierarchy for the piece.
+    source_ids: [graphic-design-fundamentals-jeffery]
+  - schema_version: 1
+    method_id: art-pipeline-tracking-review
+    title: Art pipeline tracking review
+    purpose: Track art assets through explicit pipeline stages with a stated exit criterion per stage, instead of an informal "done when it looks done" status.
+    applicable_capability_ids: [asset_tracking, art_direction]
+    steps:
+      - Define the pipeline stages an asset passes through (for example concept, blockout, first pass, final, integrated) and what must be true to call each stage complete.
+      - Record which stage each asset is actually in, not just whether "art is being worked on" in general.
+      - Surface assets stuck at a stage well past their expected duration as a visible risk, the same way a production impediment is tracked.
+      - Distinguish an asset that is blocked on a dependency from one that is simply still in progress.
+    evidence_requirements:
+      - The current stage of each asset under review and its Definition of Done for that stage.
+      - How long the asset has been in its current stage.
+    source_ids: [scrum-guide-2020]
+items:
+  - schema_version: 1
+    item_id: art-hierarchy-before-contrast
+    title: Hierarchy directs attention before contrast confirms it
+    kind: professional_knowledge
+    statement: A piece establishes visual hierarchy by ordering elements by importance; contrast in value, color, or scale is the tool that makes that ordering readable at a glance, not a substitute for having an ordering in the first place.
+    domain_ids: [art, game_art]
+    capability_ids: [visual_development, concept_art]
+    source_ids: [graphic-design-fundamentals-jeffery]
+    method_ids: [art-consistency-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: art-consistency-judged-across-set
+    title: Consistency is judged across the set, not within a single piece
+    kind: standard
+    statement: Whether a color palette, silhouette language, or level of detail is consistent can only be judged by comparing an asset against the rest of its set; a single piece cannot be consistent or inconsistent in isolation.
+    domain_ids: [art, game_art]
+    capability_ids: [art_direction, visual_development]
+    source_ids: [graphic-design-fundamentals-jeffery]
+    method_ids: [art-consistency-review]
+    freshness_class: stable
+    confidence: 0.9
+  - schema_version: 1
+    item_id: art-polish-not-same-as-brief
+    title: Looking finished is not the same as meeting the brief
+    kind: anti_pattern
+    statement: A polished-looking asset can still fail its intended hierarchy, readability, or consistency requirements; visual polish and correctness against the art direction's actual requirements are separate questions, and finishing one does not confirm the other.
+    domain_ids: [art, game_art]
+    capability_ids: [concept_art, ui_art, art_direction]
+    source_ids: [graphic-design-fundamentals-jeffery]
+    method_ids: [art-consistency-review]
+    freshness_class: stable
+    confidence: 0.91
+  - schema_version: 1
+    item_id: art-pipeline-stage-needs-exit-criterion
+    title: Asset pipeline stages need an explicit exit criterion
+    kind: professional_knowledge
+    statement: An asset's pipeline status is only useful if each stage has an explicit, shared completion criterion; without one, two people can disagree about whether an asset is actually ready to move to the next stage.
+    domain_ids: [art, production]
+    capability_ids: [asset_tracking]
+    source_ids: [scrum-guide-2020]
+    method_ids: [art-pipeline-tracking-review]
+    freshness_class: slow_changing
+    confidence: 0.9
+  - schema_version: 1
+    item_id: art-stalled-asset-is-visible-risk
+    title: A stalled asset is a visible risk, not silent progress
+    kind: standard
+    statement: An asset that has stayed in one pipeline stage well past its expected duration should be surfaced the same way a production impediment is, with an owner and a re-inspection point, rather than left to appear as ordinary in-progress work.
+    domain_ids: [art, production]
+    capability_ids: [asset_tracking, art_direction]
+    source_ids: [scrum-guide-2020]
+    method_ids: [art-pipeline-tracking-review]
+    freshness_class: slow_changing
+    confidence: 0.87
+evaluation_ids: [art-consistency-contract, asset-pipeline-contract]
+created_at: "2026-09-11T00:00:00Z"

@@ -1,0 +1,173 @@
+# New candidate pack (K8 of the K5-K15 expansion). state: draft — NOT
+# installed, NOT reviewed, NOT trusted for routing. Capability set: the two
+# capabilities proposed for a new `liveops-lead` agent in
+# docs/AI_WORK_SPLIT.md, drawn from the existing, previously-unowned
+# `live_operations` (`post_launch_commercial`) and `liveops_design`
+# (`game_design`) capabilities.
+# See docs/AI_WORK_SPLIT.md and .ai/handoffs/claude-to-codex.md.
+schema_version: 1
+pack_id: liveops-core
+name: LiveOps Core
+version: 1.0.0
+description: >-
+  Live-operations maturity and iteration-loop discipline grounded in a
+  17-year live-games practitioner's account (Crystin Cox — Director of Live
+  Game Operations, Xbox Game Studios Publishing; ArenaNet/Guild Wars 2;
+  Nexon/MapleStory), and content-cadence and balance-timing discipline
+  grounded in a decade-plus live-service title's own documented growth
+  history (Chris Wilson, co-founder of Grinding Gear Games and creator of
+  Path of Exile).
+state: draft
+domain_ids: [liveops, game_liveops]
+capability_ids: [live_operations, liveops_design]
+sources:
+  - schema_version: 1
+    source_id: cox-beyond-gaas-liveops-gdc2020
+    title: "Beyond Games as a Service with Live Ops"
+    author: Crystin Cox
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=I7755b0nY0I
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2020-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a ~51-minute talk); no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Crystin Cox, 17+ years in games, Director of Live Game Operations for Xbox Game Studios Publishing at Microsoft; previously founded the Commerce Team at ArenaNet responsible for the shipped, commercially successful Guild Wars 2's monetization strategy through its launch and multiple expansions; led live operations on the global distribution of the shipped, commercially successful MapleStory at Nexon America; also worked on Pirates of the Caribbean Online at Disney Online."
+    applicable_capability_ids: [liveops_design, live_operations]
+  - schema_version: 1
+    source_id: wilson-poe-played-forever-gdc2019
+    title: "Designing Path of Exile to Be Played Forever"
+    author: Chris Wilson
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=tmuy9fyNUjY
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2019-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a ~59-minute talk); no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Chris Wilson, co-founder of Grinding Gear Games and creator/lead designer of the shipped, commercially successful, decade-plus-sustained live-service game Path of Exile, presenting the studio's own documented player-count and revenue history from its launch through years of live operation."
+    applicable_capability_ids: [liveops_design, live_operations]
+methods:
+  - schema_version: 1
+    method_id: liveops-maturity-and-iteration-review
+    title: LiveOps maturity and iteration review
+    purpose: Assess whether a live game's operational practice matches its actual maturity level, and check that "iteration" is not being confused with pre-planned content delivery on a fixed schedule.
+    applicable_capability_ids: [liveops_design]
+    steps:
+      - Distinguish genuine iteration, small and frequent changes made in direct response to player feedback and behavioral data, from planned content delivery on a fixed schedule, which is a different activity even though both happen post-launch.
+      - Check whether a team attempting segmentation or personalization-driven optimization has first established basic iteration capability; data-driven personalization is very difficult to act on without an existing ability to make frequent game changes.
+      - When player behavior diverges sharply from the intended design, check whether the response is grounded in actual engagement or retention data about that behavior, rather than an assumption that the divergence must be suppressed to match original intent.
+      - For a game far along in its live-service life, check whether engagement is being designed for beyond active play time, such as community and fan experiences, rather than only within game systems.
+    evidence_requirements:
+      - Which maturity tier the practice under review actually reflects, and whether claimed "iteration" is genuinely feedback-responsive or a relabeled fixed content schedule.
+      - Any behavioral or retention data backing a response to emergent player behavior under review.
+    source_ids: [cox-beyond-gaas-liveops-gdc2020]
+  - schema_version: 1
+    method_id: live-content-cadence-and-timing-review
+    title: Live content cadence and timing review
+    purpose: Check that a live game's content release cadence and balance-change timing follow the documented practices that drove sustained growth for a long-running live-service title, rather than treating release timing and balance timing as unimportant.
+    applicable_capability_ids: [liveops_design, live_operations]
+    steps:
+      - Confirm the release cadence is fixed and predictable, a stated, consistent interval, rather than variable in size and timing, since players need to be able to plan around, and return for, a known next date.
+      - Check that a content release is batched with enough marketable substance to be worth players and press noticing, rather than delivered as a small patch that improves the game without moving engagement.
+      - Confirm balance changes affecting an active competitive or build-choice meta are scheduled for the boundary between content cycles, not mid-cycle, since players who already committed to a build or strategy under the prior balance experience mid-cycle changes as unfair.
+      - Check whether monetization and re-engagement efforts are concentrated toward the start of a content cycle, when a fresh start or new content gives players their clearest reason to return.
+    evidence_requirements:
+      - The actual cadence and size history of recent releases, checked for predictability.
+      - The timing of any planned balance changes relative to the current content cycle's boundaries.
+    source_ids: [wilson-poe-played-forever-gdc2019]
+items:
+  - schema_version: 1
+    item_id: iteration-is-not-the-same-as-planned-content-delivery
+    title: Iteration is not the same as delivering pre-planned content on a schedule
+    kind: professional_knowledge
+    statement: Genuine live-operations iteration means small, frequent changes made in direct response to player feedback and behavioral data; delivering pre-planned content on a fixed schedule, however frequently, is a different activity, a slow-cadence form of production, and should not be mistaken for the feedback loop live operations is actually built around.
+    domain_ids: [liveops, game_liveops]
+    capability_ids: [liveops_design]
+    source_ids: [cox-beyond-gaas-liveops-gdc2020]
+    method_ids: [liveops-maturity-and-iteration-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: personalization-requires-iteration-capability-first
+    title: Personalization requires iteration capability to already be in place
+    kind: professional_knowledge
+    statement: Segmentation and data-driven personalization are difficult to act on productively without an existing ability to make frequent, low-friction changes to the game; teams that attempt sophisticated targeting before establishing basic iteration capability tend to collect data they cannot actually use.
+    domain_ids: [liveops, game_liveops]
+    capability_ids: [liveops_design]
+    source_ids: [cox-beyond-gaas-liveops-gdc2020]
+    method_ids: [liveops-maturity-and-iteration-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: emergent-player-behavior-needs-a-data-grounded-response
+    title: Emergent player behavior needs a data-grounded response, not an assumption
+    kind: professional_knowledge
+    statement: When players adopt a strategy or behavior far outside a system's intended design, the productive response is to check whether that behavior actually correlates with genuine engagement or enjoyment before deciding whether to suppress it or support it; treating a divergence from design intent as automatically undesirable risks removing something players have organically found fun.
+    domain_ids: [liveops, game_liveops]
+    capability_ids: [liveops_design]
+    source_ids: [cox-beyond-gaas-liveops-gdc2020]
+    method_ids: [liveops-maturity-and-iteration-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: mastery-phase-extends-engagement-beyond-play-time
+    title: The most advanced live-ops practice extends engagement beyond active play time
+    kind: professional_knowledge
+    statement: The most advanced live-operations practice treats a game's engagement as extending beyond active play sessions into community, fan content, and shared social experience; designing deliberately for this layer, rather than treating it as an unplanned side effect, is what drives organic growth and reduces reliance on paid acquisition.
+    domain_ids: [liveops, game_liveops]
+    capability_ids: [liveops_design]
+    source_ids: [cox-beyond-gaas-liveops-gdc2020]
+    method_ids: [liveops-maturity-and-iteration-review]
+    freshness_class: stable
+    confidence: 0.83
+  - schema_version: 1
+    item_id: predictable-cadence-lets-players-plan-their-return
+    title: A predictable cadence lets a disengaging player plan their return
+    kind: professional_knowledge
+    statement: A live game's content releases should follow a fixed, predictable interval rather than variable timing and scope, since a predictable schedule lets a player who is about to disengage plan a specific return date instead of burning out or leaving without any intention to come back.
+    domain_ids: [liveops, game_liveops]
+    capability_ids: [liveops_design, release_management]
+    source_ids: [wilson-poe-played-forever-gdc2019]
+    method_ids: [live-content-cadence-and-timing-review]
+    freshness_class: stable
+    confidence: 0.89
+  - schema_version: 1
+    item_id: small-frequent-patches-dont-move-engagement-alone
+    title: Small frequent patches do not reliably move engagement on their own
+    kind: anti_pattern
+    statement: Small, frequent content patches improve a game and are worth continuing, but on their own they do not reliably move aggregate engagement or player-count metrics; the content that moves those numbers needs to be batched into a release substantial enough for players and press to actually notice and talk about.
+    domain_ids: [liveops, game_liveops]
+    capability_ids: [liveops_design]
+    source_ids: [wilson-poe-played-forever-gdc2019]
+    method_ids: [live-content-cadence-and-timing-review]
+    freshness_class: stable
+    confidence: 0.86
+  - schema_version: 1
+    item_id: mid-cycle-balance-changes-feel-unfair
+    title: Mid-cycle balance changes are experienced as unfair, regardless of merit
+    kind: anti_pattern
+    statement: Balance changes made in the middle of an active content cycle are experienced as unfair by players who already committed to a build or strategy under the prior balance, regardless of whether the change is a genuine improvement; holding balance changes for a cycle boundary, where they become part of a fresh, visible choice, avoids this specific failure mode.
+    domain_ids: [liveops, game_liveops]
+    capability_ids: [liveops_design, live_operations]
+    source_ids: [wilson-poe-played-forever-gdc2019]
+    method_ids: [live-content-cadence-and-timing-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: monetization-concentrates-at-cycle-start
+    title: Monetization and re-engagement effort concentrates at the start of a cycle
+    kind: standard
+    statement: Concentrating monetization and re-engagement efforts toward the start of a content cycle, when a fresh start or new content gives players their clearest reason to return and invest, is more effective than spreading effort evenly across the cycle, since players who disengage near a cycle's end are expected to return and monetize again at the start of the next one.
+    domain_ids: [liveops, game_liveops]
+    capability_ids: [live_operations]
+    source_ids: [wilson-poe-played-forever-gdc2019]
+    method_ids: [live-content-cadence-and-timing-review]
+    freshness_class: stable
+    confidence: 0.84
+evaluation_ids:
+  [
+    liveops-iteration-vs-content-contract,
+    liveops-cadence-and-balance-timing-contract,
+  ]
+created_at: "2026-09-12T00:00:00Z"

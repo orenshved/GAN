@@ -539,6 +539,17 @@ class CodexBridge:
             if previous is not None:
                 if previous.state == "candidate_composed":
                     return await self._recruit_task(command.request_id, task, previous)
+                if previous.state == "remediation_required":
+                    decision = next(
+                        (
+                            item
+                            for item in snapshot.decisions
+                            if item.decision_id == f"knowledge-gap-{task.task_id}"
+                        ),
+                        None,
+                    )
+                    if decision is not None and decision.selected_option is not None:
+                        return await self._recruit_task(command.request_id, task, previous)
                 return previous
             return await self._recruit_task(command.request_id, task)
 
@@ -582,10 +593,30 @@ class CodexBridge:
                     "created_at": previous.created_at,
                 }
             )
-        await asyncio.to_thread(self.store.record_recruitment, record)
-        if record.state == "remediation_required":
+        decision = next(
+            (
+                item
+                for item in snapshot.decisions
+                if item.decision_id == f"knowledge-gap-{task.task_id}"
+            ),
+            None,
+        )
+        needs_director = record.diagnosis.problem in {"no_agent", "missing_expertise_pack"}
+        if needs_director and (decision is None or decision.selected_option is None):
+            record = record.model_copy(update={"state": "remediation_required"})
+            await asyncio.to_thread(self.store.record_recruitment, record)
+            await asyncio.to_thread(self.store.record_knowledge_escalation, record)
+            await asyncio.to_thread(
+                self.store.record_knowledge_state,
+                task.task_id,
+                blocked=True,
+                detail="Specialist knowledge is missing; the Director must choose whether to teach the current agent or create and teach a new specialist.",
+            )
             return record
         if record.missing_expertise_capabilities:
+            record = record.model_copy(update={"state": "remediation_required"})
+        await asyncio.to_thread(self.store.record_recruitment, record)
+        if record.state == "remediation_required":
             return record
         now = timestamp()
         record = self.recruiter.begin_audition(record, now)
@@ -594,6 +625,13 @@ class CodexBridge:
         now = timestamp()
         record = self.recruiter.evaluate(record, submission, review, now)
         await asyncio.to_thread(self.store.record_recruitment, record)
+        if record.state == "probation":
+            await asyncio.to_thread(
+                self.store.record_knowledge_state,
+                task.task_id,
+                blocked=False,
+                detail="The Director-approved specialist teaching path is qualified and ready.",
+            )
         return record
 
     async def _run_audition(

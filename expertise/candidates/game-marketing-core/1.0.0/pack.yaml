@@ -1,0 +1,203 @@
+# New candidate pack (K5 — first of the K5-K15 expansion). state: draft — NOT
+# installed, NOT reviewed, NOT trusted for routing. Capability set: the four
+# `post_launch_commercial` capabilities already present in the ontology with no
+# owning agent (`marketing_assets`, `trailers`, `screenshots`, `store_copy`) — a
+# future `marketing-lead` agent is proposed for these in docs/AI_WORK_SPLIT.md,
+# not created here (agent roster is cross-review territory), the same pattern
+# `project-intelligence-analysis` used before its agent existed.
+# See docs/AI_WORK_SPLIT.md and .ai/handoffs/claude-to-codex.md.
+#
+# Sourcing note: two independent, well-differentiated sources under
+# GAN_CLAUDE_RESEARCH_SOURCING_STRATEGY.md — an official platform authority
+# (Valve's own Steamworks documentation, for store_copy/marketing_assets) and a
+# world-class shipped-title practitioner (Derek Lieu, for trailers/screenshots).
+# `screenshots` is the thinnest capability here — it is backed by shot-selection
+# principles that transfer from trailer editing, but no dedicated screenshot-
+# specific practitioner source was found this pass; a future version is a
+# candidate for one.
+schema_version: 1
+pack_id: game-marketing-core
+name: Game Marketing Core
+version: 1.0.0
+description: >-
+  Trailer hook/comprehension/pacing review grounded in a shipped-title trailer
+  editor's practice (Derek Lieu — Among Us, Half-Life: Alyx, Psychonauts 2,
+  Firewatch, Spelunky 2, Dead Cells, Subnautica, Noita), and Steam store-page
+  description structure grounded in Valve's own Steamworks documentation.
+  `screenshots` remains the thinnest capability — covered by shot-selection
+  principles that transfer from trailer editing, not a dedicated source.
+state: draft
+domain_ids: [marketing, game_marketing]
+capability_ids: [marketing_assets, trailers, screenshots, store_copy]
+sources:
+  - schema_version: 1
+    source_id: lieu-trailer-made-gdc2019
+    title: "Trailer Made: What Makes a Successful and Memorable Game Trailer"
+    author: Derek Lieu
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=QWd7F0z1W_Y
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2019-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a ~29-minute talk); no transcript text reproduced, every item below is original distilled wording. Speaker credential verified across multiple independent sources: Derek Lieu, a professional trailer editor for 15+ years (game trailers specifically for the last several), with over 100 trailers for shipped, commercially released titles including Among Us, Half-Life: Alyx, Psychonauts 2, Firewatch, Spelunky 2, Dead Cells, Subnautica, and Noita; studied film production at NYU, worked at movie-trailer house Giaronomo Productions and at Hammer Creative (AAA game trailers) before going independent."
+    applicable_capability_ids: [trailers, screenshots, marketing_assets]
+  - schema_version: 1
+    source_id: steamworks-store-page-description-docs
+    title: "Store Page Written Description (Steamworks Documentation)"
+    author: Valve Corporation
+    publisher: Valve Corporation (Steamworks)
+    uri: https://partner.steamgames.com/doc/store/page/description
+    source_type: official_documentation
+    retrieved_at: "2026-09-12T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-12T00:00:00Z"
+    license: "No explicit open license found on the page (checked live); standard Valve/Steamworks copyright applies by default. Cited for attribution and reference only; no text reproduced, every item below is original distilled wording."
+    applicable_capability_ids: [store_copy, marketing_assets]
+methods:
+  - schema_version: 1
+    method_id: trailer-hook-and-comprehension-review
+    title: Trailer hook and comprehension review
+    purpose: Check that a trailer identifies and leads with one clear, specific hook rather than a generic feature list, and that it establishes the player's core role or verb early enough for the rest of the footage to be understood.
+    applicable_capability_ids: [trailers, marketing_assets]
+    steps:
+      - Identify what a viewer would tell a friend after watching the trailer; if nothing specific and distinct emerges, the hook is not clear yet.
+      - Check whether the trailer relies on generic feature-list language shared with many other games in the genre, rather than what is actually unique about this one.
+      - Confirm the player's core verb or role is established early enough that later footage is comprehensible, rather than appearing in the middle or late.
+      - Flag reliance on narrated claims about the game's quality in place of letting the footage itself carry the excitement.
+    evidence_requirements:
+      - The trailer's actual shot sequence and the specific hook or verb it establishes, and when.
+      - What a viewer unfamiliar with the game would take away as the one or two memorable things about it.
+    source_ids: [lieu-trailer-made-gdc2019]
+  - schema_version: 1
+    method_id: trailer-shot-selection-and-pacing-review
+    title: Trailer shot selection and pacing review
+    purpose: Evaluate individual shots for clarity, interest, novelty, and visual quality, and check that the trailer's overall pacing avoids a flat or single-escalation curve in favor of a structure with an initial hook and internal intensity waves.
+    applicable_capability_ids: [trailers, screenshots]
+    steps:
+      - For each candidate shot, check whether it is clear on its own, interesting, new relative to shots already used, and visually strong; a shot failing more than one of these is a candidate to cut or replace.
+      - Check the trailer's overall intensity curve across its runtime; a constant-high, constant-low, or single unbroken escalation each tend to read as predictable or exhausting.
+      - Confirm the player's HUD stays hidden except where a specific HUD element is the direct point of that particular shot.
+      - Confirm a studio or publisher logo unlikely to be recognized on sight appears only on the end slate, not the opening.
+    evidence_requirements:
+      - The shot list with each shot's clear/interesting/new/visual-quality assessment.
+      - The trailer's structure mapped against cold-open, introduction, escalation, and climax.
+    source_ids: [lieu-trailer-made-gdc2019]
+  - schema_version: 1
+    method_id: steam-store-description-structure-review
+    title: Steam store description structure review
+    purpose: Check that a store page's short description and About This Game section follow Valve's documented structure and constraints, rather than reading as an unstructured wall of text or omitting the genre and hook a new visitor needs immediately.
+    applicable_capability_ids: [store_copy, marketing_assets]
+    steps:
+      - Confirm the short description states the genre and core hook within its first sentence, stays plain text with no formatting, and avoids time-based language such as "now available."
+      - Check the About This Game section uses short paragraphs, bolded key features or section headers, and visual aids such as screenshots or GIFs, rather than one dense unbroken block of text.
+      - Confirm no disallowed content is present, such as external links or QR codes, mocked-up Steam UI or fake purchase buttons, advertising of other games, or jargon unexplained for a new audience.
+      - If multiple purchase options exist (editions, DLC), confirm the differences between them are clearly distinguished.
+    evidence_requirements:
+      - The actual short description and About This Game text under review.
+      - Each documented constraint checked explicitly against that text, not assumed compliant.
+    source_ids: [steamworks-store-page-description-docs]
+items:
+  - schema_version: 1
+    item_id: trailer-goals-teach-excite-tease
+    title: A trailer's three goals are to teach, excite, and tease
+    kind: professional_knowledge
+    statement: A game trailer's goals are to teach the audience how the player fits into the game, excite them about its potential, and tease enough to leave them wanting more; achieving two of the three can still work, but the strongest trailers do all three rather than optimizing for spectacle alone.
+    domain_ids: [marketing, game_marketing]
+    capability_ids: [trailers]
+    source_ids: [lieu-trailer-made-gdc2019]
+    method_ids: [trailer-hook-and-comprehension-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: trailer-hook-is-one-thing-not-a-list
+    title: A trailer's hook is one specific thing, not a feature list
+    kind: professional_knowledge
+    statement: Testing a trailer by imagining what a viewer would tell a friend afterward reveals whether it has a real hook; the strongest trailers leave a viewer with one or two memorable, specific things, not a recitation of feature counts or bullet points, which tend to read as generic regardless of how true they are.
+    domain_ids: [marketing, game_marketing]
+    capability_ids: [trailers, marketing_assets]
+    source_ids: [lieu-trailer-made-gdc2019]
+    method_ids: [trailer-hook-and-comprehension-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: trailer-must-teach-before-it-can-excite
+    title: A trailer must teach the player's role before later footage can excite
+    kind: professional_knowledge
+    statement: A game trailer carries a comprehension burden a film trailer does not — the audience needs to understand how the player fits into what they are watching before later footage can land — so the player's core verb or role needs to appear early and escalate in complexity afterward, the same way a tutorial does, rather than assuming context the audience does not yet have.
+    domain_ids: [marketing, game_marketing]
+    capability_ids: [trailers]
+    source_ids: [lieu-trailer-made-gdc2019]
+    method_ids: [trailer-hook-and-comprehension-review]
+    freshness_class: stable
+    confidence: 0.86
+  - schema_version: 1
+    item_id: trailer-generic-comparisons-are-an-anti-pattern
+    title: Emphasizing familiarity over uniqueness makes a trailer forgettable
+    kind: anti_pattern
+    statement: Emphasizing ways a game resembles other familiar games, rather than what is unique about it, tends to make a trailer forgettable, since audiences are watching specifically to find out what is new; familiar-genre language is a genuine asset only when the hook itself is a novel combination of recognizable elements, not a substitute for having one.
+    domain_ids: [marketing, game_marketing]
+    capability_ids: [trailers, marketing_assets]
+    source_ids: [lieu-trailer-made-gdc2019]
+    method_ids: [trailer-hook-and-comprehension-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: trailer-shot-order-creates-meaning
+    title: Shot order creates meaning a single shot does not carry alone
+    kind: professional_knowledge
+    statement: A trailer's shots are not an interchangeable montage; the order two shots are cut together in creates a meaning neither shot carries by itself, such as implying cause and effect, so shot sequencing should be a deliberate editorial decision rather than an arbitrary arrangement of the best-looking clips.
+    domain_ids: [marketing, game_marketing]
+    capability_ids: [trailers]
+    source_ids: [lieu-trailer-made-gdc2019]
+    method_ids: [trailer-shot-selection-and-pacing-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: trailer-pacing-needs-waves-not-a-flat-curve
+    title: Trailer pacing needs waves, not a flat or single-escalation curve
+    kind: standard
+    statement: A trailer that holds constant high intensity throughout, constant low intensity throughout, or rises in one unbroken escalation each tend to read as predictable or exhausting; a structure with an initial hook, a series of smaller intensity waves that escalate overall, and a climax near the end sustains attention more reliably than any of those flatter patterns.
+    domain_ids: [marketing, game_marketing]
+    capability_ids: [trailers]
+    source_ids: [lieu-trailer-made-gdc2019]
+    method_ids: [trailer-shot-selection-and-pacing-review]
+    freshness_class: stable
+    confidence: 0.84
+  - schema_version: 1
+    item_id: trailer-hud-hidden-unless-relevant-to-the-shot
+    title: The HUD stays hidden unless it is the direct point of the shot
+    kind: standard
+    statement: A player's HUD should stay hidden in trailer or screenshot footage except where a specific HUD element is the direct point of that shot, since HUD elements meant to help someone play the game function as visual noise for a viewer who is only watching.
+    domain_ids: [marketing, game_marketing]
+    capability_ids: [trailers, screenshots]
+    source_ids: [lieu-trailer-made-gdc2019]
+    method_ids: [trailer-shot-selection-and-pacing-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: steam-short-description-leads-with-genre-and-hook
+    title: The short description leads with genre and hook, in plain text
+    kind: professional_knowledge
+    statement: Valve's own documentation for the Steam short-description field specifies plain text with no formatting, a strict length limit, and guidance to convey the game's genre and core value proposition immediately, since this text is one of the first things a new storefront visitor reads and disproportionately influences the purchase decision.
+    domain_ids: [marketing, game_marketing]
+    capability_ids: [store_copy]
+    source_ids: [steamworks-store-page-description-docs]
+    method_ids: [steam-store-description-structure-review]
+    freshness_class: version_sensitive
+    confidence: 0.93
+  - schema_version: 1
+    item_id: steam-about-this-game-favors-skimmable-structure
+    title: About This Game favors skimmable structure over a wall of text
+    kind: standard
+    statement: Valve's documentation for the About This Game section explicitly recommends short paragraphs, bolded key features or headers, and visual aids over one dense unbroken block of text, on the stated basis that shorter, skimmable content converts a distracted storefront visitor more effectively than a wall of text.
+    domain_ids: [marketing, game_marketing]
+    capability_ids: [store_copy, marketing_assets]
+    source_ids: [steamworks-store-page-description-docs]
+    method_ids: [steam-store-description-structure-review]
+    freshness_class: version_sensitive
+    confidence: 0.91
+evaluation_ids: [trailer-hook-contract, steam-description-contract]
+created_at: "2026-09-12T00:00:00Z"

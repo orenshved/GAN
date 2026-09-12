@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: esrb-dlc-rating-contract
+pack_id: legal-compliance-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [content_rating_strategy]
+scenario: >-
+  A shipped game carries an ESRB Teen rating. The team is finishing a new
+  DLC pack that adds significantly more graphic violence than anything in
+  the base game. A team status update reads: "DLC is content-complete,
+  ready to ship, rating's already handled since the base game has one." A
+  reviewer is asked whether that claim is accurate.
+discriminates: >-
+  A generic reviewer may accept the claim because the base game's rating
+  already exists and covers the same title. A specialist checks ESRB's
+  documented DLC policy specifically and flags that the base rating does
+  not automatically extend to content exceeding it.
+expected_specialist_findings:
+  - ESRB's own documented process states that DLC exceeding the content level already reflected in the base game's rating requires its own separate rating submission; the base game's Teen rating does not automatically extend to cover it.
+  - The status update treats "rating's already handled" as settled based on the base game's existing rating, which is exactly the documented gap; the DLC's significantly more graphic violence makes a new submission very likely to be required.
+  - Shipping without the required additional rating submission risks the same disclosure and compliance consequences as an incomplete initial submission, independent of what rating the DLC would ultimately receive.
+  - Recommend treating the DLC's rating status as unresolved and requiring a fresh rating submission reflecting its actual content before it ships, rather than inheriting the base game's rating.
+expected_uncertainty:
+  - Whether the increased violence is severe enough to definitely change the assigned rating category, or is borderline, not stated; either way the documented process still requires a submission to determine that.
+acceptable_source_ids: [esrb-ratings-process-docs]
+scoring_notes: >-
+  Pass only if the enriched run specifically names the DLC-exceeding-base-rating
+  policy as the reason the claim is inaccurate, and requires a new
+  submission before shipping. Accepting the claim because a rating already
+  exists for the title, or objecting only to the violence level without
+  naming the submission requirement, is a fail.

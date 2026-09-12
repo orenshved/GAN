@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: visual-identity-cross-medium-contract
+pack_id: game-art-direction
+applies_to_versions: ["1.1.0", "1.1.1"]
+capability_ids: [art_direction, visual_development, ui_art]
+scenario: >-
+  A synthetic production update reports a new building interior as complete,
+  noting "the room looks great, ship it." The room's wall signage was
+  hand-lettered by an outside contractor in a font and color scheme that does
+  not match the signage system used in every other building shown so far.
+  The palette, materials, and props in the room otherwise match the
+  established world. A reviewer is asked whether "the room looks great" is
+  sufficient to approve it.
+discriminates: >-
+  A generic reviewer may accept the room because it looks good taken on its
+  own. A specialist checks the room's signage against the established
+  cross-medium identity system used everywhere else, and flags the mismatch
+  as a consistency failure independent of how the room reads in isolation.
+expected_specialist_findings:
+  - Whether the room looks good in isolation and whether its signage matches the established cross-medium identity system are separate questions; the palette, materials, and props matching does not confirm the signage does.
+  - A visual identity is only actually consistent if every channel it appears through reinforces it; auditing the room as a whole cannot substitute for checking the one channel (signage) that was sourced outside the normal pipeline.
+  - The mismatch most likely reflects an unreviewed contractor choice rather than a deliberate exception, since nothing about the room signals it is meant to read as visually distinct from the rest of the world.
+  - "Recommend revising the signage to the established system, or, if this building is meant to read as a deliberate exception (a foreign faction, a pre-existing structure), documenting that explicitly rather than leaving it as an unreviewed default."
+expected_uncertainty:
+  - Whether the mismatch was a deliberate creative choice or simply unreviewed contractor output — not stated.
+acceptable_source_ids: [macdonald-visual-threshold]
+scoring_notes: >-
+  Pass only if the enriched run specifically names the signage-versus-established-system
+  mismatch as the issue, independent of the room's overall visual quality.
+  Accepting "looks great" as sufficient, or flagging generic "inconsistency"
+  without identifying the signage channel and the cross-medium check, is a
+  fail.

@@ -1,0 +1,29 @@
+schema_version: 1
+benchmark_id: godot-signal-contract
+pack_id: godot-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [engine_architecture, gameplay_engineering, godot_development]
+scenario: >-
+  A synthetic health bar UI node reads the player's current health value
+  every frame inside `_process()` to keep its display up to date, rather than
+  the player node emitting a signal when health actually changes. A
+  contributor reviewing the code says "it works fine, no bugs reported,
+  leave it as is." A reviewer is asked whether this implementation is sound.
+discriminates: >-
+  A generic reviewer may accept "works fine, no bugs" as sufficient. A
+  specialist recognizes the per-frame poll as an avoidable coupling and
+  efficiency problem regardless of whether it currently produces visible
+  bugs.
+expected_specialist_findings:
+  - Polling the player's health every frame means the health bar must know exactly where and how to read the player's internal state, which is a form of coupling the signal system exists specifically to avoid.
+  - This also does unnecessary work every single frame even when health hasn't changed, rather than reacting only when it actually does.
+  - The absence of reported bugs does not mean the coupling and inefficiency aren't real costs; a bug-free implementation can still be the wrong architecture.
+  - Recommend refactoring so the player node emits a signal when health changes, and the health bar connects to that signal instead of polling — this both decouples the UI from the player's internals and removes the redundant per-frame work.
+expected_uncertainty:
+  - Whether this poll has a measurable performance cost in practice given the project's actual frame budget — not stated, though the coupling concern stands regardless.
+acceptable_source_ids: [godot-signals-docs]
+scoring_notes: >-
+  Pass only if the enriched run flags the per-frame poll as an architecture
+  problem independent of whether bugs have been reported, and recommends a
+  signal-based refactor. Accepting "works fine, leave it" without addressing
+  the coupling/efficiency issue is a fail.

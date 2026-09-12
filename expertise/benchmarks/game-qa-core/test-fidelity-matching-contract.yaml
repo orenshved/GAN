@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: test-fidelity-matching-contract
+pack_id: game-qa-core
+applies_to_versions: ["1.2.0", "1.2.1"]
+capability_ids: [automated_testing, functional_testing]
+scenario: >-
+  A synthetic pull request adds a new full-world integration test (the
+  heaviest, slowest test level available, loading the full map, player, and
+  network setup) to cover a minor edge case: attempting to close a chest that
+  has no lock does nothing. The feature's primary successful path, closing an
+  unlocked chest, the action nearly every player will actually perform, has
+  no automated test of any level. A reviewer is asked whether this test
+  suite change is well-targeted before merging.
+discriminates: >-
+  A generic reviewer may accept the change because a test was added and it
+  passes. A specialist checks which behavior received the most expensive
+  test level against which behavior is actually the feature's primary path,
+  and flags the mismatch.
+expected_specialist_findings:
+  - The most expensive, highest-fidelity test level was spent on a minor edge case, while the feature's actual primary path, the behavior nearly every player will exercise, has no coverage at all; the fidelity budget is inverted from where it provides the most protection.
+  - Recommend covering the primary successful path with the highest-fidelity test available, since it protects the behavior most valuable to players, and moving the no-lock edge case to a lighter-weight, faster test level instead.
+  - The new test's assertion approach is not described; before accepting it, confirm it checks the actual outcome (the chest's state is unchanged) rather than an incidental implementation detail such as exact frame timing, which would make the test brittle to unrelated changes.
+  - Recommend restructuring the coverage before merging, so the golden path gets the higher-fidelity test and the edge case moves to the cheaper test level.
+expected_uncertainty:
+  - Whether the new test's assertion targets the true behavioral outcome or an implementation detail — not stated.
+acceptable_source_ids: [masella-sot-automated-testing-gdc2019]
+scoring_notes: >-
+  Pass only if the enriched run specifically identifies the inverted coverage
+  (expensive test on the edge case, no test on the golden path) as the
+  problem and recommends restructuring which level covers which behavior.
+  Accepting the PR because the new test passes, or objecting only to the
+  test's runtime without naming the coverage mismatch, is a fail.

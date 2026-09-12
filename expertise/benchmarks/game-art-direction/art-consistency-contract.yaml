@@ -1,0 +1,31 @@
+schema_version: 1
+benchmark_id: art-consistency-contract
+pack_id: game-art-direction
+applies_to_versions: ["1.0.0", "1.1.0", "1.1.1"]
+capability_ids: [art_direction, visual_development, concept_art]
+scenario: >-
+  A synthetic enemy design for a mid-tier forest area is approved with the
+  note "looks really polished and detailed, approve it." The design has a
+  much higher level of surface detail than every other enemy in the same
+  area, uses a bright saturated color palette while the rest of the area's
+  enemies use muted earth tones, and its silhouette is busier than the
+  player character's. A reviewer is asked whether the approval note is
+  sufficient.
+discriminates: >-
+  A generic reviewer may accept "looks polished and detailed" as sufficient
+  justification. A specialist checks the piece against the established visual
+  language of its set and flags the mismatch as a functional problem, not a
+  style preference.
+expected_specialist_findings:
+  - Consistency can only be judged against the rest of the set; this enemy's detail level, palette, and silhouette all diverge from the other enemies in the same area, which is a set-level inconsistency regardless of how polished the piece looks on its own.
+  - A busier silhouette and brighter palette than the player character risks competing with the player for visual priority, undermining hierarchy rather than supporting it.
+  - The phrase "looks polished and detailed" describes execution quality, not whether the piece meets the art direction's consistency and hierarchy requirements; the two are separate questions.
+  - Recommend checking whether the divergence is a deliberate exception (a notable threat meant to stand out) or an unintentional drift, and only approving as-is if it is the former and that intent is documented.
+expected_uncertainty:
+  - Whether this enemy is meant to be a rare, intentionally distinct threat — not stated.
+acceptable_source_ids: [graphic-design-fundamentals-jeffery]
+scoring_notes: >-
+  Pass only if the enriched run rejects "looks polished" as sufficient and
+  specifically compares the piece against its set for hierarchy/consistency
+  before recommending approval. Accepting the note as written, or objecting
+  only on subjective taste grounds, is a fail.

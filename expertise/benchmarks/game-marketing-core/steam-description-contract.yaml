@@ -1,0 +1,31 @@
+schema_version: 1
+benchmark_id: steam-description-contract
+pack_id: game-marketing-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [store_copy, marketing_assets]
+scenario: >-
+  A synthetic Steam store page draft has a short description reading: "Now
+  available! Check out our amazing new game! Available on multiple
+  platforms with regular updates and DLC!" The About This Game section is a
+  single dense paragraph of about 400 words with no bolding, headers, or
+  embedded images, listing features in run-on sentences. A reviewer is
+  asked whether this store page text is ready to publish.
+discriminates: >-
+  A generic reviewer may accept the text because it is enthusiastic and
+  covers the game's ongoing support. A specialist checks the short
+  description and About This Game section against Valve's own documented
+  structure and flags exactly where each fails it.
+expected_specialist_findings:
+  - The short description uses time-based language ("Now available") that Valve's own guidance says to avoid, and never states the game's genre or core hook, so a new visitor reading only this text would not know what kind of game it is.
+  - The About This Game section is one dense unbroken paragraph with no bolded features, headers, or visual aids, which Valve's own documentation specifically recommends against in favor of shorter, skimmable paragraphs.
+  - Neither section identifies anything distinctive about this specific game; "amazing new game" and generic feature language could describe almost any title on the storefront.
+  - "Recommend rewriting the short description to lead with genre and hook in plain text, and restructuring About This Game into short paragraphs with bolded key features and at least one supporting screenshot or GIF, per Valve's documented guidance."
+expected_uncertainty:
+  - Whether the studio already has screenshots or GIFs ready to embed in the About This Game section — not stated.
+acceptable_source_ids: [steamworks-store-page-description-docs]
+scoring_notes: >-
+  Pass only if the enriched run identifies both the short-description problem
+  (time-based language, missing genre/hook) and the About This Game
+  structure problem (no skimmable formatting) as separate, specific issues.
+  Accepting the text as enthusiastic and sufficient, or flagging only one of
+  the two sections, is a fail.

@@ -1,0 +1,33 @@
+schema_version: 1
+benchmark_id: balance-repeated-tuning-contract
+pack_id: game-design-core
+applies_to_versions: ["1.1.0"]
+capability_ids: [balance_design, systems_design, game_direction]
+scenario: >-
+  A character has already received three consecutive isolated nerfs to its
+  own numbers over three patches and still overperforms. A fourth patch
+  proposes a fourth isolated nerf to the same character's numbers. No other
+  system, such as a shared item or passive ability that interacts with this
+  character, is mentioned or investigated. A reviewer is asked whether a
+  fourth isolated nerf to the character is the right next step.
+discriminates: >-
+  A generic reviewer may accept another isolated nerf as the obvious
+  continuation of what has already been tried three times. A specialist
+  treats three consecutive failed correction attempts on the same target as
+  evidence that the cause may not be isolated to that target, and calls for
+  checking interacting systems before a fourth attempt at the same kind of
+  fix.
+expected_specialist_findings:
+  - Three consecutive nerfs that have not resolved the problem is itself a signal that the character's own numbers may not be the actual cause; the pattern calls for checking related systems, such as shared items or passives, before a fourth isolated tuning pass.
+  - Continuing to correct the same character patch after patch without resolving it is the repeated-tuning pattern that erodes trust in whether the process behind the changes is working, independent of whether a legitimate process exists behind them.
+  - Recommend checking whether a systemic co-factor changed around the same time the character's performance became a problem, and treating the character's own design and any suspected systemic cause as two separate hypotheses to test rather than continuing to isolate tuning on the character alone.
+  - If no systemic cause is found and the character's own design is fundamentally difficult to balance, recommend an explicit redesign decision rather than a fifth incremental tuning pass on the same numbers.
+expected_uncertainty:
+  - Whether a systemic co-factor, such as an item or shared-ability change, occurred around the same time the character's performance became a problem — not stated.
+acceptable_source_ids: [street-lol-balance-gdc2017]
+scoring_notes: >-
+  Pass only if the enriched run identifies the repeated-failed-tuning pattern
+  itself as a reason to look for a systemic cause before approving a fourth
+  isolated nerf. Approving the fourth nerf without investigating a systemic
+  cause, or flagging only that "three nerfs seems like a lot" without naming
+  the systemic-cause check, is a fail.

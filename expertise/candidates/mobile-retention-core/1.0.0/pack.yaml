@@ -1,0 +1,183 @@
+# New candidate pack (K10 of the K5-K15 expansion). state: draft — NOT
+# installed, NOT reviewed, NOT trusted for routing. Capability set: all four
+# capabilities proposed for a new `mobile-retention-lead` agent in
+# docs/AI_WORK_SPLIT.md, drawn from the existing, previously-unowned
+# `retention_design` (`game_design`) and `funnel_analysis`, `ab_testing`,
+# `analytics` (`product_data`).
+# See docs/AI_WORK_SPLIT.md and .ai/handoffs/claude-to-codex.md.
+schema_version: 1
+pack_id: mobile-retention-core
+name: Mobile Retention Core
+version: 1.0.0
+description: >-
+  Retention/engagement data-interpretation discipline (audience-mix
+  confounding, subgroup masking, sample-size and power-curve statistics,
+  cherry-picking, A/B test design pitfalls) grounded in a 3x games
+  co-founder/CEO's own analytics practice (Emily Greer — Kongregate, Double
+  Loop Games), and cognitive-load-aware onboarding design grounded in a
+  PhD psychologist and former Director of UX at Epic Games' own account of
+  onboarding UX testing on Fortnite and Paragon (Celia Hodent).
+state: draft
+domain_ids: [retention, game_retention]
+capability_ids: [retention_design, funnel_analysis, ab_testing, analytics]
+sources:
+  - schema_version: 1
+    source_id: greer-data-driven-or-blinded-gdc2020
+    title: "Data-Driven or Data-Blinded? Uses and Abuses of Analytics in Games"
+    author: Emily Greer
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=MR2rorssk9c
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2020-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a ~60-minute talk); no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Emily Greer, 3x co-founder/CEO in games — co-founder and CEO of Kongregate, where she led its free-to-play web platform and third-party mobile publishing program (40+ shipped mobile titles including AdVenture Capitalist and Animation Throwdown), later co-founder/CEO of Double Loop Games; Board Member and Vice-Chair of the International Game Developers Association."
+    applicable_capability_ids: [funnel_analysis, analytics, ab_testing]
+  - schema_version: 1
+    source_id: hodent-gamers-brain-onboarding-gdc2019
+    title: "The Gamer's Brain, Part 2: UX of Onboarding and Player Engagement"
+    author: Celia Hodent
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=Paf6B1jleCo
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2019-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a ~57-minute talk); no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Celia Hodent, PhD in psychology, 14+ years in the games industry, former Director of User Experience at Epic Games where she worked on the shipped, commercially successful Fortnite (2013-2017), previously at Ubisoft and LucasArts, and author of the book The Gamer's Brain: How Neuroscience and UX Can Impact Video Game Design."
+    applicable_capability_ids: [retention_design]
+methods:
+  - schema_version: 1
+    method_id: retention-data-confound-review
+    title: Retention data confound review
+    purpose: Check that a retention or engagement metric change is actually attributed to a game or design change, rather than an unexamined shift in audience mix, a masked subgroup effect, or a small-sample artifact.
+    applicable_capability_ids: [funnel_analysis, analytics, ab_testing]
+    steps:
+      - Check whether a change in an aggregate metric could be explained by a shift in audience composition, such as a UA campaign, a viral spike, or a platform feature, rather than an actual change to the game; break the metric out by cohort, acquisition source, or tenure before attributing the change to a design decision.
+      - Check whether an aggregate metric that looks healthy could be masking a serious problem in a smaller subgroup, such as a specific device or platform; break out by relevant segments rather than relying on the top-line average alone.
+      - Before trusting a metric drawn from a small sample or narrow slice, check the sample size; a metric with too small a sample is not reliable evidence in either direction.
+      - Confirm a claimed improvement is not cherry-picked, a single favorable data point remembered while surrounding unfavorable data is forgotten, and is not the product of confirmation bias from only looking for data that supports a specific theory.
+    evidence_requirements:
+      - The metric's breakdown by cohort, segment, or acquisition source, not only its aggregate value.
+      - The sample size behind any claimed change or result.
+    source_ids: [greer-data-driven-or-blinded-gdc2020]
+  - schema_version: 1
+    method_id: ab-test-design-and-interpretation-review
+    title: A/B test design and interpretation review
+    purpose: Check that an A/B test's assignment, duration, and evaluation criteria avoid documented, common ways tests produce misleading results.
+    applicable_capability_ids: [ab_testing]
+    steps:
+      - Confirm test assignment happens at the point of actual exposure to the feature being tested, not at an earlier point such as app launch, which would dilute the test population with users who never encountered the tested feature.
+      - Check the test's duration against known biases, an early cutoff over-weights the most engaged players who show up first, and a short window can catch only a short-term effect that reverses over a longer window.
+      - Confirm the test's evaluation looks at more than the single primary KPI and considers downstream effects, since a change can improve its target metric while quietly harming another.
+      - For metrics following a skewed, outlier-driven distribution such as revenue, check that the comparison uses medians or a test built for skewed distributions, not a mean-based comparison that a handful of high-spending outliers can dominate.
+    evidence_requirements:
+      - The point at which users were assigned to the test, and the test's actual run duration.
+      - Which metrics, beyond the single primary one, were reviewed before declaring a result.
+    source_ids: [greer-data-driven-or-blinded-gdc2020]
+  - schema_version: 1
+    method_id: onboarding-cognitive-load-review
+    title: Onboarding cognitive load review
+    purpose: Check that a new player's onboarding experience respects the brain's actual attention and working-memory limits, rather than assuming players will notice and absorb everything presented to them.
+    applicable_capability_ids: [retention_design]
+    steps:
+      - Check whether the onboarding introduces more new mechanics, UI elements, or concepts at once than working memory can hold, roughly three items at a time, and whether unfamiliar mechanics are distributed over time rather than front-loaded.
+      - Check whether an onboarding message or cue competes with an active, attention-demanding task; attention works like a spotlight on one task, not a broad scan, so a critical message shown while the player is engaged elsewhere is likely to go completely unperceived, not merely under-weighted.
+      - Confirm a design's affordances, the visual or interactive cues suggesting what an element does, actually match its real functionality; a mismatched affordance actively misleads players and makes the correct behavior harder to teach afterward.
+      - Confirm evidence for onboarding comprehension comes from actual observed behavior, such as playtest footage or attention data, rather than an assumption that a visible on-screen element was seen or understood.
+    evidence_requirements:
+      - The specific sequence and pacing of new concepts introduced during onboarding.
+      - Any playtest or attention data supporting a claim that a specific onboarding element was actually noticed and understood.
+    source_ids: [hodent-gamers-brain-onboarding-gdc2019]
+items:
+  - schema_version: 1
+    item_id: metric-changes-can-be-audience-mix-not-design
+    title: A metric change can reflect audience mix, not an actual design change
+    kind: professional_knowledge
+    statement: A change in an aggregate engagement or revenue metric is often caused by a shift in who makes up the audience, such as a UA campaign, a viral spike, or a platform feature, rather than an actual change to the game; before attributing a metric change to a design decision, the metric should be broken out by cohort, acquisition source, or tenure to rule out an audience-mix explanation.
+    domain_ids: [retention, game_retention]
+    capability_ids: [funnel_analysis, analytics]
+    source_ids: [greer-data-driven-or-blinded-gdc2020]
+    method_ids: [retention-data-confound-review]
+    freshness_class: stable
+    confidence: 0.9
+  - schema_version: 1
+    item_id: aggregate-averages-can-mask-subgroup-problems
+    title: Aggregate averages can mask a real problem in a smaller subgroup
+    kind: anti_pattern
+    statement: A healthy-looking aggregate metric can mask a serious problem affecting a smaller subgroup, such as a specific device or platform; relying on top-line averages alone, without breaking a metric out by relevant segments, risks missing real, fixable issues entirely.
+    domain_ids: [retention, game_retention]
+    capability_ids: [analytics]
+    source_ids: [greer-data-driven-or-blinded-gdc2020]
+    method_ids: [retention-data-confound-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: small-sample-metrics-are-not-reliable-evidence
+    title: Metrics from a small sample are not reliable evidence in either direction
+    kind: professional_knowledge
+    statement: A metric computed from a small enough sample size is not reliable evidence in either direction, since binary metrics like retention tolerate smaller samples much better than skewed, outlier-driven metrics like revenue; sample size should be checked and stated alongside any cohort or test result, not assumed adequate.
+    domain_ids: [retention, game_retention]
+    capability_ids: [analytics, ab_testing]
+    source_ids: [greer-data-driven-or-blinded-gdc2020]
+    method_ids: [retention-data-confound-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: cherry-picking-and-confirmation-bias-distort-metric-review
+    title: Cherry-picking and confirmation bias distort metric review
+    kind: anti_pattern
+    statement: Reviewers naturally remember the one data point that hit a target and forget the surrounding data that did not, and tend to find confirming data when they go looking with a specific theory already in mind; a metric review should check the full run of data around a claimed result, not the single most favorable point.
+    domain_ids: [retention, game_retention]
+    capability_ids: [analytics]
+    source_ids: [greer-data-driven-or-blinded-gdc2020]
+    method_ids: [retention-data-confound-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: ab-test-assignment-must-match-actual-exposure
+    title: A/B test assignment must match the point of actual exposure
+    kind: professional_knowledge
+    statement: An A/B test's population should be assigned at the point where users actually encounter the feature being tested, not at an earlier point such as app launch; assigning too early dilutes the test population with users who never interacted with the tested feature and biases the result.
+    domain_ids: [retention, game_retention]
+    capability_ids: [ab_testing]
+    source_ids: [greer-data-driven-or-blinded-gdc2020]
+    method_ids: [ab-test-design-and-interpretation-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: single-metric-ab-test-verdicts-miss-downstream-effects
+    title: Judging an A/B test on a single metric alone can miss real downstream cost
+    kind: anti_pattern
+    statement: Judging an A/B test on a single target metric alone risks missing a real downstream cost; a documented case improved its primary conversion metric while quietly reducing overall revenue because the change removed options the most valuable players relied on, a tradeoff only visible by reviewing more than one metric together.
+    domain_ids: [retention, game_retention]
+    capability_ids: [ab_testing]
+    source_ids: [greer-data-driven-or-blinded-gdc2020]
+    method_ids: [ab-test-design-and-interpretation-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: onboarding-must-respect-working-memory-limits
+    title: Onboarding must respect working memory's limited capacity
+    kind: professional_knowledge
+    statement: Working memory can hold only a few new items at once, roughly three; onboarding that introduces more new mechanics, controls, or concepts simultaneously than this exceeds what a new player can actually process, and unfamiliar mechanics should be distributed over time rather than front-loaded into the first few minutes.
+    domain_ids: [retention, game_retention]
+    capability_ids: [retention_design]
+    source_ids: [hodent-gamers-brain-onboarding-gdc2019]
+    method_ids: [onboarding-cognitive-load-review]
+    freshness_class: stable
+    confidence: 0.89
+  - schema_version: 1
+    item_id: onboarding-cues-competing-with-active-tasks-go-unnoticed
+    title: Onboarding cues competing with an active task go unnoticed, not under-weighted
+    kind: anti_pattern
+    statement: Attention functions like a spotlight focused on one task at a time, not a broad scan of everything on screen; an onboarding message or cue shown while the player is actively engaged in a demanding task, such as combat, is likely to go completely unperceived rather than merely under-weighted, a failure mode directly observed in real playtest eye-tracking data.
+    domain_ids: [retention, game_retention]
+    capability_ids: [retention_design]
+    source_ids: [hodent-gamers-brain-onboarding-gdc2019]
+    method_ids: [onboarding-cognitive-load-review]
+    freshness_class: stable
+    confidence: 0.9
+evaluation_ids: [audience-mix-confound-contract, onboarding-attention-contract]
+created_at: "2026-09-12T00:00:00Z"

@@ -1,0 +1,199 @@
+# New candidate pack (K3 remainder). state: draft — NOT installed, NOT
+# reviewed, NOT trusted for routing. No owning agent requires this pack yet.
+#
+# Built per GAN_CLAUDE_RESEARCH_SOURCING_STRATEGY.md: this domain has no
+# freely-licensed formal literature (the reason it was deferred out of the
+# earlier K3 pass), so sourcing follows that strategy's practitioner-evidence
+# model instead of the written-standard model used elsewhere in this program.
+#
+# Source 1 is a GDC talk's actual transcript, extracted with yt-dlp (native
+# captions) rather than reasoned from title/summary — two independent
+# secondary write-ups of this same talk were checked first and had no
+# substantive content, so the primary transcript was pulled directly.
+# Source 2 is a shipped-title professional artist's tutorial catalog, whose
+# GitHub README states an explicit open license, checked directly rather
+# than assumed.
+#
+# Every claim below is original wording distilled from the acquired material,
+# not transcript text reproduced verbatim, per the strategy's licensing
+# section (§15): summaries and derived methods, not copied source material.
+schema_version: 1
+pack_id: pixel-art-production
+name: Pixel Art Production
+version: 1.0.0
+description: >-
+  Pixel-cluster and silhouette readability review, limited-frame animation
+  craft (spacing, smears, overlapping action), and indexed-palette/shading
+  discipline, distilled from a shipped-title developer's GDC talk and a
+  shipped-title artist's open-licensed tutorial catalog. Practitioner-sourced
+  by design — this craft has no equivalent to a WCAG or Scrum Guide, and the
+  professionally useful knowledge is concentrated in talks and tutorials, not
+  formal standards.
+state: draft
+domain_ids: [art, game_art]
+capability_ids: [pixel_art, animation]
+sources:
+  - schema_version: 1
+    source_id: kyle-bunk-gdc-talk
+    title: "Animation Bootcamp: High Resolution Pixel Art and Animation"
+    author: Kyle Bunk
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=Ih65Kg4DTw8
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2018-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and reviewed directly (two secondary write-ups of this talk were checked first and had no substantive content, so the primary source was pulled). Cited for attribution; no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Kyle Bunk, animator at Firaxis Games, worked on the XCOM 2 expansion (per the talk's own introduction)."
+    applicable_capability_ids: [pixel_art, animation]
+  - schema_version: 1
+    source_id: saint11-pixel-art-tutorials
+    title: Saint11 Pixel Art Tutorials
+    author: Pedro Medeiros (Saint11)
+    publisher: Pedro Medeiros, via GitHub (saint11/Saint11Tutorials)
+    uri: https://github.com/saint11/Saint11Tutorials
+    source_type: official_documentation
+    retrieved_at: "2026-09-12T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Creative Commons Attribution 4.0 International (CC BY 4.0), as stated in the repository's own README — verified directly. Author credential verified: Pedro Medeiros, pixel artist credited on the shipped, commercially released games Celeste and TowerFall, co-founder of Coldblood Inc. Used here to cross-verify silhouette, shading, and subpixel-animation as established, professionally recognized topics in a shipped-title artist's own curriculum, not to reproduce specific tutorial content."
+    applicable_capability_ids: [pixel_art]
+methods:
+  - schema_version: 1
+    method_id: pixel-cluster-silhouette-review
+    title: Pixel cluster and silhouette review
+    purpose: Evaluate a sprite or animation frame's readability by its silhouette and pixel-cluster grouping before adding interior detail, rather than judging it by rendered detail alone.
+    applicable_capability_ids: [pixel_art]
+    steps:
+      - Reduce the piece to a pure silhouette, one flattened value, and confirm the pose, action, or shape reads clearly at that stage alone.
+      - Check that pixels of the same local color or value form coherent, deliberate clusters rather than scattered, isolated single-pixel noise.
+      - Confirm value and contrast groups stay distinct enough that the piece would still read if converted to grayscale.
+      - Only after silhouette and value grouping read clearly, add selective interior detail; do not add detail to compensate for a silhouette or clustering problem.
+    evidence_requirements:
+      - The specific sprite or frame under review, viewed as a flattened silhouette and at native pixel scale, not upscaled or smoothed.
+      - Comparison against the rest of its set for consistent value grouping.
+    source_ids: [saint11-pixel-art-tutorials, kyle-bunk-gdc-talk]
+  - schema_version: 1
+    method_id: limited-frame-animation-review
+    title: Limited-frame animation review
+    purpose: Evaluate a low-frame-count animation's spacing, smears, and overlapping action by how it reads at actual playback speed, not by inspecting individual frames in isolation.
+    applicable_capability_ids: [animation]
+    steps:
+      - Check spacing between key poses; uneven spacing, with holds and acceleration or deceleration, reads as natural movement, while uniform spacing reads as mechanical.
+      - For a large, fast pose change with too few frames to show the true motion, add a smear or stretch frame between the poses rather than a hard cut; judge the smear at playback speed, not as a still image.
+      - Confirm different parts of a rig or character do not all start and stop moving in exact unison; stagger the timing of secondary parts such as cloth, hair, or a held weapon against the primary motion.
+      - Evaluate any shortcut that would be physically impossible in reality, such as a prop instantly repositioning, at the animation's actual playback frame rate before rejecting it.
+    evidence_requirements:
+      - Runtime or real-speed playback of the animation, not a single exported frame.
+      - The target frame rate and platform the animation will actually run at.
+    source_ids: [kyle-bunk-gdc-talk]
+  - schema_version: 1
+    method_id: indexed-palette-shading-review
+    title: Indexed palette and shading review
+    purpose: Confirm a sprite's color and shading approach uses a deliberately restricted, indexed palette and a consistent banding or dithering choice, rather than an unrestricted or per-frame-inconsistent color approach.
+    applicable_capability_ids: [pixel_art]
+    steps:
+      - Confirm the piece uses a fixed, restricted set of indexed colors defined before detailed work begins, so a later palette-wide correction can be made once instead of frame by frame.
+      - Identify the shading approach, hard banding with a small number of discrete value steps, dithering with a patterned blend, or a deliberate mix, and confirm it is applied consistently across the set.
+      - For animated pieces, weigh dithering's per-frame consistency cost against banding's animation-friendliness; treat dithering as a heavier commitment specifically for animated sprites.
+      - Confirm the exported asset carries alpha transparency rather than being flattened onto an opaque background.
+    evidence_requirements:
+      - The declared or indexed palette size and the specific shading technique used.
+      - Whether the export includes alpha transparency.
+    source_ids: [kyle-bunk-gdc-talk]
+items:
+  - schema_version: 1
+    item_id: pixel-silhouette-clusters-before-detail
+    title: Silhouette and clusters are evaluated before interior detail
+    kind: professional_knowledge
+    statement: A sprite's readability should be confirmed at the silhouette and pixel-cluster level, since coherent clusters of same-value pixels read as intentional form while scattered single-pixel noise does not; interior detail cannot fix a silhouette or clustering problem, only obscure it.
+    domain_ids: [art, game_art]
+    capability_ids: [pixel_art]
+    source_ids: [saint11-pixel-art-tutorials, kyle-bunk-gdc-talk]
+    method_ids: [pixel-cluster-silhouette-review]
+    freshness_class: stable
+    confidence: 0.9
+  - schema_version: 1
+    item_id: pixel-isolated-noise-is-not-detail
+    title: Isolated single-pixel noise is not detail
+    kind: anti_pattern
+    statement: Scattering individual off-palette or high-contrast pixels across a form to suggest texture, without them forming a coherent cluster, reads as noise rather than intentional detail and typically degrades readability rather than improving it.
+    domain_ids: [art, game_art]
+    capability_ids: [pixel_art]
+    source_ids: [saint11-pixel-art-tutorials]
+    method_ids: [pixel-cluster-silhouette-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: pixel-uneven-spacing-reads-natural
+    title: Uneven spacing reads as natural motion
+    kind: standard
+    statement: Animation frames spaced evenly in time produce mechanical-looking movement; natural motion needs uneven spacing, with holds and acceleration or deceleration between key poses, especially in low-frame-count sprite animation where every frame's timing is deliberate.
+    domain_ids: [art, game_art]
+    capability_ids: [animation]
+    source_ids: [kyle-bunk-gdc-talk]
+    method_ids: [limited-frame-animation-review]
+    freshness_class: stable
+    confidence: 0.9
+  - schema_version: 1
+    item_id: pixel-smear-substitutes-for-missing-frames
+    title: Smear frames substitute for missing motion frames
+    kind: professional_knowledge
+    statement: When a frame budget is too limited to show a fast transition between two poses directly, a smear or stretch frame communicates the motion in between; a smear does not need to look correct as a still image, only to read well at actual playback speed.
+    domain_ids: [art, game_art]
+    capability_ids: [animation]
+    source_ids: [kyle-bunk-gdc-talk]
+    method_ids: [limited-frame-animation-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: pixel-cheat-invisible-at-speed-is-acceptable
+    title: A cheat invisible at playback speed is an acceptable trade-off
+    kind: heuristic
+    statement: A physically impossible shortcut in an animation, such as a prop instantly repositioning between two adjacent frames, is an acceptable trade-off against production time if it is not perceptible at the animation's actual playback speed; judge such shortcuts at speed, not by inspecting individual frames.
+    domain_ids: [art, game_art, production]
+    capability_ids: [animation]
+    source_ids: [kyle-bunk-gdc-talk]
+    method_ids: [limited-frame-animation-review]
+    freshness_class: stable
+    confidence: 0.82
+  - schema_version: 1
+    item_id: pixel-index-palette-before-detail-work
+    title: Index the palette before detailed work, not after
+    kind: professional_knowledge
+    statement: Restricting a sprite to a fixed, indexed set of colors before doing detailed work means a later color correction can be applied once, palette-wide, instead of manually across every already-completed frame.
+    domain_ids: [art, game_art]
+    capability_ids: [pixel_art]
+    source_ids: [kyle-bunk-gdc-talk]
+    method_ids: [indexed-palette-shading-review]
+    freshness_class: stable
+    confidence: 0.9
+  - schema_version: 1
+    item_id: pixel-dithering-costs-more-in-animation
+    title: Dithering costs more to keep consistent across animation frames than banding
+    kind: standard
+    statement: Dithering can achieve a comparable shading effect to hard banding under palette constraints, but its pattern must be kept visually consistent frame to frame in animation, which is a heavier and more error-prone commitment than banding for animated sprites specifically; this is a production trade-off, not a rule against dithering itself.
+    domain_ids: [art, game_art]
+    capability_ids: [pixel_art, animation]
+    source_ids: [kyle-bunk-gdc-talk]
+    method_ids: [indexed-palette-shading-review]
+    freshness_class: stable
+    confidence: 0.82
+  - schema_version: 1
+    item_id: pixel-export-alpha-not-opaque
+    title: Export with alpha transparency, not an opaque background
+    kind: anti_pattern
+    statement: Flattening a sprite onto a solid background color instead of exporting with alpha transparency assumes a single, predictable usage context; sprites are commonly reused in contexts such as overlays, compositing, or streaming that the original export did not anticipate, and a missing alpha channel blocks that reuse.
+    domain_ids: [art, game_art]
+    capability_ids: [pixel_art]
+    source_ids: [kyle-bunk-gdc-talk]
+    method_ids: [indexed-palette-shading-review]
+    freshness_class: stable
+    confidence: 0.86
+evaluation_ids:
+  [
+    pixel-cluster-contract,
+    pixel-animation-spacing-contract,
+    pixel-palette-contract,
+  ]
+created_at: "2026-09-12T00:00:00Z"

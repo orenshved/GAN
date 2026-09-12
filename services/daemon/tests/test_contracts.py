@@ -41,9 +41,31 @@ def test_ontology_covers_exact_prd_capabilities_and_allows_extensions():
     section = prd.split("# 15. Capability Ontology")[1].split("# 16. Agent Definition")[0]
     expected = set(re.findall(r"^- ([a-z_]+)$", section, flags=re.M))
     entries = json.loads((ROOT / "capabilities/ontology/initial.json").read_text())
-    assert {item["capability_id"] for item in entries} == expected
+    capability_ids = {item["capability_id"] for item in entries}
+    assert expected <= capability_ids
+    assert capability_ids - expected == {
+        "project_analysis",
+        "dependency_analysis",
+        "godot_development",
+        "local_model_selection",
+        "resource_analysis",
+        "contract_review",
+        "ip_licensing_review",
+        "platform_tos_compliance",
+        "content_rating_strategy",
+        "security_review",
+        "data_protection",
+        "vulnerability_management",
+        "incident_response",
+        "access_control_review",
+        "instructional_design",
+        "knowledge_retention",
+        "agent_onboarding",
+    }
     for entry in entries:
-        contracts.Capability.model_validate(entry)
+        capability = contracts.Capability.model_validate(entry)
+        assert capability.capability_id not in capability.related_capability_ids
+        assert set(capability.related_capability_ids) <= capability_ids
     contracts.Capability.model_validate(
         VALID["Capability"] | {"capability_id": "future_capability"}
     )

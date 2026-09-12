@@ -1,0 +1,173 @@
+# New candidate pack (K13 of the K5-K15 expansion). state: draft - NOT
+# installed, NOT reviewed, NOT trusted for routing. Capability set: the
+# existing, currently unowned `art` capability proposed for a new
+# `tech-art-lead` agent in docs/AI_WORK_SPLIT.md (`technical_art`), the
+# art/engineering bridge discipline - distinct from both art-lead (visual
+# authority) and engineering-lead (general engine code).
+# See docs/AI_WORK_SPLIT.md and .ai/handoffs/claude-to-codex.md.
+schema_version: 1
+pack_id: technical-art-core
+name: Technical Art Core
+version: 1.0.0
+description: >-
+  Shader-authoring risk and tooling discipline (tiered shader libraries,
+  performance visibility at authoring time, real-condition preview,
+  plain-language parameters), grounded in a Valve and Bungie technical art
+  veteran's own account of the shipped Half-Life, Team Fortress, and
+  Counter-Strike series (Steve Theodore), paired with plugin-based
+  tool and rigging pipeline architecture discipline (encapsulated,
+  versioned, metadata-agnostic tools that scale without collapsing into
+  unmaintainable monoliths), grounded in a senior technical artist's own
+  account of a multi-project AAA studio's tools team (Michael Malinowski,
+  Creative Assembly).
+state: draft
+domain_ids: [technical_art, game_technical_art]
+capability_ids: [technical_art]
+sources:
+  - schema_version: 1
+    source_id: theodore-who-shall-build-this-shader-2009
+    title: "Who Among Us Shall Build This Shader?"
+    author: Steve Theodore
+    publisher: Game Developer (formerly Gamasutra)
+    uri: https://www.gamedeveloper.com/programming/who-among-us-shall-build-this-shader-
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2009-03-16T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "No open content license found on the page (checked live); standard Game Developer/Gamasutra copyright applies by default. Cited for attribution and reference only, no text reproduced, every item below is original distilled wording. Speaker credential verified: Steve Theodore, animator and technical artist at Valve from 1997 to 2002 credited on the shipped Half-Life, Team Fortress Classic, Counter-Strike, and Team Fortress 2, later Technical Art Manager at Zipper Interactive and Technical Director at Bungie Studios (2007-2009, spanning this article's publication); independently verified via the Half-Life Wiki, MobyGames, and Game Developer's own author page."
+    applicable_capability_ids: [technical_art]
+  - schema_version: 1
+    source_id: malinowski-forward-facing-rigs-tools-pipelines-gdc2020
+    title: "A Practical Approach to Developing Forward-Facing Rigs, Tools and Pipelines"
+    author: Michael Malinowski
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=3l5tgk8hRn4
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2020-01-22T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a 52-minute talk plus Q&A); no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Michael Malinowski, Senior Technical Artist at Creative Assembly (Total War series) with 11 years in the industry spanning rigging, tools, and pipeline development, previously at Animal Logic, Guerrilla Games, and Lionhead Studios; independently verified via GDC's own official talk listing and the talk's own account of production tools shipped across Creative Assembly's multiple concurrent AAA projects."
+    applicable_capability_ids: [technical_art]
+methods:
+  - schema_version: 1
+    method_id: shader-authoring-tiering-and-risk-review
+    title: Shader authoring tiering and risk review
+    purpose: Check that shader authorship, performance visibility, and preview accuracy are structured to prevent late-development performance surprises and cross-asset visual inconsistency, rather than leaving them to be discovered only once assets are already in the game.
+    applicable_capability_ids: [technical_art]
+    steps:
+      - Check whether shader authorship is split by risk tier, most artists working from a curated library of specialized, purpose-built shaders rather than an open-ended general-purpose shader graph, with genuine custom shader creation reserved for a small, designated group of technical artists.
+      - Check whether each library shader exposed to artists carries an explicit, plain-language relative performance indicator, rather than leaving artists to discover a shader's real cost only once it is profiled during a late optimization pass.
+      - Check whether a shader's editor preview reflects the game's actual dynamic lighting, HDR, and moving-character conditions, rather than only a static preview setup, since materials that look consistent with each other in a static preview can diverge sharply once placed in real gameplay conditions.
+      - Check whether shader parameters exposed to artists are named after their visual effect in plain language rather than raw technical or mathematical terms, since a parameter an artist cannot interpret tends to get tuned by trial and error, which is where cross-asset inconsistency actually originates.
+    evidence_requirements:
+      - Whether custom, non-library shader authorship is restricted to a small, designated group rather than open to any artist.
+      - Whether a shader's performance cost is visible to the artist authoring it, before it reaches a late-development optimization pass.
+    source_ids: [theodore-who-shall-build-this-shader-2009]
+  - schema_version: 1
+    method_id: plugin-based-tool-and-exporter-architecture-review
+    title: Plugin-based tool and exporter architecture review
+    purpose: Check that a pipeline tool handling multiple data types or content variants is structured to scale without becoming an unmaintainable monolith, and can absorb new requirements without forcing already-shipped content to break.
+    applicable_capability_ids: [technical_art]
+    steps:
+      - Check whether a pipeline tool that handles multiple independent data types, such as an exporter handling geometry, skeletal data, and cloth, encapsulates each data type as an isolated, independently addable unit rather than accumulating all of them as intermixed logic inside one growing file, since the intermixed version becomes unreviewable and eventually gets discarded and rewritten from scratch rather than maintained.
+      - Check whether adding support for a new data type or asset variant requires only adding a new self-contained unit in a known location, rather than editing shared logic that every other data type also depends on, since the ability to add functionality without touching working code is what actually lets a team experiment without fear of breaking something else.
+      - Check whether a tool that must remain compatible with content already in production, such as rigs built years earlier, versions its building-block units so old content keeps building against the version it was authored with while new work uses the latest, rather than forcing a single shared version that either breaks old content or blocks all future iteration.
+      - Check whether tools depend on a generic interface to project-specific structures, such as rig naming conventions or metadata layout, rather than hardcoding assumptions about one specific structure, since a generic interface lets the same tool logic work unmodified across multiple rig types, asset sources, or even different authoring applications.
+    evidence_requirements:
+      - Whether the tool's support for each data type or variant is isolated enough that changing one cannot silently affect another.
+      - Whether older, already-shipped content is required to be manually migrated to a new tool version, or continues working against the version it was built with.
+    source_ids: [malinowski-forward-facing-rigs-tools-pipelines-gdc2020]
+items:
+  - schema_version: 1
+    item_id: tiered-shader-authorship-reduces-late-development-risk
+    title: Tiered shader authorship reduces late-development risk
+    kind: professional_knowledge
+    statement: Splitting shader authorship by risk tier, most artists working from a curated library of purpose-built shaders while genuine custom shader creation stays with a small group of designated technical artists, reduces the risk of open-ended experimentation producing late-development performance surprises that have to be stripped out under deadline pressure.
+    domain_ids: [technical_art, game_technical_art]
+    capability_ids: [technical_art]
+    source_ids: [theodore-who-shall-build-this-shader-2009]
+    method_ids: [shader-authoring-tiering-and-risk-review]
+    freshness_class: stable
+    confidence: 0.83
+  - schema_version: 1
+    item_id: shader-performance-must-be-visible-at-authoring-time
+    title: Shader performance must be visible at authoring time, not discovered later
+    kind: anti_pattern
+    statement: An artist given a general-purpose shader tool without visibility into relative cost will naturally experiment broadly, and the resulting performance problems tend to surface only late in development when they are most expensive and stressful to fix, exposing a shader's relative performance cost directly in the authoring tool, rather than leaving it to be discovered during a late optimization pass, is a documented way to avoid this.
+    domain_ids: [technical_art, game_technical_art]
+    capability_ids: [technical_art]
+    source_ids: [theodore-who-shall-build-this-shader-2009]
+    method_ids: [shader-authoring-tiering-and-risk-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: static-preview-can-hide-real-condition-visual-inconsistency
+    title: A static preview can hide real-condition visual inconsistency
+    kind: anti_pattern
+    statement: Individually authored materials can look consistent with each other inside a static editor preview and still diverge sharply once placed under the game's actual dynamic lighting, HDR, or a moving character, without a preview that reflects real in-game conditions, visual inconsistency across a cast or environment can go completely undetected until it is already in the shipped game.
+    domain_ids: [technical_art, game_technical_art]
+    capability_ids: [technical_art]
+    source_ids: [theodore-who-shall-build-this-shader-2009]
+    method_ids: [shader-authoring-tiering-and-risk-review]
+    freshness_class: stable
+    confidence: 0.82
+  - schema_version: 1
+    item_id: plain-language-shader-parameters-prevent-trial-and-error-tuning
+    title: Plain-language shader parameters prevent trial-and-error tuning
+    kind: professional_knowledge
+    statement: A shader parameter exposed to artists using raw technical or mathematical naming gets tuned by trial and error rather than genuine understanding of its visual effect, which is where cross-asset inconsistency actually originates, naming exposed parameters after their visual effect in plain language is a documented way to close this gap.
+    domain_ids: [technical_art, game_technical_art]
+    capability_ids: [technical_art]
+    source_ids: [theodore-who-shall-build-this-shader-2009]
+    method_ids: [shader-authoring-tiering-and-risk-review]
+    freshness_class: stable
+    confidence: 0.8
+  - schema_version: 1
+    item_id: encapsulated-plugin-architecture-prevents-monolithic-tool-collapse
+    title: Encapsulated plugin architecture prevents monolithic tool collapse
+    kind: anti_pattern
+    statement: A pipeline tool handling several independent data types tends to grow, through ordinary feature requests over a project's life, into one large intermixed file that no one fully understands or is willing to touch, and is eventually discarded and rewritten from scratch rather than maintained, encapsulating each data type as an isolated, independently addable unit from the start is a documented way to avoid reaching that point.
+    domain_ids: [technical_art, game_technical_art]
+    capability_ids: [technical_art]
+    source_ids: [malinowski-forward-facing-rigs-tools-pipelines-gdc2020]
+    method_ids: [plugin-based-tool-and-exporter-architecture-review]
+    freshness_class: stable
+    confidence: 0.86
+  - schema_version: 1
+    item_id: isolated-extensibility-lowers-the-cost-of-experimentation
+    title: Isolated extensibility lowers the cost of experimentation
+    kind: professional_knowledge
+    statement: When adding support for a new data type or variant only requires dropping in a new self-contained unit rather than editing logic that every other data type also depends on, the actual cost of a failed experiment drops to removing one file, this lowered risk is what actually gives a technical art team the confidence to try new approaches rather than defaulting to the safest known solution.
+    domain_ids: [technical_art, game_technical_art]
+    capability_ids: [technical_art]
+    source_ids: [malinowski-forward-facing-rigs-tools-pipelines-gdc2020]
+    method_ids: [plugin-based-tool-and-exporter-architecture-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: versioning-pipeline-components-lets-old-content-keep-building
+    title: Versioning pipeline components lets old content keep building while tools evolve
+    kind: professional_knowledge
+    statement: A tool that must remain compatible with content already in production should version its building-block units so that older content continues to build against the version it was originally authored with while new work uses the latest version, rather than forcing every piece of content onto one shared version, which either breaks stable, already-shipped content or blocks the team from ever iterating on the tool again.
+    domain_ids: [technical_art, game_technical_art]
+    capability_ids: [technical_art]
+    source_ids: [malinowski-forward-facing-rigs-tools-pipelines-gdc2020]
+    method_ids: [plugin-based-tool-and-exporter-architecture-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: generic-metadata-interfaces-let-tool-logic-work-across-rig-types
+    title: Generic metadata interfaces let the same tool logic work across rig types and applications
+    kind: professional_knowledge
+    statement: Tools that depend on a generic interface to a rig's structure, rather than hardcoding one specific naming convention or metadata layout, can run the exact same underlying logic across rigs with completely different internal structures, different metadata systems, and even different authoring applications, with the cost of supporting a new structure isolated to writing one new interface implementation rather than modifying the tool itself.
+    domain_ids: [technical_art, game_technical_art]
+    capability_ids: [technical_art]
+    source_ids: [malinowski-forward-facing-rigs-tools-pipelines-gdc2020]
+    method_ids: [plugin-based-tool-and-exporter-architecture-review]
+    freshness_class: stable
+    confidence: 0.84
+evaluation_ids:
+  [shader-access-expansion-contract, monolithic-exporter-edit-contract]
+created_at: "2026-09-12T00:00:00Z"

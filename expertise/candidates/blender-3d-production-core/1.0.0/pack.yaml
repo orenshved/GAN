@@ -1,0 +1,249 @@
+# New candidate pack (K12 of the K5-K15 expansion). state: draft - NOT
+# installed, NOT reviewed, NOT trusted for routing. Capability set: the
+# existing, currently unowned `art` capabilities proposed for a new
+# `3d-art-director` agent in docs/AI_WORK_SPLIT.md (`character_art`,
+# `environment_art`, `prop_art`, `rigging`, `animation`) - none of these
+# are in art-lead's current capability set. Deliberately a tool-specific
+# pack layered on general 3D-art capabilities, the same pattern godot-core
+# uses for engine_architecture/gameplay_engineering.
+# See docs/AI_WORK_SPLIT.md and .ai/handoffs/claude-to-codex.md.
+schema_version: 1
+pack_id: blender-3d-production-core
+name: Blender 3D Production Core
+version: 1.0.0
+description: >-
+  Blender-specific game-asset production technique (non-destructive
+  modifier workflow, custom mesh-attribute interop data, real-time
+  viewport validation, hair-card grooming) grounded in Embark Studios'
+  own official account of adopting Blender studio-wide for the shipped,
+  commercially live THE FINALS and the shipped ARC Raiders, paired with
+  shared-topology character/rig production discipline and iteration
+  discipline grounded in BioShock Infinite's own Lead Character Artist
+  (Gavin Goulden, Irrational Games), and first-person rig-architecture and
+  additive-animation discipline grounded in a Blizzard animator's own
+  account of Overwatch's shipped hero roster (Matthew Boehm).
+state: draft
+domain_ids: [blender, game_3d_production]
+capability_ids: [character_art, environment_art, prop_art, rigging, animation]
+sources:
+  - schema_version: 1
+    source_id: embark-blender-game-dev-pipeline-2020
+    title: "Using Blender in Game Development"
+    author: Daniel Bystedt
+    publisher: Blender Foundation (blender.org User Stories), originally Embark Studios
+    uri: https://www.blender.org/user-stories/using-blender-in-game-development-by-embark/
+    source_type: official_documentation
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2020-11-27T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    license: "Most of the blender.org website is published under Creative Commons Attribution per Blender's own website license policy, checked live at blender.org/about/license/, with stated exceptions not individually re-checked for this specific page. No text reproduced regardless; every item below is original distilled wording. Speaker credential verified: Daniel Bystedt, character artist at Embark Studios (Stockholm, makers of the shipped, commercially live THE FINALS and the shipped ARC Raiders) at the time of writing, active Blender community member and code.blender.org contributor; independently verified via Blender's own conference speaker profile and BlenderNation's independent coverage of Embark's Blender Development Fund sponsorship."
+    applicable_capability_ids: [character_art, environment_art, prop_art]
+  - schema_version: 1
+    source_id: goulden-bioshock-infinite-iteration-gdc2014
+    title: "Change Is Good: The Importance of Iteration Within a Character Art Pipeline"
+    author: Gavin Goulden
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=1qH8PWeHyo8
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2014-03-19T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a 57-minute talk plus Q&A); no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Gavin Goulden, Lead Character Artist at Irrational Games credited as Lead Character Artist on the shipped, critically acclaimed BioShock Infinite and its Burial at Sea DLC, moving to Insomniac Games as Lead Character Artist on the shipped Sunset Overdrive around the time of this GDC 2014 talk; independently verified via 3dtotal's published interview and GDC's own official talk listing."
+    applicable_capability_ids: [character_art, prop_art, rigging]
+  - schema_version: 1
+    source_id: boehm-overwatch-first-person-animation-gdc2017
+    title: "Animation Bootcamp: The First Person Animation of Overwatch"
+    author: Matthew Boehm
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=7t0hLZd_8Z4
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2017-03-02T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a 34-minute talk); no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Matthew Boehm, animator at Blizzard Entertainment on the shipped, commercially successful Overwatch, specializing in first-person animation across its playable hero roster; independently verified via GDC's own official talk listing and the talk's own cross-references to fellow Blizzard Overwatch animators Jesse Davis and Dave Gibson's own GDC talks on the same production."
+    applicable_capability_ids: [animation, rigging]
+methods:
+  - schema_version: 1
+    method_id: blender-nondestructive-asset-workflow-review
+    title: Blender non-destructive asset workflow review
+    purpose: Check that a 3D asset production workflow in Blender actually gets the tool's key production advantages, non-destructive editing, custom data for cross-tool interop, and real-time preview validation, rather than working as if it were a purely destructive, offline-render tool.
+    applicable_capability_ids: [character_art, environment_art, prop_art]
+    steps:
+      - Check whether geometry-shaping operations are being applied as reversible modifiers rather than committed directly to the base mesh, since a non-destructive, modifier-based workflow keeps every step editable later, which matters heavily in game production where asset requirements change repeatedly during development.
+      - Check whether production metadata needed downstream, such as vertex groups, bevel weights, or custom object properties, is being stored directly on the mesh data and carried through an interchange format that preserves custom attributes, rather than being reconstructed by hand at each pipeline stage.
+      - Check whether shading and texturing are being evaluated in a real-time viewport before the asset is exported and imported into the game engine, since catching a shading problem in the authoring tool is far cheaper than discovering it only after a full export-import round trip.
+      - For asset types with a documented Blender-specific technique, such as hair-card grooming for real-time hair, check whether that established technique is being used rather than a slower or less game-appropriate approach carried over from offline-render workflows.
+    evidence_requirements:
+      - Whether the asset's construction history uses non-destructive modifiers or destructive edits committed directly to the base mesh.
+      - Whether production metadata needed downstream survives the export and import round trip into the next pipeline stage or tool.
+    source_ids: [embark-blender-game-dev-pipeline-2020]
+  - schema_version: 1
+    method_id: shared-topology-and-rig-system-review
+    title: Shared topology and rig system review
+    purpose: Check that a character or prop production system scales to a large cast or a large set of variants without linearly scaling cost, using shared topology, shared rigs, and modular attachments rather than fully bespoke assets per character.
+    applicable_capability_ids: [character_art, prop_art, rigging]
+    steps:
+      - Check whether a family of similar characters is built from a shared base topology, UV layout, and facial rig rather than each being modeled, unwrapped, and rigged independently, since a shared foundation lets new heads be rigged in effectively one step and lets textures and model elements be reused across the cast.
+      - Check whether background or crowd characters have their own dedicated, purpose-built low-cost version, with reduced vertex count, textures baked down to fewer materials, and a simplified rig, rather than simply being scaled-down instances of a full hero asset, since many hero-cost instances on screen at once becomes a real performance problem.
+      - Check whether tiered or variant equipment is built as separate attachment pieces layered over one shared base body rather than as several complete unique body assets, since this keeps the major cost on the single shared base while variation is added cheaply through the attachments.
+      - Check whether a reference or override system that swaps a real asset in at runtime uses a near-zero-cost placeholder as its default, rather than a real, full-cost asset, since a real default can be loaded into memory alongside the actual override at the same time, silently doubling the cost, and a placeholder also makes a missing override immediately visible rather than silently expensive.
+    evidence_requirements:
+      - Whether characters sharing a role or tier share base topology, UVs, and rig, or are each built independently.
+      - What the default or placeholder asset is in any runtime reference or override system, and its actual cost if never replaced.
+    source_ids: [goulden-bioshock-infinite-iteration-gdc2014]
+  - schema_version: 1
+    method_id: asset-iteration-and-readability-discipline-review
+    title: Asset iteration and readability discipline review
+    purpose: Check that an asset or character design decision is judged by whether it actually reads and fits in its real production context, rather than by the polish or prior investment already put into it.
+    applicable_capability_ids: [character_art, environment_art]
+    steps:
+      - Check whether a design's intended meaning, such as a character's personality, role, or narrative signal, has actually been verified to read correctly once placed in real game context, rather than assumed to work because it looked correct in isolated concept art or an early build.
+      - When new information changes what an asset actually needs to do, such as a narrative or scope change altering how much a character appears, check that the asset is judged against its new requirements rather than kept because of how much time was already invested in it.
+      - Check whether a claimed problem with an asset is actually a readability or context problem rather than an execution-quality problem, since a well-executed asset can still fail if it does not communicate what it needs to in the actual game, and the fix for each is different.
+      - Confirm that a decision to discard or substantially rework an asset is driven by an identified functional or narrative gap, not treated as a personal or team failure, since discarding validated-but-now-wrong work is a normal, expected part of iterative production.
+    evidence_requirements:
+      - Whether the design's intended read has been checked in actual game context, not just in isolated concept or early-build review.
+      - What specific requirement changed to prompt reconsidering an already-built asset, if a rework or discard is being proposed.
+    source_ids: [goulden-bioshock-infinite-iteration-gdc2014]
+  - schema_version: 1
+    method_id: rig-architecture-and-additive-animation-review
+    title: Rig architecture and additive animation review
+    purpose: Check that a rig's attachment architecture and a first-person animation's pose and camera systems are built to avoid known, documented failure patterns rather than the most obvious naive implementation.
+    applicable_capability_ids: [animation, rigging]
+    steps:
+      - Check where a weapon or held-prop attachment bone sits in the rig hierarchy, an attachment bone placed deep in the arm chain, below the hand, can produce a visible desync artifact during in-engine playback as it interpolates back toward its parent's position between keyframes, a dedicated weapon-attachment bone parented under the rig's root avoids this.
+      - Check whether the field of view used to render the game world is decoupled from the field of view used to render a first-person view-model, since without that separation, a player's own FOV preference directly stretches and distorts hand and weapon poses an animator specifically authored.
+      - Check whether first-person animation is structured as a base pose with separate additive layers for aim, movement, and per-weapon accents, rather than as one monolithic clip per action, since a layered structure lets a base pose change propagate automatically through every action built on top of it.
+      - Check whether secondary motion systems, such as spring-based lag and lean, are tuned with different parameters per character rather than applied uniformly across a cast, since the same underlying system can be tuned to read as completely different personalities purely through parameter changes.
+    evidence_requirements:
+      - Where the weapon or prop attachment bone sits in the rig hierarchy relative to the hand chain and the root.
+      - Whether world FOV and first-person view-model FOV are driven by the same setting or are decoupled.
+    source_ids: [boehm-overwatch-first-person-animation-gdc2017]
+items:
+  - schema_version: 1
+    item_id: nondestructive-modifier-workflow-enables-safe-iteration
+    title: A non-destructive modifier workflow enables safe iteration
+    kind: professional_knowledge
+    statement: Building game assets with non-destructive modifiers rather than committing directly to base geometry keeps every step editable and re-orderable later, this matters heavily in game production where asset requirements change repeatedly during development and a destructive edit forecloses easy revision.
+    domain_ids: [blender, game_3d_production]
+    capability_ids: [character_art, environment_art, prop_art]
+    source_ids: [embark-blender-game-dev-pipeline-2020]
+    method_ids: [blender-nondestructive-asset-workflow-review]
+    freshness_class: version_sensitive
+    confidence: 0.85
+  - schema_version: 1
+    item_id: custom-mesh-attribute-data-enables-cross-tool-interop
+    title: Custom mesh attribute data enables cross-tool interop
+    kind: professional_knowledge
+    statement: Storing production metadata such as vertex groups, bevel weights, or custom per-object properties directly on the mesh data, then carrying it through an interchange format that preserves custom attributes, lets information created in one tool survive a handoff to another tool or engine in the pipeline rather than being lost or needing to be manually rebuilt at each stage.
+    domain_ids: [blender, game_3d_production]
+    capability_ids: [character_art, environment_art, prop_art]
+    source_ids: [embark-blender-game-dev-pipeline-2020]
+    method_ids: [blender-nondestructive-asset-workflow-review]
+    freshness_class: version_sensitive
+    confidence: 0.83
+  - schema_version: 1
+    item_id: shared-base-topology-and-rig-speeds-production-and-consistency
+    title: A shared base topology and rig speeds production and consistency
+    kind: professional_knowledge
+    statement: Deriving a family of characters from a shared base topology, UV layout, and facial rig lets new heads be rigged in effectively one step and lets textures and model elements be reused across characters, trading a small amount of creative freedom per character for large gains in production speed and visual consistency across a large cast.
+    domain_ids: [blender, game_3d_production]
+    capability_ids: [character_art, rigging]
+    source_ids: [goulden-bioshock-infinite-iteration-gdc2014]
+    method_ids: [shared-topology-and-rig-system-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: crowd-variants-need-a-dedicated-reduced-budget-not-a-scaled-down-hero-asset
+    title: Crowd variants need a dedicated reduced budget, not a scaled-down hero asset
+    kind: professional_knowledge
+    statement: A background or crowd character needs its own dedicated, purpose-built low-cost version, with reduced vertex count, textures baked down to fewer materials, and a heavily simplified rig, rather than simply being a scaled-down instance of the full hero asset, since a crowd rendered at hero-asset cost becomes a real performance problem once many instances appear on screen at once.
+    domain_ids: [blender, game_3d_production]
+    capability_ids: [character_art, environment_art]
+    source_ids: [goulden-bioshock-infinite-iteration-gdc2014]
+    method_ids: [shared-topology-and-rig-system-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: modular-attachment-system-shares-cost-across-prop-variants
+    title: A modular attachment system shares cost across prop variants
+    kind: professional_knowledge
+    statement: Building tiered or variant equipment as separate attachment pieces layered over one shared base body, rather than as several complete unique body assets, keeps the major memory and production cost on the single shared base while variation is added cheaply through the attachments, and lets kit-bashed combinations be reused across many characters.
+    domain_ids: [blender, game_3d_production]
+    capability_ids: [prop_art, character_art]
+    source_ids: [goulden-bioshock-infinite-iteration-gdc2014]
+    method_ids: [shared-topology-and-rig-system-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: naive-asset-reference-systems-can-silently-double-memory-cost
+    title: A naive asset reference system can silently double memory cost
+    kind: anti_pattern
+    statement: A reference or override system that swaps one asset in for a default at runtime can load both the default and the actual override into memory at the same time if the default itself is a real, full-cost asset, a documented fix is to make the default a near-zero-cost placeholder so only the intended asset is ever actually paid for, and a missing override becomes immediately and visibly obvious rather than silently expensive.
+    domain_ids: [blender, game_3d_production]
+    capability_ids: [character_art, prop_art]
+    source_ids: [goulden-bioshock-infinite-iteration-gdc2014]
+    method_ids: [shared-topology-and-rig-system-review]
+    freshness_class: stable
+    confidence: 0.83
+  - schema_version: 1
+    item_id: a-design-can-fail-purely-on-readability-regardless-of-execution-quality
+    title: A design can fail purely on readability, regardless of execution quality
+    kind: anti_pattern
+    statement: A character or asset design can be well executed and still fail because its intended meaning does not actually read in context, a documented example is an early character design intended to convey innocence and mystery through subtle wardrobe and hair choices that tested as generic and forgettable once placed in the actual game rather than communicating any of what was intended, readability in real context is a separate test from the quality of the asset in isolation.
+    domain_ids: [blender, game_3d_production]
+    capability_ids: [character_art, environment_art]
+    source_ids: [goulden-bioshock-infinite-iteration-gdc2014]
+    method_ids: [asset-iteration-and-readability-discipline-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: sunk-cost-in-a-polished-asset-is-not-a-reason-to-keep-it
+    title: Sunk cost in a polished asset is not a reason to keep it
+    kind: professional_knowledge
+    statement: A deeply polished, heavily invested asset should still be discarded or reworked when new information, such as a narrative pacing change shifting how much a character actually appears, shows it no longer serves its purpose, treating months of prior work as a sunk cost rather than a reason to keep a wrong asset is a documented, repeatable production discipline, not a one-time exception.
+    domain_ids: [blender, game_3d_production]
+    capability_ids: [character_art]
+    source_ids: [goulden-bioshock-infinite-iteration-gdc2014]
+    method_ids: [asset-iteration-and-readability-discipline-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: weapon-attachment-point-placement-can-cause-visible-in-engine-desync
+    title: Weapon attachment point placement in the rig can cause visible in-engine desync
+    kind: anti_pattern
+    statement: Attaching a weapon bone deep in the arm's bone chain, below the hand, can produce a visible desync artifact during animation playback in engine, because the attachment bone interpolates back toward its parent's position between keyframes at runtime, a documented fix is a dedicated weapon-attachment bone parented under the rig's root rather than under the hand, keeping the weapon's motion independent of exactly how the hand chain is posed.
+    domain_ids: [blender, game_3d_production]
+    capability_ids: [rigging]
+    source_ids: [boehm-overwatch-first-person-animation-gdc2017]
+    method_ids: [rig-architecture-and-additive-animation-review]
+    freshness_class: stable
+    confidence: 0.86
+  - schema_version: 1
+    item_id: separating-world-fov-from-view-model-fov-protects-authored-hand-poses
+    title: Separating world FOV from view-model FOV protects authored hand poses
+    kind: professional_knowledge
+    statement: Decoupling the field of view used to render the game world from the field of view used to render a first-person view-model lets players adjust their own world FOV preference without distorting or stretching the hand and weapon poses an animator specifically authored, without this separation a player's FOV setting directly warps every carefully crafted first-person pose.
+    domain_ids: [blender, game_3d_production]
+    capability_ids: [animation, rigging]
+    source_ids: [boehm-overwatch-first-person-animation-gdc2017]
+    method_ids: [rig-architecture-and-additive-animation-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: layered-additive-poses-let-a-base-pose-change-cascade-without-reauthoring
+    title: Layered additive poses let a base pose change cascade without reauthoring
+    kind: professional_knowledge
+    statement: Structuring first-person animation as a base pose with separate additive layers for aim, movement, and per-weapon accents, rather than authoring every action as one monolithic clip, lets a change to the base pose propagate automatically through every layered action built on top of it instead of requiring each action to be manually re-authored.
+    domain_ids: [blender, game_3d_production]
+    capability_ids: [animation]
+    source_ids: [boehm-overwatch-first-person-animation-gdc2017]
+    method_ids: [rig-architecture-and-additive-animation-review]
+    freshness_class: stable
+    confidence: 0.85
+evaluation_ids:
+  [rig-attachment-desync-contract, sunk-cost-asset-rework-contract]
+created_at: "2026-09-12T00:00:00Z"

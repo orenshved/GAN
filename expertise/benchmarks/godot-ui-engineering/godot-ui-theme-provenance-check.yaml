@@ -1,7 +1,7 @@
 schema_version: 1
 benchmark_id: godot-ui-theme-provenance-check
 pack_id: godot-ui-engineering
-applies_to_versions: ["1.1.0", "1.1.1", "1.1.2"]
+applies_to_versions: ["1.1.2"]
 capability_ids: [ui_engineering, godot_development]
 scenario: >-
   A synthetic Godot UI has forty Button and Label nodes across eight scenes. Each

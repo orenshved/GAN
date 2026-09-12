@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: godot-decoupling-contract
+pack_id: godot-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [engine_architecture, godot_development]
+scenario: >-
+  A synthetic reusable "EnemySpawner" scene finds the player node with
+  `get_node("../../Player")`, a hard path reaching two levels up and across
+  to a sibling. It works correctly in the level it was originally built for.
+  A contributor wants to drop the same scene into a second level whose node
+  structure is different, and proposes just copying the scene in as-is since
+  "it already works." A reviewer is asked whether this is safe.
+discriminates: >-
+  A generic reviewer may agree since the scene "already works." A specialist
+  recognizes the hard upward-and-sideways path reference as certain to break
+  in a differently structured scene and requires it to be replaced before
+  reuse.
+expected_specialist_findings:
+  - The `get_node("../../Player")` call is a hard path reference reaching outside the scene's own subtree; it assumes an exact ancestor structure that the new level does not necessarily share.
+  - The fact that it already works is true only in the original level's specific structure; the reference will silently fail or throw if the new level's Player node is not exactly two levels up and one sideways from the spawner.
+  - This is precisely the reuse-breaking pattern hard references produce; the scene should instead receive the player reference through dependency injection — an exported node reference, a Callable, or a NodePath set at instantiation — so the parent context supplies it rather than the scene reaching outward to find it.
+  - Recommend refactoring to injection before reusing the scene in the second level, not copying it in as-is.
+expected_uncertainty:
+  - Whether the second level's structure is close enough that the hard path would happen to still resolve — not stated, and not something to rely on either way.
+acceptable_source_ids: [godot-scene-organization-docs]
+scoring_notes: >-
+  Pass only if the enriched run flags the hard path reference as a reuse
+  hazard and requires dependency injection before the scene is copied into
+  the new level. Approving the direct copy because "it already works" is a
+  fail.

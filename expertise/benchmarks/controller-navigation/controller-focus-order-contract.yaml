@@ -1,0 +1,31 @@
+schema_version: 1
+benchmark_id: controller-focus-order-contract
+pack_id: controller-navigation
+applies_to_versions: ["1.0.0"]
+capability_ids: [controller_navigation]
+scenario: >-
+  A synthetic settings menu has nine tiles arranged in a 3x3 grid, navigable
+  with the D-pad in all four directions. A developer implements focus so that
+  pressing "down" from the bottom row wraps back to the top row, and pressing
+  "right" from the rightmost column wraps to the leftmost column, matching
+  how the game's other menus, which are single-column lists, already behave.
+  The developer notes this makes navigation "consistent across the whole
+  game." A reviewer is asked whether this implementation is correct.
+discriminates: >-
+  A generic reviewer may accept "consistent with our other menus" as a good
+  justification. A specialist recognizes that looping is a linear-menu
+  behavior that does not transfer to a multi-directional grid, and that this
+  is the wrong kind of consistency to optimize for here.
+expected_specialist_findings:
+  - Looping focus at the edges is the correct behavior for linear menus (single up/down or single left/right axis), which is why the game's other list-style menus loop correctly.
+  - A 3x3 grid allows focus to move in more than one axis; looping at its edges breaks the 2D spatial logic a player relies on to predict where focus will land next.
+  - Consistency with the other menus is the wrong axis of consistency to optimize for here — the relevant rule is linear-vs-grid structure, not project-wide uniformity of the looping behavior itself.
+  - Recommend disabling looping specifically for this grid menu while keeping it for the linear ones, rather than forcing one behavior across both menu types.
+expected_uncertainty:
+  - Whether players have expressed a preference either way for this specific menu — not stated.
+acceptable_source_ids: [xag-112-navigation]
+scoring_notes: >-
+  Pass only if the enriched run identifies that grid menus should not loop
+  and explains why the "consistency with linear menus" justification is the
+  wrong kind of consistency. Accepting the looping grid as correctly
+  consistent is a fail.

@@ -1,0 +1,202 @@
+# New candidate pack (K6 of the K5-K15 expansion). state: draft — NOT
+# installed, NOT reviewed, NOT trusted for routing. Capability set: three of
+# the four capabilities proposed for a new `legal` ontology family in
+# docs/AI_WORK_SPLIT.md (`contract_review`, `ip_licensing_review`,
+# `content_rating_strategy`); a future `legal-lead` agent is proposed for
+# these, not created here — the ontology family itself is also proposed to
+# Codex, not added unilaterally (capabilities/ontology/initial.json is
+# runtime-consumed data this stream does not own outright).
+#
+# `platform_tos_compliance` (the fourth proposed capability) is deliberately
+# EXCLUDED from this version's capability_ids. Neither source found this pass
+# covers actual platform partner/distribution agreement terms (Steam
+# Distribution Agreement, console certification agreements) — Chris Reid's
+# talk covers developer-facing contracts (contractor, publishing) and IP, not
+# platform-facing ones. Declaring a capability with no genuine backing content
+# would be the same mistake this program's retrospective audit spent four
+# passes correcting elsewhere; a dedicated source for platform ToS structure
+# is a candidate for a future version instead.
+#
+# CRITICAL FRAMING, carried through every method and item below: this pack's
+# output is risk-flagging for a licensed attorney's review, never legal
+# advice and never a substitute for retaining counsel for an actual situation.
+# This is not an invented disclaimer — it is the speaker's own framing of his
+# talk ("this presentation is legal education, not legal advice"), extended
+# here to how this pack's content may be used at runtime.
+# See docs/AI_WORK_SPLIT.md and .ai/handoffs/claude-to-codex.md.
+schema_version: 1
+pack_id: legal-compliance-core
+name: Legal and Compliance Core
+version: 1.0.0
+description: >-
+  IP ownership/assignment review and contract clause completeness review
+  grounded in a licensed game-industry attorney's practitioner guidance
+  (Chris Reid), and ESRB rating-submission disclosure discipline grounded in
+  ESRB's own official documentation. Every method and item is scoped as
+  risk-flagging for a licensed attorney's review, never as legal advice or a
+  substitute for retaining counsel. `platform_tos_compliance` is deliberately
+  excluded from this version — no genuine source content found this pass; see
+  header comment.
+state: draft
+domain_ids: [legal, game_legal]
+capability_ids: [contract_review, ip_licensing_review, content_rating_strategy]
+sources:
+  - schema_version: 1
+    source_id: reid-practical-law-101-gdc2016
+    title: "Practical Law 101 For Indie Developers: Not Scary Edition"
+    author: Chris Reid
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=8eAW-7Js7NA
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2016-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a ~40-minute talk); no transcript text reproduced, every item below is original distilled wording. This is general legal education, not legal advice, per the speaker's own opening disclaimer — every item drawn from it is scoped the same way: a risk flag for attorney review, not a legal conclusion. Speaker credential verified: Chris Reid, an active member of the New York State Bar Association (Entertainment, Arts and Sports Law section's Copyright and Trademark committee), founder of a dedicated game/technology/creative law practice, a prior intellectual-property litigation associate at Ropes & Gray LLP, and a recurring speaker on video game law at GDC, IndieCade: East, and NYSBA/NYC Bar events."
+    applicable_capability_ids: [contract_review, ip_licensing_review]
+  - schema_version: 1
+    source_id: esrb-ratings-process-docs
+    title: "ESRB Ratings Process"
+    author: Entertainment Software Rating Board
+    publisher: Entertainment Software Association
+    uri: https://www.esrb.org/ratings/ratings-process/
+    source_type: official_documentation
+    retrieved_at: "2026-09-12T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-12T00:00:00Z"
+    license: "Copyright Entertainment Software Association (checked live); no open content license found. Cited for attribution and reference only; no text reproduced, every item below is original distilled wording."
+    applicable_capability_ids: [content_rating_strategy]
+methods:
+  - schema_version: 1
+    method_id: ip-ownership-and-assignment-review
+    title: IP ownership and assignment review
+    purpose: Flag, for a licensed attorney's review, whether IP created by a contributor other than the company itself has actually been assigned via a signed agreement, and distinguish an outright assignment from a license whose scope (territory, platform, duration) is a separately negotiated question.
+    applicable_capability_ids: [ip_licensing_review, contract_review]
+    steps:
+      - For each contributor to the game who is not the company itself, check whether a signed work-for-hire or IP-assignment agreement exists; absent one, ownership defaults to the individual who created the work, not the company, regardless of payment or verbal understanding.
+      - When a publishing or distribution relationship is under review, determine whether the developer's rights are being assigned outright or only licensed, and if licensed, flag whether the license's territory, platform coverage, and duration are each stated rather than assumed.
+      - Distinguish what copyright can protect, a game's fixed creative expression such as art, code, dialogue, and music, from what it cannot, the underlying abstract rules, mechanics, or idea.
+      - Flag a contract's warranties and indemnification section as the place where a party takes on liability for IP claims, such as promising a work is original, and confirm it has been read rather than treated as boilerplate.
+    evidence_requirements:
+      - The actual signed agreement, or its absence, for each contributor whose work is used in the game.
+      - The specific scope terms of any license under review, rather than an unstated blanket assumption.
+    source_ids: [reid-practical-law-101-gdc2016]
+  - schema_version: 1
+    method_id: contract-clause-completeness-review
+    title: Contract clause completeness review
+    purpose: Flag, for a licensed attorney's review, whether a contractor or publishing agreement actually defines the clauses that most commonly cause disputes when left vague, rather than assuming they are self-evident.
+    applicable_capability_ids: [contract_review]
+    steps:
+      - Confirm the term and termination clause states how long the agreement lasts, how either party can exit it, and what happens financially and to IP upon termination.
+      - Confirm payment terms state the calculation basis, such as hourly, flat fee, milestone, or revenue share, and timing, in enough detail that both sides would independently calculate the same number.
+      - Confirm the scope of deliverables is specific and checkable, such as a stated minimum, format, or technical specification, rather than a vague description.
+      - For a publishing agreement specifically, confirm revenue is defined, including what is deducted before any split, and confirm derivative-works rights such as sequels, DLC, and merchandising are explicitly addressed rather than left as an afterthought.
+    evidence_requirements:
+      - The actual clause text for term/termination, payment, and deliverables scope under review, checked for specificity rather than assumed adequate.
+      - For a publishing agreement, the revenue definition and derivative-works terms specifically.
+    source_ids: [reid-practical-law-101-gdc2016]
+  - schema_version: 1
+    method_id: esrb-rating-submission-readiness-review
+    title: ESRB rating submission readiness review
+    purpose: Check that a rating submission discloses content completely and accurately, since incomplete disclosure carries its own documented enforcement risk independent of whatever rating the game ultimately receives.
+    applicable_capability_ids: [content_rating_strategy]
+    steps:
+      - Identify whether the title follows the physical/retail process (questionnaire plus submitted gameplay video) or the digital/IARC questionnaire-only process, since disclosure requirements differ between them.
+      - For a physical/retail submission, confirm the submitted video and questionnaire include the most extreme instances of relevant content categories, not only representative or best-case footage.
+      - Check whether any planned downloadable content exceeds the content level already reflected in the base game's rating, which would require its own separate rating submission rather than inheriting the base rating.
+      - Treat incomplete or inaccurate content disclosure as a distinct risk from the rating outcome itself.
+    evidence_requirements:
+      - The actual submitted or planned questionnaire and footage, compared against the game's actual content, including any planned DLC beyond the base game.
+    source_ids: [esrb-ratings-process-docs]
+items:
+  - schema_version: 1
+    item_id: ip-ownership-defaults-to-the-creator
+    title: IP ownership defaults to whoever created it, not who commissioned it
+    kind: professional_knowledge
+    statement: By default, whoever creates a copyrightable piece of a game owns it, not the company or studio that commissioned it; that default is overridden only by a signed work-for-hire or assignment agreement, so a contributor without one may still legally own what they made regardless of payment or verbal understanding.
+    domain_ids: [legal, game_legal]
+    capability_ids: [ip_licensing_review]
+    source_ids: [reid-practical-law-101-gdc2016]
+    method_ids: [ip-ownership-and-assignment-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: assignment-and-license-are-different-questions
+    title: Assigning IP and licensing it are different questions
+    kind: professional_knowledge
+    statement: Whether a developer is assigning its IP rights outright to a publisher versus only licensing them are different questions with very different consequences, and a license is not one thing; its territory, platform coverage, and duration are each separately negotiated terms that need to be stated explicitly, not assumed.
+    domain_ids: [legal, game_legal]
+    capability_ids: [ip_licensing_review, contract_review]
+    source_ids: [reid-practical-law-101-gdc2016]
+    method_ids: [ip-ownership-and-assignment-review]
+    freshness_class: stable
+    confidence: 0.86
+  - schema_version: 1
+    item_id: copyright-protects-expression-not-mechanics
+    title: Copyright protects expression, not the underlying mechanics
+    kind: professional_knowledge
+    statement: Copyright protects a game's fixed creative expression, its art, code, dialogue, and music, but not its abstract rules, mechanics, or underlying idea, which is why many games can share a genre or mechanic without infringing each other; a claim of infringement resting on similar mechanics alone is on much weaker ground than one resting on copied expression.
+    domain_ids: [legal, game_legal]
+    capability_ids: [ip_licensing_review]
+    source_ids: [reid-practical-law-101-gdc2016]
+    method_ids: [ip-ownership-and-assignment-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: trademark-rights-require-use-in-commerce
+    title: Trademark rights generally begin only once a name is used in commerce
+    kind: professional_knowledge
+    statement: Trademark rights in a name, logo, or title generally begin accruing only once it is actually used in commerce by being sold, not merely announced; federal registration is the exception that lets a developer claim priority up to roughly three years before selling, which is the main practical reason to register early despite the cost.
+    domain_ids: [legal, game_legal]
+    capability_ids: [ip_licensing_review]
+    source_ids: [reid-practical-law-101-gdc2016]
+    method_ids: [ip-ownership-and-assignment-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: vague-contract-clauses-are-a-recurring-failure-point
+    title: Vague payment, deliverable, or termination clauses are a recurring failure point
+    kind: anti_pattern
+    statement: Vague payment terms, deliverable descriptions, or termination conditions are a recurring source of dispute in developer contracts; a clause is only doing its job if both sides would independently calculate the same payment, agree whether a deliverable was met, or agree what happens upon exit, and a short, vague clause is a warning sign rather than a sign of simplicity.
+    domain_ids: [legal, game_legal]
+    capability_ids: [contract_review]
+    source_ids: [reid-practical-law-101-gdc2016]
+    method_ids: [contract-clause-completeness-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: derivative-works-rights-need-explicit-terms
+    title: Derivative-works rights need explicit terms, not an afterthought clause
+    kind: professional_knowledge
+    statement: Publishing agreements often address derivative works such as sequels, DLC, merchandising, and adaptations, and leaving these undefined or granting them broadly by default can sign away rights to a game's most lucrative future opportunities; derivative-works terms need explicit, deliberate attention rather than treatment as a boilerplate afterthought.
+    domain_ids: [legal, game_legal]
+    capability_ids: [contract_review]
+    source_ids: [reid-practical-law-101-gdc2016]
+    method_ids: [contract-clause-completeness-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: rating-disclosure-is-a-separate-risk-from-the-rating-itself
+    title: Incomplete rating disclosure is its own risk, separate from the rating outcome
+    kind: professional_knowledge
+    statement: Under ESRB's documented process, incomplete or inaccurate content disclosure during rating submission carries its own enforcement risk, including sanctions and fines, independent of what rating the game would have received had it been fully disclosed; submitting only best-case footage is a distinct risk from simply receiving a stricter rating.
+    domain_ids: [legal, game_legal]
+    capability_ids: [content_rating_strategy]
+    source_ids: [esrb-ratings-process-docs]
+    method_ids: [esrb-rating-submission-readiness-review]
+    freshness_class: version_sensitive
+    confidence: 0.9
+  - schema_version: 1
+    item_id: dlc-exceeding-base-rating-needs-its-own-submission
+    title: DLC that exceeds the base game's rated content needs its own submission
+    kind: standard
+    statement: Downloadable content that exceeds the content level already reflected in the base game's ESRB rating requires its own separate rating submission; assuming the base game's rating automatically covers all future DLC is a documented gap in the process, not a safe default.
+    domain_ids: [legal, game_legal]
+    capability_ids: [content_rating_strategy]
+    source_ids: [esrb-ratings-process-docs]
+    method_ids: [esrb-rating-submission-readiness-review]
+    freshness_class: version_sensitive
+    confidence: 0.89
+evaluation_ids: [ip-assignment-contract, esrb-dlc-rating-contract]
+created_at: "2026-09-12T00:00:00Z"

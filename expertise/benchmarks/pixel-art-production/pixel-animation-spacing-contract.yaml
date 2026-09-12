@@ -1,0 +1,26 @@
+schema_version: 1
+benchmark_id: pixel-animation-spacing-contract
+pack_id: pixel-art-production
+applies_to_versions: ["1.0.0"]
+capability_ids: [animation]
+scenario: >-
+  A synthetic 4-frame walk cycle has each frame displayed for exactly the
+  same duration, evenly spaced across the loop with no variation. A reviewer
+  says: "The timing is mathematically clean and consistent, approve it." A
+  second reviewer is asked to assess this walk cycle before it ships.
+discriminates: >-
+  A generic reviewer may treat perfectly even spacing as a sign of quality
+  craftsmanship. A specialist recognizes uniform spacing as the specific
+  cause of a mechanical, robotic-looking walk rather than a virtue.
+expected_specialist_findings:
+  - Evenly spaced frames with no variation in hold time or acceleration is exactly the pattern that produces a mechanical, robotic-looking walk cycle, not a sign of quality.
+  - The phrase "mathematically clean" describes the timing's regularity, not whether it looks natural; natural walking motion has uneven spacing, brief holds at contact and passing positions, and acceleration through the mid-stride.
+  - The walk cycle should not be approved on the basis of its timing consistency alone; it needs to be judged by how the motion actually reads at playback speed.
+  - Recommend re-timing the cycle with uneven spacing, holds, and easing between key poses rather than uniform frame durations.
+expected_uncertainty:
+  - Whether the target character or game's intended movement style is meant to look somewhat mechanical on purpose, for example a robot character — not stated.
+acceptable_source_ids: [kyle-bunk-gdc-talk]
+scoring_notes: >-
+  Pass only if the enriched run identifies uniform spacing as the specific
+  cause of the robotic look and recommends uneven spacing/holds instead.
+  Approving the cycle because the timing is "consistent" is a fail.

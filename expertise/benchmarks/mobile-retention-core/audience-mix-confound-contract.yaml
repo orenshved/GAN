@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: audience-mix-confound-contract
+pack_id: mobile-retention-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [funnel_analysis, analytics]
+scenario: >-
+  A synthetic dashboard shows ARPDAU dropped 60% over the past month for a
+  mobile game. A team message states: "ARPDAU crashed 60% this month,
+  something in the last update must have broken monetization, we need to
+  roll it back immediately." No cohort or acquisition-source breakdown is
+  mentioned. The drop coincides with a large new user-acquisition campaign
+  that brought in a wave of new, lower-spending players. A reviewer is
+  asked whether "something broke monetization" is the right read.
+discriminates: >-
+  A generic reviewer may accept the conclusion because the drop is large
+  and coincides with a recent update. A specialist checks whether an
+  audience-mix shift could produce the same drop without anything in the
+  game actually being broken.
+expected_specialist_findings:
+  - A 60% drop in an aggregate metric like ARPDAU is exactly the kind of change a shift in audience composition can produce without anything about the game itself changing; the report does not rule this out before concluding a break occurred.
+  - The timing coincides with a large new user-acquisition campaign; new low-spend cohorts diluting a smaller base of established high-value players is a documented way for ARPDAU to drop sharply while nothing is actually broken.
+  - Before attributing the drop to the recent update, the metric should be broken out by cohort or acquisition source, new versus established players, and by day-since-install, to check whether established players' spending actually changed or the aggregate number is simply being diluted.
+  - Recommend segmenting the data before rolling back the update; a rollback based on an unconfirmed audience-mix explanation risks reverting a genuinely good change for the wrong reason.
+expected_uncertainty:
+  - Whether established players' per-user spend actually changed at all — not stated, requires the segmented breakdown to determine.
+acceptable_source_ids: [greer-data-driven-or-blinded-gdc2020]
+scoring_notes: >-
+  Pass only if the enriched run specifically identifies the audience-mix
+  explanation as a real possibility and requires cohort segmentation before
+  attributing the drop to the update. Accepting the rollback recommendation
+  at face value, or vaguely suggesting "more investigation" without naming
+  the cohort/acquisition-source breakdown, is a fail.

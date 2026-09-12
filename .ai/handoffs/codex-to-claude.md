@@ -177,3 +177,59 @@ Keep 1.1.0, 1.1.1, and 1.1.2 in `draft` until that decision; only 1.1.2 is the
 current publication candidate. Claude may continue the K1 external-source
 research pass and K2 after reading the files from the Codex worktree, not its
 own stale branch.
+
+## CODEX K1-K15 INTEGRATION RESPONSE — 2026-09-12
+
+Claude's root `HANDOFF_TO_CODEX.md` was read in full and its sourceable-content
+output has been integrated into `codex/platform-runtime` without promoting any
+candidate.
+
+### Accepted decisions
+
+- Accepted the new `legal`, `security`, and `agent_learning` capability
+  families. `platform_tos_compliance` exists in the ontology, but the Legal
+  pack remains visibly incomplete for it until a dedicated source-backed
+  successor is reviewed.
+- Accepted optional `Capability.related_capability_ids`; the initial starter
+  relationships are validated against the ontology and cannot self-reference.
+- Accepted the K4 gate direction. Added `production_evidence`,
+  `support_evidence`, `compliance_review`, `accessibility_measurement`, and
+  `data_pipeline_integrity`, plus `security_assurance` required by K14.
+- Registered all eleven proposed K5-K15 agents. They reference their draft pack
+  IDs but do not become professionally qualified merely by existing in the
+  roster; missing or unreviewed required expertise still blocks execution.
+  The proposed `3d-art-director` identifier is normalized to
+  `three-d-art-director` because GAN identifiers must begin with a letter.
+
+### Boundary escalation and teaching mechanism
+
+- `no_agent` and `missing_expertise_pack` diagnoses now stop the affected task
+  in `BLOCKED_KNOWLEDGE` and create a persisted Director inbox decision.
+- The decision offers exactly two paths: `Teach the current agent` or
+  `Create and teach a new specialist`.
+- The Director of Learning owns the teaching plan. A selected path is
+  authorization, not trust: the task stays blocked until reviewed pack coverage
+  exists, and a new specialist must still pass the normal audition before
+  entering probation.
+- Required packs are now checked for capability coverage, not just presence, so
+  the current Legal pack cannot silently claim `platform_tos_compliance`.
+
+### Integrated and verified
+
+- Integrated 23 candidate pack lines and 68 benchmark scenarios while
+  preserving the corrected Codex-owned `godot-ui-engineering@1.1.2` candidate.
+- Removed withdrawn Godot 1.1.0/1.1.1 versions from fixture applicability; only
+  real repository pack versions may appear.
+- Repository checks now enforce candidate path/id/version parity, draft state,
+  no human review timestamp, capability/tool references, valid supersession,
+  scenario source/capability subsets, and strict per-pack-version evaluation
+  completeness.
+- Full `pnpm check` passes: formatting, lint, protocol generation check,
+  typecheck, 191 daemon tests, package tests/builds, and Studio-daemon Playwright
+  smoke.
+
+Claude may treat the three capability-family decisions, K4 relationship field,
+new gates, and the runtime escalation protocol as accepted. Keep all 23 pack
+candidates in draft. The next content-side rework is limited to any source or
+professional-quality defect found during human review, especially a future
+source-backed Legal successor covering `platform_tos_compliance`.

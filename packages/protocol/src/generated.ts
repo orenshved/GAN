@@ -93,6 +93,7 @@ export type EvaluationRequirements = [string, ...string[]];
  */
 export type ExpectedOutputs = [string, ...string[]];
 export type Family = string;
+export type RelatedCapabilityIds = string[];
 export type RequiredInputs1 = string[];
 export type SchemaVersion4 = 1;
 export type Version2 = string;
@@ -275,6 +276,7 @@ export type Event =
       | GMEvent
       | PlanEvent
       | InboxEvent
+      | InboxDecisionRequestedEvent
       | IntelligenceEvent
       | EvidenceRecordedEvent
       | EvaluationRecordedEvent
@@ -805,21 +807,9 @@ export type ActorId22 = string;
 export type ActorType22 = "human" | "gm" | "agent" | "system" | "external";
 export type CorrelationId22 = string;
 export type EventId22 = string;
-export type EventType22 = "project.intelligence_indexed";
-export type IndexedAt = string;
-export type Knowledge1 = KnowledgeEntry[];
+export type EventType22 = "gm.decision_requested";
 export type ProjectId39 = string;
-export type Excerpt = string | null;
-export type Kind4 = "document" | "source" | "asset" | "configuration";
-export type MediaType1 = string;
-export type Path1 = string;
-export type Sha2561 = string;
-export type Size1 = number;
-export type Resources = IndexedResource[];
 export type SchemaVersion48 = 1;
-export type WorkspaceDigest = string;
-export type ProjectId40 = string;
-export type SchemaVersion49 = 1;
 export type Sequence22 = number;
 export type TaskId35 = string | null;
 export type Timestamp22 = string;
@@ -827,27 +817,39 @@ export type ActorId23 = string;
 export type ActorType23 = "human" | "gm" | "agent" | "system" | "external";
 export type CorrelationId23 = string;
 export type EventId23 = string;
-export type EventType23 = "evidence.recorded";
+export type EventType23 = "project.intelligence_indexed";
+export type IndexedAt = string;
+export type Knowledge1 = KnowledgeEntry[];
+export type ProjectId40 = string;
+export type Excerpt = string | null;
+export type Kind4 = "document" | "source" | "asset" | "configuration";
+export type MediaType1 = string;
+export type Path1 = string;
+export type Sha2561 = string;
+export type Size1 = number;
+export type Resources = IndexedResource[];
+export type SchemaVersion49 = 1;
+export type WorkspaceDigest = string;
+export type ProjectId41 = string;
+export type SchemaVersion50 = 1;
+export type Sequence23 = number;
+export type TaskId36 = string | null;
+export type Timestamp23 = string;
+export type ActorId24 = string;
+export type ActorType24 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId24 = string;
+export type EventId24 = string;
+export type EventType24 = "evidence.recorded";
 export type CaptureOrigin = "runtime" | "source" | "simulation" | "human_observation" | "model_output";
 export type CapturedAt1 = string;
 export type EvidenceClass = "deterministic" | "measured" | "comparative" | "heuristic" | "human";
 export type EvidenceId = string;
 export type ProducerId = string;
 export type ProducerType = "tool" | "model" | "human";
-export type ProjectId41 = string;
-export type SchemaVersion50 = 1;
-export type Summary2 = string;
-export type TaskId36 = string;
 export type ProjectId42 = string;
 export type SchemaVersion51 = 1;
-export type Sequence23 = number;
-export type TaskId37 = string | null;
-export type Timestamp23 = string;
-export type ActorId24 = string;
-export type ActorType24 = "human" | "gm" | "agent" | "system" | "external";
-export type CorrelationId24 = string;
-export type EventId24 = string;
-export type EventType24 = "evaluation.recorded";
+export type Summary2 = string;
+export type TaskId37 = string;
 export type ProjectId43 = string;
 export type SchemaVersion52 = 1;
 export type Sequence24 = number;
@@ -857,7 +859,17 @@ export type ActorId25 = string;
 export type ActorType25 = "human" | "gm" | "agent" | "system" | "external";
 export type CorrelationId25 = string;
 export type EventId25 = string;
-export type EventType25 = "recruitment.updated";
+export type EventType25 = "evaluation.recorded";
+export type ProjectId44 = string;
+export type SchemaVersion53 = 1;
+export type Sequence25 = number;
+export type TaskId39 = string | null;
+export type Timestamp25 = string;
+export type ActorId26 = string;
+export type ActorType26 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId26 = string;
+export type EventId26 = string;
+export type EventType26 = "recruitment.updated";
 export type AdjacentAgentIds = string[];
 export type AuditionId = string;
 export type CandidateId = string;
@@ -890,7 +902,7 @@ export type Result2 = "passed" | "failed";
 export type Rationale2 = string;
 export type Recommendation3 = "probation" | "reject";
 export type Sandbox1 = "read_only";
-export type SchemaVersion53 = 1;
+export type SchemaVersion54 = 1;
 export type RequestedToolIds = string[];
 /**
  * @minItems 1
@@ -960,7 +972,7 @@ export type FreshnessClass2 = "stable" | "slow_changing" | "version_sensitive" |
 export type ItemId = string;
 export type Kind5 = "professional_knowledge" | "standard" | "heuristic" | "anti_pattern" | "example" | "benchmark";
 export type MethodIds1 = string[];
-export type SchemaVersion54 = 1;
+export type SchemaVersion55 = 1;
 /**
  * @minItems 1
  */
@@ -975,7 +987,7 @@ export type Name2 = string;
 export type PackId1 = string;
 export type RequiredToolIds = string[];
 export type ReviewedAt = string | null;
-export type SchemaVersion55 = 1;
+export type SchemaVersion56 = 1;
 /**
  * @minItems 1
  */
@@ -985,45 +997,45 @@ export type SupersedesVersion = string | null;
 export type Version5 = string;
 export type ExpertiseSnapshot = ExpertisePack[];
 export type MissingExpertiseCapabilities = string[];
-export type ProjectId44 = string;
+export type ProjectId45 = string;
 export type RecruitmentId = string;
-export type SchemaVersion56 = 1;
+export type SchemaVersion57 = 1;
 export type State7 = "candidate_composed" | "remediation_required" | "auditioning" | "probation" | "rejected";
-export type TaskId39 = string;
+export type TaskId40 = string;
 export type CapabilityIds3 = string[];
 export type Decision1 = "trusted" | "needs_approval" | "forbidden" | "unavailable";
 export type Detail7 = string;
 export type ToolId = string;
 export type ToolDiscoveries = ToolDiscovery[];
 export type UpdatedAt1 = string;
-export type ProjectId45 = string;
-export type SchemaVersion57 = 1;
-export type Sequence25 = number;
-export type TaskId40 = string | null;
-export type Timestamp25 = string;
-export type ActorId26 = string;
-export type ActorType26 = "human" | "gm" | "agent" | "system" | "external";
-export type CorrelationId26 = string;
-export type EventId26 = string;
-export type EventType26 = "qa.gate_waived";
-export type GateId1 = string;
 export type ProjectId46 = string;
-export type Reason6 = string;
 export type SchemaVersion58 = 1;
-export type TaskId41 = string;
-export type WaivedAt = string;
-export type WaivedBy = "human";
-export type WaiverId = string;
-export type ProjectId47 = string;
-export type SchemaVersion59 = 1;
 export type Sequence26 = number;
-export type TaskId42 = string | null;
+export type TaskId41 = string | null;
 export type Timestamp26 = string;
 export type ActorId27 = string;
 export type ActorType27 = "human" | "gm" | "agent" | "system" | "external";
 export type CorrelationId27 = string;
 export type EventId27 = string;
-export type EventType27 = "model.benchmark_recorded";
+export type EventType27 = "qa.gate_waived";
+export type GateId1 = string;
+export type ProjectId47 = string;
+export type Reason6 = string;
+export type SchemaVersion59 = 1;
+export type TaskId42 = string;
+export type WaivedAt = string;
+export type WaivedBy = "human";
+export type WaiverId = string;
+export type ProjectId48 = string;
+export type SchemaVersion60 = 1;
+export type Sequence27 = number;
+export type TaskId43 = string | null;
+export type Timestamp27 = string;
+export type ActorId28 = string;
+export type ActorType28 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId28 = string;
+export type EventId28 = string;
+export type EventType28 = "model.benchmark_recorded";
 export type BenchmarkId = string;
 export type BenchmarkedAt = string;
 export type CompletionTokens = number;
@@ -1032,7 +1044,7 @@ export type LatencyMs = number;
 export type ModelDigest = string;
 export type ModelName = string;
 export type OutputChannel = "response" | "thinking";
-export type ProjectId48 = string;
+export type ProjectId49 = string;
 export type PromptSha256 = string;
 export type PromptTokens = number;
 /**
@@ -1040,19 +1052,19 @@ export type PromptTokens = number;
  */
 export type RequiredCapabilityIds = [string, ...string[]];
 export type Result3 = "passed" | "failed" | "unavailable";
-export type SchemaVersion60 = 1;
-export type Summary4 = string;
-export type TaskId43 = string;
-export type ProjectId49 = string;
 export type SchemaVersion61 = 1;
-export type Sequence27 = number;
-export type TaskId44 = string | null;
-export type Timestamp27 = string;
-export type ActorId28 = string;
-export type ActorType28 = "human" | "gm" | "agent" | "system" | "external";
-export type CorrelationId28 = string;
-export type EventId28 = string;
-export type EventType28 = "model.routing_recorded";
+export type Summary4 = string;
+export type TaskId44 = string;
+export type ProjectId50 = string;
+export type SchemaVersion62 = 1;
+export type Sequence28 = number;
+export type TaskId45 = string | null;
+export type Timestamp28 = string;
+export type ActorId29 = string;
+export type ActorType29 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId29 = string;
+export type EventId29 = string;
+export type EventType29 = "model.routing_recorded";
 /**
  * @minItems 3
  */
@@ -1068,25 +1080,25 @@ export type Reason7 = string;
 export type Route = "deterministic_tool" | "local_ollama" | "codex_authenticated" | "paid_provider" | "wait_for_codex";
 export type Viable = boolean;
 export type CreatedAt4 = string;
-export type ProjectId50 = string;
+export type ProjectId51 = string;
 export type Reason8 = string;
 export type RoutingId = string;
-export type SchemaVersion62 = 1;
+export type SchemaVersion63 = 1;
 export type SelectedModelName = string | null;
 export type SelectedProviderId = string | null;
 export type SelectedRoute =
   "deterministic_tool" | "local_ollama" | "codex_authenticated" | "paid_provider" | "wait_for_codex";
-export type TaskId45 = string;
-export type ProjectId51 = string;
-export type SchemaVersion63 = 1;
-export type Sequence28 = number;
-export type TaskId46 = string | null;
-export type Timestamp28 = string;
-export type ActorId29 = string;
-export type ActorType29 = "human" | "gm" | "agent" | "system" | "external";
-export type CorrelationId29 = string;
-export type EventId29 = string;
-export type EventType29 = "production_domain.inspected";
+export type TaskId46 = string;
+export type ProjectId52 = string;
+export type SchemaVersion64 = 1;
+export type Sequence29 = number;
+export type TaskId47 = string | null;
+export type Timestamp29 = string;
+export type ActorId30 = string;
+export type ActorType30 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId30 = string;
+export type EventId30 = string;
+export type EventType30 = "production_domain.inspected";
 export type DomainId = string;
 export type EvaluationId2 = string;
 export type EvidenceId1 = string;
@@ -1102,21 +1114,21 @@ export type Title7 = string;
 export type InspectedAt = string;
 export type InspectedFileCount = number;
 export type InspectionId = string;
-export type ProjectId52 = string;
-export type SchemaVersion64 = 1;
-export type Status = "passed" | "needs_attention" | "not_applicable";
-export type TaskId47 = string;
-export type ToolId1 = string;
 export type ProjectId53 = string;
 export type SchemaVersion65 = 1;
-export type Sequence29 = number;
-export type TaskId48 = string | null;
-export type Timestamp29 = string;
-export type ActorId30 = string;
-export type ActorType30 = "human" | "gm" | "agent" | "system" | "external";
-export type CorrelationId30 = string;
-export type EventId30 = string;
-export type EventType30 =
+export type Status = "passed" | "needs_attention" | "not_applicable";
+export type TaskId48 = string;
+export type ToolId1 = string;
+export type ProjectId54 = string;
+export type SchemaVersion66 = 1;
+export type Sequence30 = number;
+export type TaskId49 = string | null;
+export type Timestamp30 = string;
+export type ActorId31 = string;
+export type ActorType31 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId31 = string;
+export type EventId31 = string;
+export type EventType31 =
   | "project.reconnaissance_started"
   | "project.reconnaissance_completed"
   | "domain.assessment_started"
@@ -1141,14 +1153,14 @@ export type Evidence1 = SourceRef[];
 export type ExpertisePacks4 = ExpertisePackRef[];
 export type InferredFacts = string[];
 export type KnownFacts = string[];
-export type ProjectId54 = string;
+export type ProjectId55 = string;
 export type Confidence5 = number;
 export type Status1 =
   "READY" | "READY_WITH_ASSUMPTIONS" | "NEEDS_INPUT_LATER" | "NEEDS_INPUT_NOW" | "BLOCKED_KNOWLEDGE";
 export type Recommendations = string[];
 export type RequestedHumanInputs = string[];
 export type Risks1 = string[];
-export type SchemaVersion66 = 1;
+export type SchemaVersion67 = 1;
 export type Summary5 = string;
 export type BlocksCurrentWork = boolean;
 export type Impact1 = string;
@@ -1164,26 +1176,26 @@ export type BlockingQuestions = string[];
 export type CompletedAt = string;
 export type DeferredQuestions = string[];
 export type OnboardingId = string;
-export type ProjectId55 = string;
+export type ProjectId56 = string;
 export type ReconciliationSummary = string;
 export type ReconnaissanceSummary = string;
 /**
  * @minItems 1
  */
 export type RelevantDomains = [string, ...string[]];
-export type SchemaVersion67 = 1;
+export type SchemaVersion68 = 1;
 export type StartedAt = string;
 export type State8 = "READY" | "NEEDS_HUMAN_INPUT" | "BLOCKED_KNOWLEDGE" | "ACTIVE";
-export type ProjectId56 = string;
-export type SchemaVersion68 = 1;
-export type Sequence30 = number;
-export type TaskId49 = string | null;
-export type Timestamp30 = string;
-export type ActorId31 = string;
-export type ActorType31 = "human" | "gm" | "agent" | "system" | "external";
-export type CorrelationId31 = string;
-export type EventId31 = string;
-export type EventType31 = "experience.observed";
+export type ProjectId57 = string;
+export type SchemaVersion69 = 1;
+export type Sequence31 = number;
+export type TaskId50 = string | null;
+export type Timestamp31 = string;
+export type ActorId32 = string;
+export type ActorType32 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId32 = string;
+export type EventId32 = string;
+export type EventType32 = "experience.observed";
 export type AgentId6 = string | null;
 /**
  * @minItems 1
@@ -1202,21 +1214,21 @@ export type ExpertisePacks5 = ExpertisePackRef[];
 export type MethodIds2 = string[];
 export type ObservationId = string;
 export type Outcome = "passed" | "failed" | "inconclusive";
-export type ProjectId57 = string;
-export type SchemaVersion69 = 1;
-export type Scope = "project_private" | "global_candidate";
-export type State9 = "observed" | "proposed" | "reviewed" | "promoted" | "rejected";
-export type TaskId50 = string;
 export type ProjectId58 = string;
 export type SchemaVersion70 = 1;
-export type Sequence31 = number;
-export type TaskId51 = string | null;
-export type Timestamp31 = string;
-export type ActorId32 = string;
-export type ActorType32 = "human" | "gm" | "agent" | "system" | "external";
-export type CorrelationId32 = string;
-export type EventId32 = string;
-export type EventType32 = "experience.lesson_recorded";
+export type Scope = "project_private" | "global_candidate";
+export type State9 = "observed" | "proposed" | "reviewed" | "promoted" | "rejected";
+export type TaskId51 = string;
+export type ProjectId59 = string;
+export type SchemaVersion71 = 1;
+export type Sequence32 = number;
+export type TaskId52 = string | null;
+export type Timestamp32 = string;
+export type ActorId33 = string;
+export type ActorType33 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId33 = string;
+export type EventId33 = string;
+export type EventType33 = "experience.lesson_recorded";
 export type Applicability = string;
 /**
  * @minItems 1
@@ -1233,40 +1245,40 @@ export type Limitations = [string, ...string[]];
  * @minItems 1
  */
 export type ObservationIds = [string, ...string[]];
-export type ProjectId59 = string;
+export type ProjectId60 = string;
 export type ProposerId = string;
 export type ReviewDetail = string | null;
 export type ReviewedAt1 = string | null;
 export type ReviewerId = string | null;
-export type SchemaVersion71 = 1;
+export type SchemaVersion72 = 1;
 export type Scope1 = "project" | "user_taste" | "domain" | "engine" | "global";
 export type State10 = "candidate" | "repeated" | "validated" | "rejected" | "expired" | "superseded";
 export type Statement5 = string;
-export type ProjectId60 = string;
-export type SchemaVersion72 = 1;
-export type Sequence32 = number;
-export type TaskId52 = string | null;
-export type Timestamp32 = string;
-export type ActorId33 = string;
-export type ActorType33 = "human" | "gm" | "agent" | "system" | "external";
-export type CorrelationId33 = string;
-export type EventId33 = string;
-export type EventType33 = "knowledge.research_recorded";
+export type ProjectId61 = string;
+export type SchemaVersion73 = 1;
+export type Sequence33 = number;
+export type TaskId53 = string | null;
+export type Timestamp33 = string;
+export type ActorId34 = string;
+export type ActorType34 = "human" | "gm" | "agent" | "system" | "external";
+export type CorrelationId34 = string;
+export type EventId34 = string;
+export type EventType34 = "knowledge.research_recorded";
 export type Detail10 = string;
 export type Excerpt1 = string | null;
-export type ProjectId61 = string;
+export type ProjectId62 = string;
 export type Requirement = string;
 export type ResearchId = string;
 export type ResearchedAt = string;
-export type SchemaVersion73 = 1;
-export type State11 = "available" | "blocked" | "failed";
-export type TaskId53 = string;
-export type Url = string;
-export type ProjectId62 = string;
 export type SchemaVersion74 = 1;
-export type Sequence33 = number;
-export type TaskId54 = string | null;
-export type Timestamp33 = string;
+export type State11 = "available" | "blocked" | "failed";
+export type TaskId54 = string;
+export type Url = string;
+export type ProjectId63 = string;
+export type SchemaVersion75 = 1;
+export type Sequence34 = number;
+export type TaskId55 = string | null;
+export type Timestamp34 = string;
 export type AcceptableSourceIds = string[];
 /**
  * @minItems 1
@@ -1417,7 +1429,7 @@ export type ExpectedSpecialistFindings =
 export type ExpectedUncertainty = string[];
 export type PackId2 = string;
 export type Scenario = string;
-export type SchemaVersion75 = 1;
+export type SchemaVersion76 = 1;
 export type ScoringNotes = string;
 export type CapturedAt2 = string;
 export type Cpu = string;
@@ -1431,7 +1443,7 @@ export type MachineId = string;
 export type OperatingSystem = string;
 export type PhysicalCoreCount = number | null;
 export type RamBytes = number | null;
-export type SchemaVersion76 = 1;
+export type SchemaVersion77 = 1;
 export type Detail11 = string;
 export type Endpoint = string;
 export type InspectedAt1 = string;
@@ -1450,7 +1462,7 @@ export type SizeBytes = number;
 export type ToolSupport = boolean;
 export type Models = LocalModel[];
 export type RuntimeId = "ollama";
-export type SchemaVersion77 = 1;
+export type SchemaVersion78 = 1;
 export type State12 = "available" | "unavailable";
 export type Version6 = string | null;
 export type Action1 = "install" | "keep_installed" | "no_recommendation";
@@ -1477,7 +1489,7 @@ export type CatalogState = "live" | "unavailable";
 export type CatalogUrl = string;
 export type InstallCommand = string | null;
 export type Installed1 = boolean;
-export type ProjectId63 = string;
+export type ProjectId64 = string;
 export type Reason10 = string;
 export type RecommendationId = string;
 export type RecommendedModelName = string | null;
@@ -1485,8 +1497,8 @@ export type RecommendedModelName = string | null;
  * @minItems 1
  */
 export type RequiredCapabilityIds1 = [string, ...string[]];
-export type SchemaVersion78 = 1;
-export type TaskId55 = string;
+export type SchemaVersion79 = 1;
+export type TaskId56 = string;
 /**
  * @minItems 1
  */
@@ -1501,7 +1513,7 @@ export type DomainId1 = string;
  * @minItems 1
  */
 export type GateIds = [string, ...string[]];
-export type SchemaVersion79 = 1;
+export type SchemaVersion80 = 1;
 export type Title8 = string;
 /**
  * @minItems 1
@@ -1514,7 +1526,19 @@ export type Version7 = string;
 export type AllowedProducerTypes = ["tool" | "model" | "human", ...("tool" | "model" | "human")[]];
 export type Claim1 = "technical" | "visual" | "subjective" | "fun";
 export type Description6 = string;
-export type Discipline = "ui" | "engineering" | "gameplay" | "level_design" | "art" | "audio" | "narrative";
+export type Discipline =
+  | "ui"
+  | "engineering"
+  | "gameplay"
+  | "level_design"
+  | "art"
+  | "audio"
+  | "narrative"
+  | "production"
+  | "compliance"
+  | "data"
+  | "support"
+  | "security";
 export type GateId2 = string;
 /**
  * @minItems 1
@@ -1525,7 +1549,7 @@ export type RequiredEvidenceClasses = [
 ];
 export type RequiresIndependentVerification = boolean;
 export type RequiresRuntimeCapture = boolean;
-export type SchemaVersion80 = 1;
+export type SchemaVersion81 = 1;
 export type Title9 = string;
 export type Version8 = string;
 export type CompletionState = "passed" | "blocked" | "human_rejected";
@@ -1542,11 +1566,11 @@ export type State13 = "missing" | "passed" | "failed" | "inconclusive" | "adviso
 export type WaiverId1 = string | null;
 export type GeneratedAt = string;
 export type PassedGateCount = number;
-export type ProjectId64 = string;
+export type ProjectId65 = string;
 export type ReportId = string;
 export type RequiredGateCount = number;
-export type SchemaVersion81 = 1;
-export type TaskId56 = string;
+export type SchemaVersion82 = 1;
+export type TaskId57 = string;
 export type WaivedGateCount = number;
 /**
  * @minItems 1
@@ -1558,7 +1582,7 @@ export type InstallState = "missing" | "installed" | "unhealthy";
 export type Invocation = "cli" | "http" | "sdk" | "mcp";
 export type Location = "local" | "cloud";
 export type OutputContract1 = string;
-export type SchemaVersion82 = 1;
+export type SchemaVersion83 = 1;
 export type ToolId2 = string;
 export type Version9 = string;
 export type AgentId7 = string;
@@ -1582,7 +1606,7 @@ export type BudgetCents = number;
 export type Month1 = string;
 export type ReservedCents = number;
 export type SettledCents = number;
-export type TaskId57 = string;
+export type TaskId58 = string;
 export type DecisionId3 = string;
 export type Rationale3 = string;
 export type RequestId5 = string;
@@ -1594,9 +1618,9 @@ export type ApprovedAssets = SourceRef[];
 export type EngineVersion = string;
 export type InspectedAt2 = string;
 export type MainScene = string;
-export type ProjectId65 = string;
+export type ProjectId66 = string;
 export type ProjectPath = string;
-export type TaskId58 = string;
+export type TaskId59 = string;
 export type UiNodes = EngineNodeInspection[];
 export type Cursor = number;
 export type Events = (
@@ -1622,6 +1646,7 @@ export type Events = (
   | GMEvent
   | PlanEvent
   | InboxEvent
+  | InboxDecisionRequestedEvent
   | IntelligenceEvent
   | EvidenceRecordedEvent
   | EvaluationRecordedEvent
@@ -1642,7 +1667,7 @@ export type Version10 = string | null;
 export type GateId3 = string;
 export type Reason11 = string;
 export type RequestId6 = string;
-export type TaskId59 = string;
+export type TaskId60 = string;
 export type Applicability1 = string;
 /**
  * @minItems 1
@@ -1660,7 +1685,7 @@ export type LessonId1 = string;
 export type Limitations1 = [string, ...string[]];
 export type ReviewedAt2 = string;
 export type ReviewerId1 = "human";
-export type SchemaVersion83 = 1;
+export type SchemaVersion84 = 1;
 export type Scope2 = "global" | "domain" | "engine";
 export type ScopeConstraint = string | null;
 export type Statement6 = string;
@@ -1668,7 +1693,7 @@ export type GateId4 = string;
 export type RequestId7 = string;
 export type Summary6 = string;
 export type SupportingEvidenceIds = string[];
-export type TaskId60 = string;
+export type TaskId61 = string;
 export type Verdict = "approved" | "rejected" | "observation";
 export type RequestId8 = string;
 export type AuditionId1 = string;
@@ -1680,7 +1705,7 @@ export type Detail12 = string;
 export type EvidenceClass2 = "human" | "heuristic";
 export type RecordedAt1 = string;
 export type ReviewerId2 = "human" | "expertise-curator";
-export type SchemaVersion84 = 1;
+export type SchemaVersion85 = 1;
 export type Auditions = PackAudition[];
 export type Baseline = ExpertiseBaselineStatus[];
 export type Candidates1 = ExpertisePack[];
@@ -1689,7 +1714,7 @@ export type Reason12 = string;
 export type RecordId = string;
 export type RecordedAt2 = string;
 export type ReviewerId3 = "human";
-export type SchemaVersion85 = 1;
+export type SchemaVersion86 = 1;
 export type State15 = "active" | "deprecated" | "disputed" | "expired";
 export type Lifecycle1 = PackLifecycleRecord[];
 export type MaintenanceFlags = string[];
@@ -1703,7 +1728,7 @@ export type PrivacyChecked = boolean;
 export type ProvenanceChecked = boolean;
 export type ReviewedAt3 = string;
 export type ReviewerId4 = "human";
-export type SchemaVersion86 = 1;
+export type SchemaVersion87 = 1;
 export type Reviews = PackReview[];
 export type BenchmarkRegressions = string[];
 export type BrokenSources = string[];
@@ -1735,11 +1760,11 @@ export type Detail15 = string;
 export type LessonId3 = string;
 export type ModelName2 = string | null;
 export type RequestId9 = string;
-export type TaskId61 = string;
-export type RequestId10 = string;
 export type TaskId62 = string;
-export type RequestId11 = string;
+export type RequestId10 = string;
 export type TaskId63 = string;
+export type RequestId11 = string;
+export type TaskId64 = string;
 export type Urgency1 = "low" | "normal" | "high";
 export type Objective3 = string;
 export type RequestId12 = string;
@@ -1750,7 +1775,7 @@ export type Detail16 = string;
 export type EvidenceText = string;
 export type BenchmarkId4 = string;
 export type PackId4 = string;
-export type TaskId64 = string;
+export type TaskId65 = string;
 export type Version11 = string;
 export type Reason13 = string;
 export type State18 = "active" | "deprecated" | "disputed" | "expired";
@@ -1791,17 +1816,17 @@ export type Inspections = ProductionDomainInspection[];
 export type Tools = ToolDefinition[];
 export type DomainId2 = string;
 export type RequestId14 = string;
-export type TaskId65 = string;
+export type TaskId66 = string;
 export type ActiveProjectId = string;
 export type Engine1 = string | null;
 export type Name6 = string;
-export type ProjectId66 = string;
+export type ProjectId67 = string;
 export type Root = string;
 export type Stage1 = string;
 export type Projects = ProjectSummary[];
 export type Path3 = string;
-export type ProjectId67 = string;
 export type ProjectId68 = string;
+export type ProjectId69 = string;
 export type BudgetReservations = BudgetReservation[];
 export type Cursor1 = number;
 export type Decisions1 = InboxDecision[];
@@ -1827,11 +1852,11 @@ export type GitDiffSummary1 = string | null;
  * @minItems 1
  */
 export type Paths3 = [string, ...string[]];
-export type ProjectId69 = string;
+export type ProjectId70 = string;
 export type ReconciledAt = string | null;
-export type SchemaVersion87 = 1;
+export type SchemaVersion88 = 1;
 export type State19 = "unresolved" | "reconciled";
-export type TaskId66 = string | null;
+export type TaskId67 = string | null;
 export type Reconciliations = ReconciliationRecord[];
 export type Recruitments = RecruitmentRecord[];
 export type RequiresReconciliation = boolean;
@@ -1853,7 +1878,7 @@ export type MaxOutputTokens = number;
 export type Prompt = string;
 export type ProviderId10 = string;
 export type RequestId17 = string;
-export type TaskId67 = string | null;
+export type TaskId68 = string | null;
 export type Approvals = SpendApproval[];
 export type Invocations = PaidInvocationRecord[];
 export type AdapterAvailable = boolean;
@@ -1861,20 +1886,20 @@ export type CredentialConfigured = boolean;
 export type Providers1 = ProviderStatus[];
 export type Reservations = BudgetReservation[];
 export type RequestId18 = string;
-export type TaskId68 = string;
+export type TaskId69 = string;
 export type ChangeId3 = string;
 export type Detail19 = string;
 export type RequestId19 = string;
-export type TaskId69 = string | null;
+export type TaskId70 = string | null;
 export type RequestId20 = string;
-export type TaskId70 = string;
+export type TaskId71 = string;
 export type FreshnessClass3 = "stable" | "slow_changing" | "version_sensitive" | "policy_sensitive" | "live";
 export type Requirement1 = string;
-export type TaskId71 = string;
+export type TaskId72 = string;
 export type Url1 = string;
 export type NodePath = string;
 export type RequestId21 = string;
-export type TaskId72 = string;
+export type TaskId73 = string;
 export type AmountCents3 = number;
 export type ExpiresAt2 = string;
 export type InvocationRequestId = string;
@@ -1904,6 +1929,7 @@ export type Events1 = (
   | GMEvent
   | PlanEvent
   | InboxEvent
+  | InboxDecisionRequestedEvent
   | IntelligenceEvent
   | EvidenceRecordedEvent
   | EvaluationRecordedEvent
@@ -1921,7 +1947,7 @@ export type HasMore1 = boolean;
 export type Type2 = "events";
 export type Detail20 = string;
 export type RequestId23 = string;
-export type TaskId73 = string;
+export type TaskId74 = string;
 /**
  * @minItems 1
  */
@@ -1938,9 +1964,9 @@ export type Deliverables3 = string[];
 export type Objective6 = string | null;
 export type RequestId25 = string;
 export type RequiredCapabilities4 = string[];
-export type TaskId74 = string | null;
+export type TaskId75 = string | null;
 export type Title12 = string | null;
-export type TaskId75 = string;
+export type TaskId76 = string;
 export type WorkerId1 = string | null;
 
 /**
@@ -2137,6 +2163,7 @@ export interface Capability {
   evaluation_requirements: EvaluationRequirements;
   expected_outputs: ExpectedOutputs;
   family: Family;
+  related_capability_ids?: RelatedCapabilityIds;
   required_inputs: RequiredInputs1;
   schema_version?: SchemaVersion4;
   version: Version2;
@@ -3159,20 +3186,37 @@ export interface InboxEvent {
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
- * via the `definition` "IntelligenceEvent".
+ * via the `definition` "InboxDecisionRequestedEvent".
  */
-export interface IntelligenceEvent {
+export interface InboxDecisionRequestedEvent {
   actor_id: ActorId22;
   actor_type: ActorType22;
   correlation_id: CorrelationId22;
   event_id: EventId22;
   event_type: EventType22;
-  payload: ProjectIntelligence;
-  project_id: ProjectId40;
-  schema_version?: SchemaVersion49;
+  payload: InboxDecision;
+  project_id: ProjectId39;
+  schema_version?: SchemaVersion48;
   sequence: Sequence22;
   task_id: TaskId35;
   timestamp: Timestamp22;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "IntelligenceEvent".
+ */
+export interface IntelligenceEvent {
+  actor_id: ActorId23;
+  actor_type: ActorType23;
+  correlation_id: CorrelationId23;
+  event_id: EventId23;
+  event_type: EventType23;
+  payload: ProjectIntelligence;
+  project_id: ProjectId41;
+  schema_version?: SchemaVersion50;
+  sequence: Sequence23;
+  task_id: TaskId36;
+  timestamp: Timestamp23;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3181,9 +3225,9 @@ export interface IntelligenceEvent {
 export interface ProjectIntelligence {
   indexed_at: IndexedAt;
   knowledge: Knowledge1;
-  project_id: ProjectId39;
+  project_id: ProjectId40;
   resources: Resources;
-  schema_version?: SchemaVersion48;
+  schema_version?: SchemaVersion49;
   workspace_digest: WorkspaceDigest;
 }
 /**
@@ -3203,17 +3247,17 @@ export interface IndexedResource {
  * via the `definition` "EvidenceRecordedEvent".
  */
 export interface EvidenceRecordedEvent {
-  actor_id: ActorId23;
-  actor_type: ActorType23;
-  correlation_id: CorrelationId23;
-  event_id: EventId23;
-  event_type: EventType23;
+  actor_id: ActorId24;
+  actor_type: ActorType24;
+  correlation_id: CorrelationId24;
+  event_id: EventId24;
+  event_type: EventType24;
   payload: Evidence;
-  project_id: ProjectId42;
-  schema_version?: SchemaVersion51;
-  sequence: Sequence23;
-  task_id: TaskId37;
-  timestamp: Timestamp23;
+  project_id: ProjectId43;
+  schema_version?: SchemaVersion52;
+  sequence: Sequence24;
+  task_id: TaskId38;
+  timestamp: Timestamp24;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3226,45 +3270,45 @@ export interface Evidence {
   evidence_id: EvidenceId;
   producer_id: ProducerId;
   producer_type: ProducerType;
-  project_id: ProjectId41;
-  schema_version?: SchemaVersion50;
+  project_id: ProjectId42;
+  schema_version?: SchemaVersion51;
   source: SourceRef;
   summary: Summary2;
-  task_id: TaskId36;
+  task_id: TaskId37;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "EvaluationRecordedEvent".
  */
 export interface EvaluationRecordedEvent {
-  actor_id: ActorId24;
-  actor_type: ActorType24;
-  correlation_id: CorrelationId24;
-  event_id: EventId24;
-  event_type: EventType24;
+  actor_id: ActorId25;
+  actor_type: ActorType25;
+  correlation_id: CorrelationId25;
+  event_id: EventId25;
+  event_type: EventType25;
   payload: Evaluation;
-  project_id: ProjectId43;
-  schema_version?: SchemaVersion52;
-  sequence: Sequence24;
-  task_id: TaskId38;
-  timestamp: Timestamp24;
+  project_id: ProjectId44;
+  schema_version?: SchemaVersion53;
+  sequence: Sequence25;
+  task_id: TaskId39;
+  timestamp: Timestamp25;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "RecruitmentEvent".
  */
 export interface RecruitmentEvent {
-  actor_id: ActorId25;
-  actor_type: ActorType25;
-  correlation_id: CorrelationId25;
-  event_id: EventId25;
-  event_type: EventType25;
+  actor_id: ActorId26;
+  actor_type: ActorType26;
+  correlation_id: CorrelationId26;
+  event_id: EventId26;
+  event_type: EventType26;
   payload: RecruitmentRecord;
-  project_id: ProjectId45;
-  schema_version?: SchemaVersion57;
-  sequence: Sequence25;
-  task_id: TaskId40;
-  timestamp: Timestamp25;
+  project_id: ProjectId46;
+  schema_version?: SchemaVersion58;
+  sequence: Sequence26;
+  task_id: TaskId41;
+  timestamp: Timestamp26;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3280,11 +3324,11 @@ export interface RecruitmentRecord {
   expertise_snapshot?: ExpertiseSnapshot;
   gap: CapabilityGap;
   missing_expertise_capabilities?: MissingExpertiseCapabilities;
-  project_id: ProjectId44;
+  project_id: ProjectId45;
   recruitment_id: RecruitmentId;
-  schema_version?: SchemaVersion56;
+  schema_version?: SchemaVersion57;
   state: State7;
-  task_id: TaskId39;
+  task_id: TaskId40;
   tool_discoveries: ToolDiscoveries;
   updated_at: UpdatedAt1;
 }
@@ -3300,7 +3344,7 @@ export interface AgentAudition {
   result: Result1;
   review: AuditionReview;
   sandbox?: Sandbox1;
-  schema_version?: SchemaVersion53;
+  schema_version?: SchemaVersion54;
   submission: AuditionSubmission;
 }
 /**
@@ -3371,7 +3415,7 @@ export interface ExpertisePack {
   pack_id: PackId1;
   required_tool_ids?: RequiredToolIds;
   reviewed_at?: ReviewedAt;
-  schema_version?: SchemaVersion55;
+  schema_version?: SchemaVersion56;
   sources: Sources1;
   state: State6;
   supersedes_version?: SupersedesVersion;
@@ -3389,7 +3433,7 @@ export interface ExpertiseKnowledgeItem {
   item_id: ItemId;
   kind: Kind5;
   method_ids?: MethodIds1;
-  schema_version?: SchemaVersion54;
+  schema_version?: SchemaVersion55;
   source_ids: SourceIds3;
   statement: Statement3;
   title: Title6;
@@ -3409,17 +3453,17 @@ export interface ToolDiscovery {
  * via the `definition` "GateWaivedEvent".
  */
 export interface GateWaivedEvent {
-  actor_id: ActorId26;
-  actor_type: ActorType26;
-  correlation_id: CorrelationId26;
-  event_id: EventId26;
-  event_type: EventType26;
+  actor_id: ActorId27;
+  actor_type: ActorType27;
+  correlation_id: CorrelationId27;
+  event_id: EventId27;
+  event_type: EventType27;
   payload: GateWaiver;
-  project_id: ProjectId47;
-  schema_version?: SchemaVersion59;
-  sequence: Sequence26;
-  task_id: TaskId42;
-  timestamp: Timestamp26;
+  project_id: ProjectId48;
+  schema_version?: SchemaVersion60;
+  sequence: Sequence27;
+  task_id: TaskId43;
+  timestamp: Timestamp27;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3427,10 +3471,10 @@ export interface GateWaivedEvent {
  */
 export interface GateWaiver {
   gate_id: GateId1;
-  project_id: ProjectId46;
+  project_id: ProjectId47;
   reason: Reason6;
-  schema_version?: SchemaVersion58;
-  task_id: TaskId41;
+  schema_version?: SchemaVersion59;
+  task_id: TaskId42;
   waived_at: WaivedAt;
   waived_by: WaivedBy;
   waiver_id: WaiverId;
@@ -3440,17 +3484,17 @@ export interface GateWaiver {
  * via the `definition` "ModelBenchmarkEvent".
  */
 export interface ModelBenchmarkEvent {
-  actor_id: ActorId27;
-  actor_type: ActorType27;
-  correlation_id: CorrelationId27;
-  event_id: EventId27;
-  event_type: EventType27;
+  actor_id: ActorId28;
+  actor_type: ActorType28;
+  correlation_id: CorrelationId28;
+  event_id: EventId28;
+  event_type: EventType28;
   payload: ModelBenchmark;
-  project_id: ProjectId49;
-  schema_version?: SchemaVersion61;
-  sequence: Sequence27;
-  task_id: TaskId44;
-  timestamp: Timestamp27;
+  project_id: ProjectId50;
+  schema_version?: SchemaVersion62;
+  sequence: Sequence28;
+  task_id: TaskId45;
+  timestamp: Timestamp28;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3465,32 +3509,32 @@ export interface ModelBenchmark {
   model_digest: ModelDigest;
   model_name: ModelName;
   output_channel?: OutputChannel;
-  project_id: ProjectId48;
+  project_id: ProjectId49;
   prompt_sha256: PromptSha256;
   prompt_tokens: PromptTokens;
   required_capability_ids: RequiredCapabilityIds;
   response?: SourceRef | null;
   result: Result3;
-  schema_version?: SchemaVersion60;
+  schema_version?: SchemaVersion61;
   summary: Summary4;
-  task_id: TaskId43;
+  task_id: TaskId44;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "ModelRoutingEvent".
  */
 export interface ModelRoutingEvent {
-  actor_id: ActorId28;
-  actor_type: ActorType28;
-  correlation_id: CorrelationId28;
-  event_id: EventId28;
-  event_type: EventType28;
+  actor_id: ActorId29;
+  actor_type: ActorType29;
+  correlation_id: CorrelationId29;
+  event_id: EventId29;
+  event_type: EventType29;
   payload: ModelRoutingRecord;
-  project_id: ProjectId51;
-  schema_version?: SchemaVersion63;
-  sequence: Sequence28;
-  task_id: TaskId46;
-  timestamp: Timestamp28;
+  project_id: ProjectId52;
+  schema_version?: SchemaVersion64;
+  sequence: Sequence29;
+  task_id: TaskId47;
+  timestamp: Timestamp29;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3499,14 +3543,14 @@ export interface ModelRoutingEvent {
 export interface ModelRoutingRecord {
   candidates: Candidates;
   created_at: CreatedAt4;
-  project_id: ProjectId50;
+  project_id: ProjectId51;
   reason: Reason8;
   routing_id: RoutingId;
-  schema_version?: SchemaVersion62;
+  schema_version?: SchemaVersion63;
   selected_model_name?: SelectedModelName;
   selected_provider_id?: SelectedProviderId;
   selected_route: SelectedRoute;
-  task_id: TaskId45;
+  task_id: TaskId46;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3529,17 +3573,17 @@ export interface ModelRouteCandidate {
  * via the `definition` "ProductionDomainInspectionEvent".
  */
 export interface ProductionDomainInspectionEvent {
-  actor_id: ActorId29;
-  actor_type: ActorType29;
-  correlation_id: CorrelationId29;
-  event_id: EventId29;
-  event_type: EventType29;
+  actor_id: ActorId30;
+  actor_type: ActorType30;
+  correlation_id: CorrelationId30;
+  event_id: EventId30;
+  event_type: EventType30;
   payload: ProductionDomainInspection;
-  project_id: ProjectId53;
-  schema_version?: SchemaVersion65;
-  sequence: Sequence29;
-  task_id: TaskId48;
-  timestamp: Timestamp29;
+  project_id: ProjectId54;
+  schema_version?: SchemaVersion66;
+  sequence: Sequence30;
+  task_id: TaskId49;
+  timestamp: Timestamp30;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3553,10 +3597,10 @@ export interface ProductionDomainInspection {
   inspected_at: InspectedAt;
   inspected_file_count: InspectedFileCount;
   inspection_id: InspectionId;
-  project_id: ProjectId52;
-  schema_version?: SchemaVersion64;
+  project_id: ProjectId53;
+  schema_version?: SchemaVersion65;
   status: Status;
-  task_id: TaskId47;
+  task_id: TaskId48;
   tool_id: ToolId1;
 }
 /**
@@ -3575,17 +3619,17 @@ export interface ProductionDomainFinding {
  * via the `definition` "OnboardingEvent".
  */
 export interface OnboardingEvent {
-  actor_id: ActorId30;
-  actor_type: ActorType30;
-  correlation_id: CorrelationId30;
-  event_id: EventId30;
-  event_type: EventType30;
+  actor_id: ActorId31;
+  actor_type: ActorType31;
+  correlation_id: CorrelationId31;
+  event_id: EventId31;
+  event_type: EventType31;
   payload: OnboardingEventPayload;
-  project_id: ProjectId56;
-  schema_version?: SchemaVersion68;
-  sequence: Sequence30;
-  task_id: TaskId49;
-  timestamp: Timestamp30;
+  project_id: ProjectId57;
+  schema_version?: SchemaVersion69;
+  sequence: Sequence31;
+  task_id: TaskId50;
+  timestamp: Timestamp31;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3613,12 +3657,12 @@ export interface LeadDomainAssessment {
   inferred_facts: InferredFacts;
   knowledge_packet?: KnowledgePacket | null;
   known_facts: KnownFacts;
-  project_id: ProjectId54;
+  project_id: ProjectId55;
   readiness: DomainReadiness;
   recommendations: Recommendations;
   requested_human_inputs: RequestedHumanInputs;
   risks: Risks1;
-  schema_version?: SchemaVersion66;
+  schema_version?: SchemaVersion67;
   summary: Summary5;
   unknowns: Unknowns;
 }
@@ -3659,11 +3703,11 @@ export interface ProjectOnboarding {
   completed_at: CompletedAt;
   deferred_questions: DeferredQuestions;
   onboarding_id: OnboardingId;
-  project_id: ProjectId55;
+  project_id: ProjectId56;
   reconciliation_summary: ReconciliationSummary;
   reconnaissance_summary: ReconnaissanceSummary;
   relevant_domains: RelevantDomains;
-  schema_version?: SchemaVersion67;
+  schema_version?: SchemaVersion68;
   started_at: StartedAt;
   state: State8;
 }
@@ -3672,17 +3716,17 @@ export interface ProjectOnboarding {
  * via the `definition` "ExperienceObservedEvent".
  */
 export interface ExperienceObservedEvent {
-  actor_id: ActorId31;
-  actor_type: ActorType31;
-  correlation_id: CorrelationId31;
-  event_id: EventId31;
-  event_type: EventType31;
+  actor_id: ActorId32;
+  actor_type: ActorType32;
+  correlation_id: CorrelationId32;
+  event_id: EventId32;
+  event_type: EventType32;
   payload: ExperienceObservation;
-  project_id: ProjectId58;
-  schema_version?: SchemaVersion70;
-  sequence: Sequence31;
-  task_id: TaskId51;
-  timestamp: Timestamp31;
+  project_id: ProjectId59;
+  schema_version?: SchemaVersion71;
+  sequence: Sequence32;
+  task_id: TaskId52;
+  timestamp: Timestamp32;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3701,29 +3745,29 @@ export interface ExperienceObservation {
   method_ids?: MethodIds2;
   observation_id: ObservationId;
   outcome?: Outcome;
-  project_id: ProjectId57;
-  schema_version?: SchemaVersion69;
+  project_id: ProjectId58;
+  schema_version?: SchemaVersion70;
   scope?: Scope;
   source: SourceRef;
   state: State9;
-  task_id: TaskId50;
+  task_id: TaskId51;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "ExperienceLessonEvent".
  */
 export interface ExperienceLessonEvent {
-  actor_id: ActorId32;
-  actor_type: ActorType32;
-  correlation_id: CorrelationId32;
-  event_id: EventId32;
-  event_type: EventType32;
+  actor_id: ActorId33;
+  actor_type: ActorType33;
+  correlation_id: CorrelationId33;
+  event_id: EventId33;
+  event_type: EventType33;
   payload: ExperienceLesson;
-  project_id: ProjectId60;
-  schema_version?: SchemaVersion72;
-  sequence: Sequence32;
-  task_id: TaskId52;
-  timestamp: Timestamp32;
+  project_id: ProjectId61;
+  schema_version?: SchemaVersion73;
+  sequence: Sequence33;
+  task_id: TaskId53;
+  timestamp: Timestamp33;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3737,12 +3781,12 @@ export interface ExperienceLesson {
   lesson_id: LessonId;
   limitations: Limitations;
   observation_ids: ObservationIds;
-  project_id: ProjectId59;
+  project_id: ProjectId60;
   proposer_id: ProposerId;
   review_detail?: ReviewDetail;
   reviewed_at?: ReviewedAt1;
   reviewer_id?: ReviewerId;
-  schema_version?: SchemaVersion71;
+  schema_version?: SchemaVersion72;
   scope?: Scope1;
   state: State10;
   statement: Statement5;
@@ -3752,17 +3796,17 @@ export interface ExperienceLesson {
  * via the `definition` "WorldResearchEvent".
  */
 export interface WorldResearchEvent {
-  actor_id: ActorId33;
-  actor_type: ActorType33;
-  correlation_id: CorrelationId33;
-  event_id: EventId33;
-  event_type: EventType33;
+  actor_id: ActorId34;
+  actor_type: ActorType34;
+  correlation_id: CorrelationId34;
+  event_id: EventId34;
+  event_type: EventType34;
   payload: WorldResearch;
-  project_id: ProjectId62;
-  schema_version?: SchemaVersion74;
-  sequence: Sequence33;
-  task_id: TaskId54;
-  timestamp: Timestamp33;
+  project_id: ProjectId63;
+  schema_version?: SchemaVersion75;
+  sequence: Sequence34;
+  task_id: TaskId55;
+  timestamp: Timestamp34;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3772,14 +3816,14 @@ export interface WorldResearch {
   artifact?: SourceRef | null;
   detail: Detail10;
   excerpt?: Excerpt1;
-  project_id: ProjectId61;
+  project_id: ProjectId62;
   requirement: Requirement;
   research_id: ResearchId;
   researched_at: ResearchedAt;
-  schema_version?: SchemaVersion73;
+  schema_version?: SchemaVersion74;
   source?: KnowledgeSource | null;
   state: State11;
-  task_id: TaskId53;
+  task_id: TaskId54;
   url: Url;
 }
 /**
@@ -3796,7 +3840,7 @@ export interface ExpertiseBenchmarkScenario {
   expected_uncertainty?: ExpectedUncertainty;
   pack_id: PackId2;
   scenario: Scenario;
-  schema_version?: SchemaVersion75;
+  schema_version?: SchemaVersion76;
   scoring_notes: ScoringNotes;
 }
 /**
@@ -3812,7 +3856,7 @@ export interface LocalHardwareInventory {
   operating_system: OperatingSystem;
   physical_core_count?: PhysicalCoreCount;
   ram_bytes?: RamBytes;
-  schema_version?: SchemaVersion76;
+  schema_version?: SchemaVersion77;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3834,7 +3878,7 @@ export interface LocalModelInventory {
   inspected_at: InspectedAt1;
   models?: Models;
   runtime_id?: RuntimeId;
-  schema_version?: SchemaVersion77;
+  schema_version?: SchemaVersion78;
   state: State12;
   version?: Version6;
 }
@@ -3868,13 +3912,13 @@ export interface LocalModelRecommendation {
   catalog_url: CatalogUrl;
   install_command?: InstallCommand;
   installed?: Installed1;
-  project_id: ProjectId63;
+  project_id: ProjectId64;
   reason: Reason10;
   recommendation_id: RecommendationId;
   recommended_model_name?: RecommendedModelName;
   required_capability_ids: RequiredCapabilityIds1;
-  schema_version?: SchemaVersion78;
-  task_id: TaskId55;
+  schema_version?: SchemaVersion79;
+  task_id: TaskId56;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3905,7 +3949,7 @@ export interface ProductionDomainDefinition {
   description: Description5;
   domain_id: DomainId1;
   gate_ids: GateIds;
-  schema_version?: SchemaVersion79;
+  schema_version?: SchemaVersion80;
   title: Title8;
   tool_ids: ToolIds1;
   version: Version7;
@@ -3923,7 +3967,7 @@ export interface QAGateDefinition {
   required_evidence_classes: RequiredEvidenceClasses;
   requires_independent_verification?: RequiresIndependentVerification;
   requires_runtime_capture?: RequiresRuntimeCapture;
-  schema_version?: SchemaVersion80;
+  schema_version?: SchemaVersion81;
   title: Title9;
   version: Version8;
 }
@@ -3937,11 +3981,11 @@ export interface QAReport {
   gates: Gates;
   generated_at: GeneratedAt;
   passed_gate_count: PassedGateCount;
-  project_id: ProjectId64;
+  project_id: ProjectId65;
   report_id: ReportId;
   required_gate_count: RequiredGateCount;
-  schema_version?: SchemaVersion81;
-  task_id: TaskId56;
+  schema_version?: SchemaVersion82;
+  task_id: TaskId57;
   waived_gate_count: WaivedGateCount;
 }
 /**
@@ -3971,7 +4015,7 @@ export interface ToolDefinition {
   location: Location;
   output_contract: OutputContract1;
   permissions: Permissions;
-  schema_version?: SchemaVersion82;
+  schema_version?: SchemaVersion83;
   tool_id: ToolId2;
   version: Version9;
 }
@@ -4032,7 +4076,7 @@ export interface BudgetLedger {
  * via the `definition` "ContextCommand".
  */
 export interface ContextCommand {
-  task_id: TaskId57;
+  task_id: TaskId58;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4063,9 +4107,9 @@ export interface EngineProjectInspection {
   engine_version: EngineVersion;
   inspected_at: InspectedAt2;
   main_scene: MainScene;
-  project_id: ProjectId65;
+  project_id: ProjectId66;
   project_path: ProjectPath;
-  task_id: TaskId58;
+  task_id: TaskId59;
   ui_nodes: UiNodes;
 }
 /**
@@ -4094,7 +4138,7 @@ export interface GateWaiverCommand {
   gate_id: GateId3;
   reason: Reason11;
   request_id: RequestId6;
-  task_id: TaskId59;
+  task_id: TaskId60;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4109,7 +4153,7 @@ export interface GlobalExperience {
   limitations: Limitations1;
   reviewed_at: ReviewedAt2;
   reviewer_id?: ReviewerId1;
-  schema_version?: SchemaVersion83;
+  schema_version?: SchemaVersion84;
   scope: Scope2;
   scope_constraint?: ScopeConstraint;
   statement: Statement6;
@@ -4123,7 +4167,7 @@ export interface HumanReviewCommand {
   request_id: RequestId7;
   summary: Summary6;
   supporting_evidence_ids?: SupportingEvidenceIds;
-  task_id: TaskId60;
+  task_id: TaskId61;
   verdict: Verdict;
 }
 /**
@@ -4163,7 +4207,7 @@ export interface PackAudition {
   pack: ExpertisePackRef;
   recorded_at: RecordedAt1;
   reviewer_id?: ReviewerId2;
-  schema_version?: SchemaVersion84;
+  schema_version?: SchemaVersion85;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4175,7 +4219,7 @@ export interface PackLifecycleRecord {
   record_id: RecordId;
   recorded_at: RecordedAt2;
   reviewer_id?: ReviewerId3;
-  schema_version?: SchemaVersion85;
+  schema_version?: SchemaVersion86;
   state: State15;
 }
 /**
@@ -4193,7 +4237,7 @@ export interface PackReview {
   provenance_checked: ProvenanceChecked;
   reviewed_at: ReviewedAt3;
   reviewer_id?: ReviewerId4;
-  schema_version?: SchemaVersion86;
+  schema_version?: SchemaVersion87;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4252,7 +4296,7 @@ export interface LessonReviewCommand {
 export interface ModelBenchmarkCommand {
   model_name?: ModelName2;
   request_id: RequestId9;
-  task_id: TaskId61;
+  task_id: TaskId62;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4268,7 +4312,7 @@ export interface ModelEnvironment {
  */
 export interface ModelRecommendationCommand {
   request_id: RequestId10;
-  task_id: TaskId62;
+  task_id: TaskId63;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4276,7 +4320,7 @@ export interface ModelRecommendationCommand {
  */
 export interface ModelRouteCommand {
   request_id: RequestId11;
-  task_id: TaskId63;
+  task_id: TaskId64;
   urgency?: Urgency1;
 }
 /**
@@ -4313,7 +4357,7 @@ export interface PackAutomatedAuditionCommand {
  */
 export interface PackBuildCommand {
   pack_id: PackId4;
-  task_id: TaskId64;
+  task_id: TaskId65;
   version: Version11;
 }
 /**
@@ -4393,7 +4437,7 @@ export interface ProductionDomainCatalog {
 export interface ProductionDomainRunCommand {
   domain_id: DomainId2;
   request_id: RequestId14;
-  task_id: TaskId65;
+  task_id: TaskId66;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4411,7 +4455,7 @@ export interface ProjectSummary {
   engine?: Engine1;
   name: Name6;
   onboarding?: ProjectOnboarding | null;
-  project_id: ProjectId66;
+  project_id: ProjectId67;
   root: Root;
   stage: Stage1;
 }
@@ -4427,14 +4471,14 @@ export interface ProjectImport {
  * via the `definition` "ProjectRemoval".
  */
 export interface ProjectRemoval {
-  project_id: ProjectId67;
+  project_id: ProjectId68;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "ProjectSelection".
  */
 export interface ProjectSelection {
-  project_id: ProjectId68;
+  project_id: ProjectId69;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4484,11 +4528,11 @@ export interface ReconciliationRecord {
   git_diff_summary?: GitDiffSummary1;
   observed: WorkspaceFingerprint;
   paths: Paths3;
-  project_id: ProjectId69;
+  project_id: ProjectId70;
   reconciled_at?: ReconciledAt;
-  schema_version?: SchemaVersion87;
+  schema_version?: SchemaVersion88;
   state?: State19;
-  task_id?: TaskId66;
+  task_id?: TaskId67;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4540,7 +4584,7 @@ export interface ProviderInvokeCommand {
   prompt: Prompt;
   provider_id: ProviderId10;
   request_id: RequestId17;
-  task_id?: TaskId67;
+  task_id?: TaskId68;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4568,7 +4612,7 @@ export interface ProviderStatus {
  */
 export interface QARunCommand {
   request_id: RequestId18;
-  task_id: TaskId68;
+  task_id: TaskId69;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4578,7 +4622,7 @@ export interface ReconcileCommand {
   change_id: ChangeId3;
   detail: Detail19;
   request_id: RequestId19;
-  task_id?: TaskId69;
+  task_id?: TaskId70;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4586,7 +4630,7 @@ export interface ReconcileCommand {
  */
 export interface RecruitmentCommand {
   request_id: RequestId20;
-  task_id: TaskId70;
+  task_id: TaskId71;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4595,7 +4639,7 @@ export interface RecruitmentCommand {
 export interface ResearchCommand {
   freshness_class?: FreshnessClass3;
   requirement: Requirement1;
-  task_id: TaskId71;
+  task_id: TaskId72;
   url: Url1;
 }
 /**
@@ -4605,7 +4649,7 @@ export interface ResearchCommand {
 export interface RuntimeCaptureCommand {
   node_path: NodePath;
   request_id: RequestId21;
-  task_id: TaskId72;
+  task_id: TaskId73;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4645,7 +4689,7 @@ export interface StreamMessage {
 export interface TaskProgressCommand {
   detail: Detail20;
   request_id: RequestId23;
-  task_id: TaskId73;
+  task_id: TaskId74;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4668,7 +4712,7 @@ export interface TaskStartCommand {
   objective?: Objective6;
   request_id: RequestId25;
   required_capabilities?: RequiredCapabilities4;
-  task_id?: TaskId74;
+  task_id?: TaskId75;
   title?: Title12;
 }
 /**
@@ -4676,6 +4720,6 @@ export interface TaskStartCommand {
  * via the `definition` "WorkerCommand".
  */
 export interface WorkerCommand {
-  task_id: TaskId75;
+  task_id: TaskId76;
   worker_id?: WorkerId1;
 }

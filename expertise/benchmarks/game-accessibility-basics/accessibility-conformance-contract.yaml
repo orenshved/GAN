@@ -1,0 +1,29 @@
+schema_version: 1
+benchmark_id: accessibility-conformance-contract
+pack_id: game-accessibility-basics
+applies_to_versions: ["1.0.0"]
+capability_ids: [accessibility_ux, accessibility_qa]
+scenario: >-
+  A synthetic marketing draft states: "Our game is fully WCAG AAA accessible,
+  the highest possible standard." No conformance audit, scope, or surface
+  is named anywhere in the draft. A reviewer is asked to assess whether this
+  claim can be published as written.
+discriminates: >-
+  A generic reviewer may accept the claim because AAA sounds like the
+  strongest possible standard to advertise. A specialist recognizes that
+  project-wide AAA conformance is explicitly discouraged by WCAG's own
+  guidance and that the claim has no stated scope.
+expected_specialist_findings:
+  - WCAG's own conformance guidance states that Level AAA conformance is not recommended as a general policy for entire sites or products, because it is not possible to satisfy every Level AAA success criterion for all content.
+  - The claim names no scope — no specific screen, mode, or feature set the AAA claim applies to — which makes it uncheckable as written.
+  - Even a narrower AAA claim would first require confirming Level A and Level AA are fully satisfied, since the levels are cumulative; nothing in the draft indicates this was verified.
+  - Recommend replacing the claim with a specific, defensible statement — for example, a named conformance level (most realistically AA) applied to a named scope, backed by an actual audit.
+expected_uncertainty:
+  - Whether any conformance audit was performed at all before this claim was drafted — not stated.
+acceptable_source_ids: [wcag-conformance-levels]
+scoring_notes: >-
+  Pass only if the enriched run rejects the unscoped AAA claim specifically
+  because project-wide AAA is discouraged by WCAG's own guidance and no scope
+  is named, and recommends a defensible replacement claim. Accepting the
+  claim as written, or objecting only that AAA "sounds too good to be true"
+  without the specific reasoning, is a fail.

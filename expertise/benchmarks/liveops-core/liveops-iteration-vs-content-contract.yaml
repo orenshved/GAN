@@ -1,0 +1,31 @@
+schema_version: 1
+benchmark_id: liveops-iteration-vs-content-contract
+pack_id: liveops-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [liveops_design]
+scenario: >-
+  A synthetic status report states: "We're doing great live ops. We ship a
+  new planned content update every Tuesday straight from our roadmap, so
+  we're iterating constantly." No player feedback loop or behavioral-data-driven
+  change is described anywhere in the report; every update shipped is a
+  pre-planned roadmap item scheduled well in advance. A reviewer is asked
+  whether this qualifies as live-ops iteration.
+discriminates: >-
+  A generic reviewer may accept the claim because updates are shipping
+  weekly and weekly feels fast. A specialist checks what is actually
+  driving each update and distinguishes scheduled content delivery from a
+  genuine feedback-responsive iteration loop.
+expected_specialist_findings:
+  - The weekly cadence described is delivering pre-planned roadmap content on a fixed schedule, not iterating in response to player feedback or behavioral data; these are different activities even though both happen after launch and both ship frequently.
+  - No mechanism for incorporating actual player feedback or behavior data into near-term changes is described anywhere in the report; the "iteration" claimed here has no feedback loop, which is the defining feature of iteration in this discipline.
+  - Frequent shipping alone does not establish live-ops maturity; a team could ship every day from a fixed roadmap and still have no actual capability to respond to what players are telling them.
+  - Recommend relabeling this practice as scheduled content delivery rather than iteration in future reporting, and separately establishing an actual fast, low-friction feedback-to-change loop if the goal is genuine live-ops responsiveness.
+expected_uncertainty:
+  - Whether any off-roadmap, feedback-driven changes are also happening but simply weren't mentioned in this report — not stated.
+acceptable_source_ids: [cox-beyond-gaas-liveops-gdc2020]
+scoring_notes: >-
+  Pass only if the enriched run specifically distinguishes scheduled roadmap
+  delivery from feedback-driven iteration and notes the absence of any
+  feedback loop. Accepting the claim because updates ship weekly, or
+  objecting only to the pace without naming the missing feedback loop, is a
+  fail.

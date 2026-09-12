@@ -149,6 +149,25 @@ class Recruiter:
     ) -> None:
         self.registry = registry
         self.capabilities = {item.capability_id: item for item in capabilities}
+        require(
+            len(self.capabilities) == len(capabilities),
+            "duplicate_capability",
+            "Capability ids must be unique",
+        )
+        for capability in capabilities:
+            unknown_related = sorted(
+                set(capability.related_capability_ids) - self.capabilities.keys()
+            )
+            require(
+                capability.capability_id not in capability.related_capability_ids,
+                "capability_self_relation",
+                capability.capability_id,
+            )
+            require(
+                not unknown_related,
+                "unknown_related_capability",
+                ", ".join(unknown_related),
+            )
         self.tools = tools
         self.knowledge_registry: ExpertisePackRegistry | None = None
 
@@ -329,6 +348,9 @@ class Recruiter:
             or _permission_decision(tool_by_id[tool_id], task).decision != "trusted"
         ]
         covered_expertise = {cap for pack in packs for cap in pack.capability_ids}
+        uncovered_required = (
+            sorted(required - covered_expertise) if candidate.required_expertise_pack_ids else []
+        )
         if existing is None:
             diagnosis = RecruitmentDiagnosis(
                 problem="no_agent",
@@ -356,6 +378,18 @@ class Recruiter:
                 required_pack_ids=existing.required_expertise_pack_ids,
                 stale_pack_ids=stale_pack_ids,
                 detail="Reuse the existing agent after its version-sensitive expertise has been refreshed and re-reviewed.",
+            )
+        elif uncovered_required:
+            diagnosis = RecruitmentDiagnosis(
+                problem="missing_expertise_pack",
+                action="attach_or_build_pack",
+                agent_id=existing.agent_id,
+                required_pack_ids=existing.required_expertise_pack_ids,
+                detail=(
+                    "The assigned pack does not cover every required capability. Build or attach reviewed expertise for: "
+                    + ", ".join(uncovered_required)
+                    + "."
+                ),
             )
         elif missing_tool_ids:
             diagnosis = RecruitmentDiagnosis(
@@ -409,6 +443,8 @@ class Recruiter:
             missing_expertise_capabilities=(
                 sorted(required - covered_expertise)
                 if self.knowledge_registry is not None and existing is None
+                else uncovered_required
+                if self.knowledge_registry is not None and existing is not None
                 else sorted(required)
                 if missing_pack_ids or stale_pack_ids
                 else []

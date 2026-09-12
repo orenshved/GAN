@@ -6,7 +6,7 @@
     "description": "game direction",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "human_judgment"]
   },
   {
     "capability_id": "creative_direction",
@@ -15,7 +15,7 @@
     "description": "creative direction",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "human_judgment"]
   },
   {
     "capability_id": "product_strategy",
@@ -24,7 +24,7 @@
     "description": "product strategy",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "human_judgment"]
   },
   {
     "capability_id": "production_planning",
@@ -33,7 +33,8 @@
     "description": "production planning",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "production_evidence"],
+    "related_capability_ids": ["dependency_management", "risk_management"]
   },
   {
     "capability_id": "milestone_planning",
@@ -42,7 +43,7 @@
     "description": "milestone planning",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "production_evidence"]
   },
   {
     "capability_id": "dependency_management",
@@ -51,7 +52,7 @@
     "description": "dependency management",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "production_evidence"]
   },
   {
     "capability_id": "scope_management",
@@ -60,7 +61,7 @@
     "description": "scope management",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "production_evidence"]
   },
   {
     "capability_id": "risk_management",
@@ -69,7 +70,7 @@
     "description": "risk management",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "production_evidence"]
   },
   {
     "capability_id": "documentation",
@@ -78,7 +79,7 @@
     "description": "documentation",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "production_evidence"]
   },
   {
     "capability_id": "asset_tracking",
@@ -87,7 +88,7 @@
     "description": "asset tracking",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "production_evidence"]
   },
   {
     "capability_id": "build_coordination",
@@ -96,7 +97,7 @@
     "description": "build coordination",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "systems_design",
@@ -105,7 +106,10 @@
     "description": "systems design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity"
+    ]
   },
   {
     "capability_id": "mechanics_design",
@@ -114,7 +118,11 @@
     "description": "mechanics design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity"
+    ],
+    "related_capability_ids": ["onboarding_design"]
   },
   {
     "capability_id": "combat_design",
@@ -123,7 +131,10 @@
     "description": "combat design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity"
+    ]
   },
   {
     "capability_id": "economy_design",
@@ -132,7 +143,10 @@
     "description": "economy design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity"
+    ]
   },
   {
     "capability_id": "progression_design",
@@ -141,7 +155,10 @@
     "description": "progression design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity"
+    ]
   },
   {
     "capability_id": "balance_design",
@@ -150,7 +167,11 @@
     "description": "balance design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity"
+    ],
+    "related_capability_ids": ["balance_testing", "balance_simulation"]
   },
   {
     "capability_id": "encounter_design",
@@ -159,7 +180,10 @@
     "description": "encounter design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity"
+    ]
   },
   {
     "capability_id": "level_design",
@@ -168,7 +192,11 @@
     "description": "level design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity",
+      "level_scene_integrity"
+    ]
   },
   {
     "capability_id": "puzzle_design",
@@ -177,7 +205,10 @@
     "description": "puzzle design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity"
+    ]
   },
   {
     "capability_id": "multiplayer_design",
@@ -186,7 +217,10 @@
     "description": "multiplayer design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity"
+    ]
   },
   {
     "capability_id": "social_design",
@@ -195,7 +229,10 @@
     "description": "social design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity"
+    ]
   },
   {
     "capability_id": "onboarding_design",
@@ -204,7 +241,11 @@
     "description": "onboarding design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity",
+      "ux_heuristic_review"
+    ]
   },
   {
     "capability_id": "tutorial_design",
@@ -213,7 +254,11 @@
     "description": "tutorial design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity",
+      "ux_heuristic_review"
+    ]
   },
   {
     "capability_id": "accessibility_design",
@@ -222,7 +267,11 @@
     "description": "accessibility design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity",
+      "ux_heuristic_review"
+    ]
   },
   {
     "capability_id": "retention_design",
@@ -231,7 +280,10 @@
     "description": "retention design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity"
+    ]
   },
   {
     "capability_id": "liveops_design",
@@ -240,7 +292,10 @@
     "description": "liveops design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity"
+    ]
   },
   {
     "capability_id": "narrative_design",
@@ -249,7 +304,11 @@
     "description": "narrative design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "worldbuilding",
@@ -258,7 +317,11 @@
     "description": "worldbuilding",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "character_writing",
@@ -267,7 +330,11 @@
     "description": "character writing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "dialogue_writing",
@@ -276,7 +343,11 @@
     "description": "dialogue writing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "interactive_dialogue",
@@ -285,7 +356,11 @@
     "description": "interactive dialogue",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "quest_design",
@@ -294,7 +369,11 @@
     "description": "quest design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "cinematic_writing",
@@ -303,7 +382,11 @@
     "description": "cinematic writing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "continuity_review",
@@ -312,7 +395,11 @@
     "description": "continuity review",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "lore_management",
@@ -321,7 +408,11 @@
     "description": "lore management",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "localization_ready_writing",
@@ -330,7 +421,11 @@
     "description": "localization ready writing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "ux_architecture",
@@ -339,7 +434,12 @@
     "description": "ux architecture",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "ux_heuristic_review",
+      "runtime_ui_capture",
+      "resolution_matrix"
+    ]
   },
   {
     "capability_id": "interaction_design",
@@ -348,7 +448,12 @@
     "description": "interaction design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "ux_heuristic_review",
+      "runtime_ui_capture",
+      "resolution_matrix"
+    ]
   },
   {
     "capability_id": "menu_design",
@@ -357,7 +462,12 @@
     "description": "menu design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "ux_heuristic_review",
+      "runtime_ui_capture",
+      "resolution_matrix"
+    ]
   },
   {
     "capability_id": "hud_design",
@@ -366,7 +476,12 @@
     "description": "hud design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "ux_heuristic_review",
+      "runtime_ui_capture",
+      "resolution_matrix"
+    ]
   },
   {
     "capability_id": "controller_navigation",
@@ -375,7 +490,12 @@
     "description": "controller navigation",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "ux_heuristic_review",
+      "runtime_ui_capture",
+      "resolution_matrix"
+    ]
   },
   {
     "capability_id": "onboarding_ux",
@@ -384,7 +504,7 @@
     "description": "onboarding ux",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "ux_heuristic_review"]
   },
   {
     "capability_id": "accessibility_ux",
@@ -393,7 +513,11 @@
     "description": "accessibility ux",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "ux_heuristic_review",
+      "accessibility_measurement"
+    ]
   },
   {
     "capability_id": "usability_analysis",
@@ -402,7 +526,7 @@
     "description": "usability analysis",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "ux_heuristic_review"]
   },
   {
     "capability_id": "player_feedback_design",
@@ -411,7 +535,7 @@
     "description": "player feedback design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "ux_heuristic_review"]
   },
   {
     "capability_id": "art_direction",
@@ -420,7 +544,13 @@
     "description": "art direction",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "art_asset_integrity",
+      "visual_reference_review",
+      "human_judgment"
+    ],
+    "related_capability_ids": ["concept_art", "visual_development", "ui_art"]
   },
   {
     "capability_id": "concept_art",
@@ -429,7 +559,11 @@
     "description": "concept art",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "art_asset_integrity",
+      "visual_reference_review"
+    ]
   },
   {
     "capability_id": "visual_development",
@@ -438,7 +572,7 @@
     "description": "visual development",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "art_asset_integrity"]
   },
   {
     "capability_id": "ui_art",
@@ -447,7 +581,12 @@
     "description": "ui art",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "art_asset_integrity",
+      "runtime_ui_capture",
+      "resolution_matrix"
+    ]
   },
   {
     "capability_id": "pixel_art",
@@ -456,7 +595,7 @@
     "description": "pixel art",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "art_asset_integrity"]
   },
   {
     "capability_id": "illustration",
@@ -465,7 +604,7 @@
     "description": "illustration",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "art_asset_integrity"]
   },
   {
     "capability_id": "character_art",
@@ -474,7 +613,7 @@
     "description": "character art",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "art_asset_integrity"]
   },
   {
     "capability_id": "environment_art",
@@ -483,7 +622,7 @@
     "description": "environment art",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "art_asset_integrity"]
   },
   {
     "capability_id": "prop_art",
@@ -492,7 +631,7 @@
     "description": "prop art",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "art_asset_integrity"]
   },
   {
     "capability_id": "texture_creation",
@@ -501,7 +640,7 @@
     "description": "texture creation",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "art_asset_integrity"]
   },
   {
     "capability_id": "material_creation",
@@ -510,7 +649,7 @@
     "description": "material creation",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "art_asset_integrity"]
   },
   {
     "capability_id": "animation",
@@ -519,7 +658,7 @@
     "description": "animation",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "art_asset_integrity"]
   },
   {
     "capability_id": "rigging",
@@ -528,7 +667,11 @@
     "description": "rigging",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "art_asset_integrity",
+      "engineering_smoke"
+    ]
   },
   {
     "capability_id": "vfx",
@@ -537,7 +680,7 @@
     "description": "vfx",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "art_asset_integrity"]
   },
   {
     "capability_id": "lighting",
@@ -546,7 +689,7 @@
     "description": "lighting",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "art_asset_integrity"]
   },
   {
     "capability_id": "cinematics",
@@ -555,7 +698,12 @@
     "description": "cinematics",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "art_asset_integrity",
+      "visual_reference_review",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "technical_art",
@@ -564,7 +712,11 @@
     "description": "technical art",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "art_asset_integrity",
+      "engineering_smoke"
+    ]
   },
   {
     "capability_id": "gameplay_engineering",
@@ -573,7 +725,7 @@
     "description": "gameplay engineering",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "engine_architecture",
@@ -582,7 +734,7 @@
     "description": "engine architecture",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "tooling",
@@ -591,7 +743,7 @@
     "description": "tooling",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "editor_extensions",
@@ -600,7 +752,7 @@
     "description": "editor extensions",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "ui_engineering",
@@ -609,7 +761,12 @@
     "description": "ui engineering",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "runtime_ui_capture",
+      "resolution_matrix"
+    ]
   },
   {
     "capability_id": "game_ai",
@@ -618,7 +775,11 @@
     "description": "game ai",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "gameplay_source_integrity"
+    ]
   },
   {
     "capability_id": "physics",
@@ -627,7 +788,7 @@
     "description": "physics",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "networking",
@@ -636,7 +797,7 @@
     "description": "networking",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "backend",
@@ -645,7 +806,7 @@
     "description": "backend",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "persistence",
@@ -654,7 +815,7 @@
     "description": "persistence",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "procedural_generation",
@@ -663,7 +824,11 @@
     "description": "procedural generation",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "gameplay_source_integrity"
+    ]
   },
   {
     "capability_id": "performance",
@@ -672,7 +837,7 @@
     "description": "performance",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "shader_engineering",
@@ -681,7 +846,7 @@
     "description": "shader engineering",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "platform_integration",
@@ -690,7 +855,7 @@
     "description": "platform integration",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "build_engineering",
@@ -699,7 +864,7 @@
     "description": "build engineering",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "audio_direction",
@@ -708,7 +873,11 @@
     "description": "audio direction",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "audio_asset_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "composition",
@@ -717,7 +886,7 @@
     "description": "composition",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "audio_asset_integrity"]
   },
   {
     "capability_id": "adaptive_music",
@@ -726,7 +895,7 @@
     "description": "adaptive music",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "audio_asset_integrity"]
   },
   {
     "capability_id": "sound_design",
@@ -735,7 +904,7 @@
     "description": "sound design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "audio_asset_integrity"]
   },
   {
     "capability_id": "ambience",
@@ -744,7 +913,7 @@
     "description": "ambience",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "audio_asset_integrity"]
   },
   {
     "capability_id": "dialogue_audio",
@@ -753,7 +922,7 @@
     "description": "dialogue audio",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "audio_asset_integrity"]
   },
   {
     "capability_id": "vo_pipeline",
@@ -762,7 +931,7 @@
     "description": "vo pipeline",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "audio_asset_integrity"]
   },
   {
     "capability_id": "audio_implementation",
@@ -771,7 +940,7 @@
     "description": "audio implementation",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "audio_asset_integrity"]
   },
   {
     "capability_id": "mixing",
@@ -780,7 +949,11 @@
     "description": "mixing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "audio_asset_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "mastering",
@@ -789,7 +962,11 @@
     "description": "mastering",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "audio_asset_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "functional_testing",
@@ -798,7 +975,8 @@
     "description": "functional testing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"],
+    "related_capability_ids": ["automated_testing", "regression_testing"]
   },
   {
     "capability_id": "regression_testing",
@@ -807,7 +985,7 @@
     "description": "regression testing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "gameplay_testing",
@@ -816,7 +994,11 @@
     "description": "gameplay testing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity",
+      "engineering_smoke"
+    ]
   },
   {
     "capability_id": "balance_testing",
@@ -825,7 +1007,11 @@
     "description": "balance testing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "gameplay_source_integrity",
+      "engineering_smoke"
+    ]
   },
   {
     "capability_id": "ux_testing",
@@ -834,7 +1020,7 @@
     "description": "ux testing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "ux_heuristic_review"]
   },
   {
     "capability_id": "automated_testing",
@@ -843,7 +1029,7 @@
     "description": "automated testing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "visual_regression",
@@ -852,7 +1038,10 @@
     "description": "visual regression",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "visual_reference_review"
+    ]
   },
   {
     "capability_id": "compatibility_testing",
@@ -861,7 +1050,7 @@
     "description": "compatibility testing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "performance_testing",
@@ -870,7 +1059,7 @@
     "description": "performance testing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "save_compatibility",
@@ -879,7 +1068,7 @@
     "description": "save compatibility",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "multiplayer_testing",
@@ -888,7 +1077,7 @@
     "description": "multiplayer testing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "localization_qa",
@@ -897,7 +1086,11 @@
     "description": "localization qa",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity",
+      "engineering_smoke"
+    ]
   },
   {
     "capability_id": "accessibility_qa",
@@ -906,7 +1099,11 @@
     "description": "accessibility qa",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "ux_heuristic_review",
+      "accessibility_measurement"
+    ]
   },
   {
     "capability_id": "telemetry_design",
@@ -915,7 +1112,11 @@
     "description": "telemetry design",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "data_pipeline_integrity"
+    ]
   },
   {
     "capability_id": "analytics",
@@ -924,7 +1125,11 @@
     "description": "analytics",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "data_pipeline_integrity"
+    ]
   },
   {
     "capability_id": "experimentation",
@@ -933,7 +1138,11 @@
     "description": "experimentation",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "data_pipeline_integrity"
+    ]
   },
   {
     "capability_id": "economy_analysis",
@@ -942,7 +1151,11 @@
     "description": "economy analysis",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "data_pipeline_integrity"
+    ]
   },
   {
     "capability_id": "balance_simulation",
@@ -951,7 +1164,11 @@
     "description": "balance simulation",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "data_pipeline_integrity"
+    ]
   },
   {
     "capability_id": "funnel_analysis",
@@ -960,7 +1177,11 @@
     "description": "funnel analysis",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "data_pipeline_integrity"
+    ]
   },
   {
     "capability_id": "ab_testing",
@@ -969,7 +1190,11 @@
     "description": "ab testing",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "data_pipeline_integrity"
+    ]
   },
   {
     "capability_id": "crash_analysis",
@@ -978,7 +1203,11 @@
     "description": "crash analysis",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "data_pipeline_integrity"
+    ]
   },
   {
     "capability_id": "localization",
@@ -987,7 +1216,11 @@
     "description": "localization",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "narrative_source_integrity"
+    ]
   },
   {
     "capability_id": "ratings_compliance",
@@ -996,7 +1229,11 @@
     "description": "ratings compliance",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "compliance_review"
+    ]
   },
   {
     "capability_id": "accessibility_compliance",
@@ -1005,7 +1242,12 @@
     "description": "accessibility compliance",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "compliance_review",
+      "accessibility_measurement"
+    ]
   },
   {
     "capability_id": "achievements",
@@ -1014,7 +1256,7 @@
     "description": "achievements",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "platform_certification",
@@ -1023,7 +1265,7 @@
     "description": "platform certification",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "store_assets",
@@ -1032,7 +1274,12 @@
     "description": "store assets",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "engineering_smoke",
+      "art_asset_integrity",
+      "visual_reference_review"
+    ]
   },
   {
     "capability_id": "packaging",
@@ -1041,7 +1288,7 @@
     "description": "packaging",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "patching",
@@ -1050,7 +1297,7 @@
     "description": "patching",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "deployment",
@@ -1059,7 +1306,7 @@
     "description": "deployment",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "release_management",
@@ -1068,7 +1315,7 @@
     "description": "release management",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "monetization",
@@ -1077,7 +1324,7 @@
     "description": "monetization",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "live_operations",
@@ -1086,7 +1333,7 @@
     "description": "live operations",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
   },
   {
     "capability_id": "community_support",
@@ -1095,7 +1342,7 @@
     "description": "community support",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "support_evidence"]
   },
   {
     "capability_id": "publishing_support",
@@ -1104,7 +1351,7 @@
     "description": "publishing support",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "support_evidence"]
   },
   {
     "capability_id": "marketing_assets",
@@ -1113,7 +1360,11 @@
     "description": "marketing assets",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "art_asset_integrity",
+      "visual_reference_review"
+    ]
   },
   {
     "capability_id": "trailers",
@@ -1122,7 +1373,11 @@
     "description": "trailers",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "art_asset_integrity",
+      "visual_reference_review"
+    ]
   },
   {
     "capability_id": "screenshots",
@@ -1131,7 +1386,11 @@
     "description": "screenshots",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "art_asset_integrity",
+      "visual_reference_review"
+    ]
   },
   {
     "capability_id": "store_copy",
@@ -1140,7 +1399,11 @@
     "description": "store copy",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity",
+      "human_judgment"
+    ]
   },
   {
     "capability_id": "patch_notes",
@@ -1149,7 +1412,10 @@
     "description": "patch notes",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": [
+      "contract_compliance",
+      "narrative_source_integrity"
+    ]
   },
   {
     "capability_id": "customer_support",
@@ -1158,7 +1424,7 @@
     "description": "customer support",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
-    "evaluation_requirements": ["contract_compliance"]
+    "evaluation_requirements": ["contract_compliance", "support_evidence"]
   },
   {
     "capability_id": "player_sentiment_analysis",
@@ -1167,6 +1433,166 @@
     "description": "player sentiment analysis",
     "required_inputs": ["task_contract"],
     "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
+  },
+  {
+    "capability_id": "project_analysis",
+    "version": "1.0.0",
+    "family": "project_intelligence",
+    "description": "Analyze project artifacts with explicit provenance.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["project_findings"],
     "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "dependency_analysis",
+    "version": "1.0.0",
+    "family": "project_intelligence",
+    "description": "Analyze project dependency structure and hotspots.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["dependency_findings"],
+    "evaluation_requirements": ["contract_compliance"],
+    "related_capability_ids": ["project_analysis"]
+  },
+  {
+    "capability_id": "godot_development",
+    "version": "1.0.0",
+    "family": "engineering",
+    "description": "Apply Godot-specific architecture and runtime engineering practices.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["task_deliverables"],
+    "evaluation_requirements": ["contract_compliance", "engineering_smoke"]
+  },
+  {
+    "capability_id": "local_model_selection",
+    "version": "1.0.0",
+    "family": "model_operations",
+    "description": "Select local models from task needs, available hardware, and current benchmark evidence.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["model_recommendation"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "resource_analysis",
+    "version": "1.0.0",
+    "family": "model_operations",
+    "description": "Assess compute, memory, storage, and runtime headroom for model execution.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["resource_findings"],
+    "evaluation_requirements": ["contract_compliance"]
+  },
+  {
+    "capability_id": "contract_review",
+    "version": "1.0.0",
+    "family": "legal",
+    "description": "Identify contract risks and route findings to licensed counsel.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["risk_flags", "counsel_review_request"],
+    "evaluation_requirements": ["contract_compliance", "compliance_review"]
+  },
+  {
+    "capability_id": "ip_licensing_review",
+    "version": "1.0.0",
+    "family": "legal",
+    "description": "Identify intellectual-property ownership and licensing risks for counsel review.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["risk_flags", "counsel_review_request"],
+    "evaluation_requirements": ["contract_compliance", "compliance_review"]
+  },
+  {
+    "capability_id": "platform_tos_compliance",
+    "version": "1.0.0",
+    "family": "legal",
+    "description": "Identify platform terms-of-service risks without claiming legal clearance.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["risk_flags", "counsel_review_request"],
+    "evaluation_requirements": ["contract_compliance", "compliance_review"],
+    "related_capability_ids": ["platform_certification", "publishing_support"]
+  },
+  {
+    "capability_id": "content_rating_strategy",
+    "version": "1.0.0",
+    "family": "legal",
+    "description": "Prepare content-rating risk and submission questions for human review.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["rating_risk_flags", "human_review_request"],
+    "evaluation_requirements": ["contract_compliance", "compliance_review"],
+    "related_capability_ids": ["ratings_compliance"]
+  },
+  {
+    "capability_id": "security_review",
+    "version": "1.0.0",
+    "family": "security",
+    "description": "Review game-system security risks without claiming certification.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["security_findings"],
+    "evaluation_requirements": ["contract_compliance", "security_assurance"]
+  },
+  {
+    "capability_id": "data_protection",
+    "version": "1.0.0",
+    "family": "security",
+    "description": "Review player-data handling, minimization, encryption, and exposure risks.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["data_protection_findings"],
+    "evaluation_requirements": ["contract_compliance", "security_assurance"]
+  },
+  {
+    "capability_id": "vulnerability_management",
+    "version": "1.0.0",
+    "family": "security",
+    "description": "Track dependency and component vulnerabilities through evidence-backed remediation.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["vulnerability_findings"],
+    "evaluation_requirements": ["contract_compliance", "security_assurance"]
+  },
+  {
+    "capability_id": "incident_response",
+    "version": "1.0.0",
+    "family": "security",
+    "description": "Prepare and evaluate evidence-backed security incident response.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["incident_response_findings"],
+    "evaluation_requirements": ["contract_compliance", "security_assurance"]
+  },
+  {
+    "capability_id": "access_control_review",
+    "version": "1.0.0",
+    "family": "security",
+    "description": "Review authorization boundaries and privileged access controls.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["access_control_findings"],
+    "evaluation_requirements": ["contract_compliance", "security_assurance"]
+  },
+  {
+    "capability_id": "instructional_design",
+    "version": "1.0.0",
+    "family": "agent_learning",
+    "description": "Design capability-specific teaching with explicit evidence and feedback.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["teaching_plan"],
+    "evaluation_requirements": ["contract_compliance", "human_judgment"]
+  },
+  {
+    "capability_id": "knowledge_retention",
+    "version": "1.0.0",
+    "family": "agent_learning",
+    "description": "Evaluate whether taught knowledge is retained and transfers to new tasks.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["retention_evidence"],
+    "evaluation_requirements": ["contract_compliance", "human_judgment"]
+  },
+  {
+    "capability_id": "agent_onboarding",
+    "version": "1.0.0",
+    "family": "agent_learning",
+    "description": "Create staged onboarding and qualification plans for new specialists.",
+    "required_inputs": ["task_contract"],
+    "expected_outputs": ["onboarding_plan"],
+    "evaluation_requirements": [
+      "contract_compliance",
+      "production_evidence",
+      "human_judgment"
+    ]
   }
 ]

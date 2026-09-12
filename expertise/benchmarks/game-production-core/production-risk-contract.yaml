@@ -1,0 +1,29 @@
+schema_version: 1
+benchmark_id: production-risk-contract
+pack_id: game-production-core
+applies_to_versions: ["1.0.0", "1.1.0", "1.1.1"]
+capability_ids: [risk_management, dependency_management]
+scenario: >-
+  A synthetic milestone status report says "risk log is up to date." The only
+  entry referencing a cross-discipline dependency is a single line written
+  three weeks ago in an old status document: "art waiting on shader pipeline
+  from engineering." It has no owner listed and no notes since. A reviewer is
+  asked whether the "risk log is up to date" claim can stand.
+discriminates: >-
+  A generic reviewer may accept the claim because a matching entry exists
+  somewhere. A specialist checks whether the impediment has an owner and has
+  been re-inspected recently, and rejects "up to date" because staleness
+  itself is the actual problem.
+expected_specialist_findings:
+  - The shader-pipeline dependency has no listed owner, so no one is accountable for resolving or re-checking it.
+  - The entry has not been updated in three weeks; an impediment that is logged once and never re-inspected functions the same as one that was never logged, regardless of whether a matching line exists in an old document.
+  - The claim "risk log is up to date" is false as stated — the presence of an old entry is not the same as an actively maintained log; the claim should be corrected to reflect that this specific item is stale.
+  - Recommend assigning an owner to the shader-pipeline dependency and re-inspecting it now, rather than treating the report as sufficient because an entry technically exists.
+expected_uncertainty:
+  - Whether the shader pipeline has actually been resolved since the note was written — unknown without re-checking.
+acceptable_source_ids: [scrum-guide-2020]
+scoring_notes: >-
+  Pass only if the enriched run rejects "risk log is up to date" specifically
+  because the entry lacks an owner and hasn't been re-inspected, not merely
+  because it is old. Accepting the report, or objecting only that the entry
+  "looks informal," is a fail.

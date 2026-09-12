@@ -1,0 +1,289 @@
+# Retrospective sourcing upgrade (K-retrospective, upgrade #4 of 4 — last one).
+# state: draft — NOT installed, NOT reviewed, NOT trusted for routing.
+# See docs/RETROSPECTIVE_SOURCING_AUDIT.md and .ai/handoffs/claude-to-codex.md.
+#
+# 1.1.0 already fixed the audit's original K1 finding (a single internal source
+# stretched across five capabilities) by adding WCAG-EM. The retrospective audit's
+# separate, later finding: WCAG-EM is a general web-accessibility evaluation
+# methodology applied to games by analogy — professionally sound, but not
+# game-specific, and it does not touch automated_testing at all. GAN's own policy
+# and WCAG-EM are both RETAINED (claim-evidence discipline and scoped-evaluation
+# discipline are both still correct and still needed); the new source adds
+# concrete, shipped-live-service-game practice for automated_testing and
+# functional_testing that neither retained source provides: how to match a test's
+# cost/fidelity to what it actually needs to verify, and how to keep a large
+# automated suite trustworthy over time (flaky-test handling, quarantine,
+# retirement) rather than letting it erode into noise.
+schema_version: 1
+pack_id: game-qa-core
+name: Game QA Core
+version: 1.2.0
+supersedes_version: 1.1.0
+description: >-
+  Claim-specific evidence planning, independent verification, and honest
+  completion gates, with a scoped-evaluation methodology (declared scope,
+  disclosed sampling, per-item reporting) grounded in W3C's WCAG-EM; and, new
+  in this version, test-fidelity matching and automated-suite trust governance,
+  grounded in a shipped, live-service game's own automated-testing practice
+  (Robert Masella, Rare — Sea of Thieves).
+state: draft
+domain_ids: [qa, game_qa]
+capability_ids:
+  [
+    functional_testing,
+    automated_testing,
+    ux_testing,
+    visual_regression,
+    accessibility_qa,
+  ]
+sources:
+  - schema_version: 1
+    source_id: gan-qa-policy
+    title: Game Agent Network QA and evidence policy
+    author: Game Agent Network
+    publisher: Game Agent Network
+    uri: gan://spec/product-requirements/qa
+    source_type: project_document
+    retrieved_at: "2026-09-09T00:00:00Z"
+    authority: curated_practice
+    freshness_class: stable
+    applicable_capability_ids:
+      [
+        functional_testing,
+        automated_testing,
+        ux_testing,
+        visual_regression,
+        accessibility_qa,
+      ]
+  - schema_version: 1
+    source_id: wcag-em-2-0
+    title: WCAG Evaluation Methodology (WCAG-EM) 2.0
+    author: W3C Accessibility Guidelines Working Group
+    publisher: World Wide Web Consortium
+    uri: https://www.w3.org/TR/WCAG-EM/
+    source_type: standard
+    retrieved_at: "2026-09-11T00:00:00Z"
+    published_at: "2026-07-23T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-11T00:00:00Z"
+    license: W3C Document License
+    applicable_capability_ids:
+      [accessibility_qa, functional_testing, visual_regression]
+  - schema_version: 1
+    source_id: masella-sot-automated-testing-gdc2019
+    title: "Automated Testing of Gameplay Features in 'Sea of Thieves'"
+    author: Robert Masella
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=X673tOi8pU8
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2019-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly (a 66-minute talk); no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Robert Masella, Senior Software/Gameplay Engineer at Rare (a Microsoft first-party studio) with 14+ years of experience, having shipped Banjo-Kazooie: Nuts & Bolts, the Kinect Sports series, and the commercially successful, live-service Sea of Thieves, where he led the automated-testing effort described in this talk."
+    applicable_capability_ids:
+      [automated_testing, functional_testing, visual_regression]
+methods:
+  - schema_version: 1
+    method_id: claim-evidence-matrix
+    title: Claim-to-evidence matrix
+    purpose: Match each completion claim to evidence capable of proving it and an eligible evaluator.
+    applicable_capability_ids:
+      [
+        functional_testing,
+        automated_testing,
+        ux_testing,
+        visual_regression,
+        accessibility_qa,
+      ]
+    steps:
+      - State the exact technical, visual, subjective, or fun claim.
+      - Select independent deterministic, measured, comparative, heuristic, or human evidence.
+      - Record missing evidence, evaluator authority, and the resulting gate state.
+    evidence_requirements:
+      - Inspectable evidence with producer, origin, digest, time, and scope.
+      - Human judgment for subjective acceptance.
+    source_ids: [gan-qa-policy]
+  - schema_version: 1
+    method_id: wcag-em-scoped-evaluation
+    title: Scoped evaluation with disclosed sampling
+    purpose: Apply a structured scope-sample-evaluate-report methodology to any claim-based QA task, so a claim never silently extends beyond what was actually evaluated.
+    applicable_capability_ids:
+      [functional_testing, visual_regression, accessibility_qa]
+    steps:
+      - Define the evaluation scope precisely — exactly which screens, states, or builds the claim covers.
+      - Where full coverage is not feasible, select and disclose a representative sample and the rationale for it, rather than testing an arbitrary or convenience subset.
+      - Evaluate each sampled item against the specific claim and record a per-item result, not only an aggregate verdict.
+      - Report which parts of the declared scope were not evaluated; the claim does not extend past what was actually evaluated.
+    evidence_requirements:
+      - The declared scope and, where sampling was used, the sample-selection rationale.
+      - Per-item results alongside any aggregate summary.
+    source_ids: [wcag-em-2-0]
+  - schema_version: 1
+    method_id: test-level-fidelity-matching-review
+    title: Test-level fidelity matching review
+    purpose: Match the cost and fidelity of an automated test to what it actually needs to verify — reserve the most expensive, full-context test level for a feature's primary successful path, cover edge and failure cases with a lighter-weight, more isolated test level, and check that a test asserts on the feature's real behavioral outcome rather than an incidental implementation detail.
+    applicable_capability_ids: [automated_testing, functional_testing]
+    steps:
+      - Identify whether the specific behavior under test is the feature's primary successful path or an edge/failure case, and check that the most expensive test level is reserved for the former.
+      - Check that a test's assertion targets the actual stated outcome (a condition waited or polled for, with a timeout) rather than an incidental implementation detail, such as an exact frame count or delay, that would break under an unrelated change.
+      - When several related, low-risk behaviors share the same expensive setup, consider covering them within one test run rather than duplicating that setup per case; keep unrelated behaviors in separate tests.
+      - Flag test coverage that is inverted — heavy investment on a minor edge case while the primary path has no coverage — as a targeting problem to fix before merging.
+    evidence_requirements:
+      - Which test level was used for the behavior under review, and whether it matches golden-path-versus-edge-case guidance.
+      - Whether the test's assertion targets the behavioral outcome or an implementation detail.
+    source_ids: [masella-sot-automated-testing-gdc2019]
+  - schema_version: 1
+    method_id: test-suite-trust-governance-review
+    title: Automated test suite trust governance review
+    purpose: Keep confidence in a large automated test suite by distinguishing a genuine regression from a test with a known history of unreliability, and by requiring a consistently unreliable test to be fixed or retired rather than left to erode trust in the whole suite indefinitely.
+    applicable_capability_ids:
+      [automated_testing, functional_testing, visual_regression]
+    steps:
+      - Before treating a single test failure as a confirmed regression, check whether that specific test has a documented history of intermittent failure unrelated to the change under review.
+      - Require a test with a recurring intermittent-failure pattern to be tracked and assigned for investigation, rather than accepted indefinitely as routine noise.
+      - Require a consistently unreliable test to be quarantined (stop letting it block the process) with a bounded deadline for its owner to fix it, and removed if it is not fixed by then.
+      - Treat a visual-comparison or screenshot-diff failure as requiring the same claim-specific judgment as any other evidence, since a pixel difference against a prior baseline shows only that a difference exists, not whether it is a defect or an accepted change.
+    evidence_requirements:
+      - The specific test's own reliability history, checked before attributing its failure to the change under review.
+      - Whether an unreliable test has an assigned owner, a quarantine status, and a deadline.
+    source_ids: [masella-sot-automated-testing-gdc2019]
+items:
+  - schema_version: 1
+    item_id: qa-claim-specific
+    title: Evidence must fit the claim
+    kind: professional_knowledge
+    statement: A gate may pass only when its evidence class and producer can establish the exact claim under review.
+    domain_ids: [qa]
+    capability_ids:
+      [
+        functional_testing,
+        automated_testing,
+        ux_testing,
+        visual_regression,
+        accessibility_qa,
+      ]
+    source_ids: [gan-qa-policy]
+    method_ids: [claim-evidence-matrix]
+    freshness_class: stable
+    confidence: 0.99
+  - schema_version: 1
+    item_id: qa-model-not-ground-truth
+    title: Model opinion is heuristic
+    kind: anti_pattern
+    statement: A model may interpret independent evidence but cannot become the source of runtime, visual, accessibility, or fun evidence it did not observe.
+    domain_ids: [qa]
+    capability_ids: [ux_testing, visual_regression, accessibility_qa]
+    source_ids: [gan-qa-policy]
+    method_ids: [claim-evidence-matrix]
+    freshness_class: stable
+    confidence: 0.99
+  - schema_version: 1
+    item_id: qa-missing-is-visible
+    title: Missing evidence stays visible
+    kind: standard
+    statement: Inconclusive or absent evidence blocks the affected claim unless the Director records an explicit scoped waiver.
+    domain_ids: [qa, production]
+    capability_ids: [functional_testing, automated_testing]
+    source_ids: [gan-qa-policy]
+    method_ids: [claim-evidence-matrix]
+    freshness_class: stable
+    confidence: 0.99
+  - schema_version: 1
+    item_id: qa-claims-bounded-by-scope
+    title: Evaluation claims are bounded by their declared scope
+    kind: professional_knowledge
+    statement: Passing a claim for a sampled or partial evaluation does not extend the claim to unevaluated screens, states, or builds; a report must state exactly what was, and was not, evaluated.
+    domain_ids: [qa]
+    capability_ids: [functional_testing, visual_regression, accessibility_qa]
+    source_ids: [wcag-em-2-0]
+    method_ids: [wcag-em-scoped-evaluation, claim-evidence-matrix]
+    freshness_class: version_sensitive
+    confidence: 0.95
+  - schema_version: 1
+    item_id: qa-sampling-must-be-disclosed
+    title: Sampling must be representative and disclosed
+    kind: standard
+    statement: When full coverage is infeasible, the evaluator must disclose how the sample was selected and why it represents the full scope; an undisclosed or convenience sample cannot support a general completion claim.
+    domain_ids: [qa]
+    capability_ids: [functional_testing, accessibility_qa, visual_regression]
+    source_ids: [wcag-em-2-0]
+    method_ids: [wcag-em-scoped-evaluation]
+    freshness_class: version_sensitive
+    confidence: 0.93
+  - schema_version: 1
+    item_id: qa-aggregate-verdict-hides-failures
+    title: An aggregate pass/fail verdict hides per-item failures
+    kind: anti_pattern
+    statement: Reporting a single aggregate pass/fail across many sampled items obscures which specific items failed and why; a QA report needs per-item results so a failure is traceable to a concrete case, not averaged away.
+    domain_ids: [qa]
+    capability_ids: [functional_testing, automated_testing, visual_regression]
+    source_ids: [wcag-em-2-0]
+    method_ids: [wcag-em-scoped-evaluation]
+    freshness_class: version_sensitive
+    confidence: 0.92
+  - schema_version: 1
+    item_id: qa-golden-path-gets-highest-fidelity-test
+    title: The primary successful path earns the most expensive test level
+    kind: professional_knowledge
+    statement: The most expensive, highest-fidelity automated test level should be reserved for a feature's primary successful path, since it protects the behavior most players actually exercise; edge and failure cases are better covered by a lighter-weight, more isolated test level, which keeps the overall suite fast enough to run continuously without losing meaningful coverage.
+    domain_ids: [qa, game_qa]
+    capability_ids: [automated_testing, functional_testing]
+    source_ids: [masella-sot-automated-testing-gdc2019]
+    method_ids: [test-level-fidelity-matching-review]
+    freshness_class: stable
+    confidence: 0.89
+  - schema_version: 1
+    item_id: qa-test-assertions-target-behavior-not-implementation
+    title: A test should assert on the behavior, not an incidental implementation detail
+    kind: anti_pattern
+    statement: A test that asserts on an incidental implementation detail, such as an exact delay or frame count, rather than the feature's actual behavioral outcome will fail whenever that unrelated detail changes, even though the feature's real behavior is still correct; the assertion should wait or poll for the stated outcome instead.
+    domain_ids: [qa]
+    capability_ids: [automated_testing]
+    source_ids: [masella-sot-automated-testing-gdc2019]
+    method_ids: [test-level-fidelity-matching-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: qa-flaky-history-changes-how-a-failure-is-read
+    title: A test's own reliability history changes how its failure should be read
+    kind: professional_knowledge
+    statement: A test with a documented history of intermittent failure should not be treated as confirming a regression on the strength of a single failure alone; that test's own reliability needs to be checked, and the result reproduced or investigated, before its failure is read as evidence that the change under review broke something.
+    domain_ids: [qa]
+    capability_ids: [automated_testing, functional_testing]
+    source_ids: [masella-sot-automated-testing-gdc2019]
+    method_ids: [test-suite-trust-governance-review]
+    freshness_class: stable
+    confidence: 0.87
+  - schema_version: 1
+    item_id: qa-unreliable-test-needs-fix-or-retire-deadline
+    title: An unreliable test needs a bounded deadline to be fixed, or it should be retired
+    kind: standard
+    statement: A test that fails consistently without reflecting an actual feature defect should be quarantined so it stops blocking the team, with a bounded deadline given to its owner to fix it, and removed if it remains unfixed; a test left indefinitely in neither a trusted nor a retired state provides worse information than having no test at all.
+    domain_ids: [qa, production]
+    capability_ids: [automated_testing]
+    source_ids: [masella-sot-automated-testing-gdc2019]
+    method_ids: [test-suite-trust-governance-review]
+    freshness_class: stable
+    confidence: 0.86
+  - schema_version: 1
+    item_id: qa-visual-diff-needs-claim-specific-judgment
+    title: A visual-diff failure shows a difference exists, not what it means
+    kind: professional_knowledge
+    statement: A screenshot or visual-comparison test failure establishes only that a pixel difference exists against a prior baseline; whether that difference is an actual visual defect or an intentional, accepted change still requires a specific judgment call, the same claim-specific scrutiny required of any other evidence class.
+    domain_ids: [qa]
+    capability_ids: [visual_regression]
+    source_ids: [masella-sot-automated-testing-gdc2019]
+    method_ids: [test-suite-trust-governance-review]
+    freshness_class: stable
+    confidence: 0.87
+evaluation_ids:
+  [
+    qa-method-contract,
+    qa-independence-contract,
+    qa-scoped-evaluation-contract,
+    test-fidelity-matching-contract,
+    flaky-test-quarantine-contract,
+  ]
+created_at: "2026-09-12T00:00:00Z"

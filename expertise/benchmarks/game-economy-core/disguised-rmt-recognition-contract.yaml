@@ -1,0 +1,33 @@
+schema_version: 1
+benchmark_id: disguised-rmt-recognition-contract
+pack_id: game-economy-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [economy_design]
+scenario: >-
+  A live-service RPG's community team proposes a plan for their top
+  streamer, who has accumulated a large surplus of rare crafting materials
+  through normal play, to give some of that surplus away to viewers during
+  a stream as a goodwill gesture. The proposal states, "since she isn't
+  accepting real money for it, this isn't real-money trading and doesn't
+  need an economic integrity review." A reviewer is asked whether this
+  framing is correct.
+discriminates: >-
+  A generic reviewer may accept the framing because no cash is changing
+  hands and the gesture is well-intentioned. A specialist checks whether
+  recipients are gaining in-economy progression in exchange for something
+  outside the normal in-game earn path, regardless of whether currency is
+  literally involved.
+expected_specialist_findings:
+  - No literal money changes hands, but the recipients are receiving in-game economic progression in exchange for something they did outside the game world, watching or engaging with the stream, which is functionally the same violation of the level playing field that real-money-trading policies exist to prevent.
+  - Streamer-originated item giveaways and community item gifting are a documented, explicitly named case in professional economic-integrity practice, treated the same as real-money trading even though no cash is involved.
+  - The "no cash, so no review needed" framing conflates the specific mechanism, currency, with the underlying principle at risk, unearned economic advantage gained from outside the in-game earn path.
+  - Recommend the giveaway be evaluated under the same economic-integrity policy as any other unearned-advantage transfer, meaning it should be reviewed and very likely disallowed or capped, rather than waved through because no money was involved.
+expected_uncertainty:
+  - Whether a small, low-value giveaway crosses the same threshold as a large one, not addressed, the source gives no specific value cutoff.
+acceptable_source_ids: [wilson-protecting-economic-integrity-2026]
+scoring_notes: >-
+  Pass only if the enriched run specifically identifies the giveaway as
+  functionally equivalent to real-money trading and rejects the "no cash,
+  no review" framing on that basis. Accepting the framing because no
+  currency was exchanged, or objecting only on vague fairness grounds
+  without naming the outside-the-earn-path mechanism, is a fail.

@@ -303,10 +303,10 @@ try {
     .click();
   const agentNetwork = page.locator('[aria-label="Agent network"]');
   await agentNetwork.getByRole("heading", { name: "Agent network" }).waitFor();
-  const exploreAll = agentNetwork.getByRole("button", {
-    name: "Explore all agents",
-  });
-  if (await exploreAll.isVisible()) await exploreAll.click();
+  await agentNetwork
+    .locator('[aria-label="Agent filters"]')
+    .getByRole("button", { name: /All agents/ })
+    .click();
   await agentNetwork
     .locator(".agent-index")
     .getByRole("button", { name: "Engineering Lead" })

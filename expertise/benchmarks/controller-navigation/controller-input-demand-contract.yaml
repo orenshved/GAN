@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: controller-input-demand-contract
+pack_id: controller-navigation
+applies_to_versions: ["1.0.0"]
+capability_ids: [controller_navigation, accessibility_ux]
+scenario: >-
+  A synthetic boss fight requires the player to alternately mash two buttons
+  as fast as possible for three seconds to break free of a grab attack, or
+  the fight is lost. Following an accessibility request, the team adds full
+  control remapping so any action can be assigned to any button, and closes
+  the request as resolved. A reviewer is asked whether the request is
+  actually addressed.
+discriminates: >-
+  A generic reviewer may accept "remapping added, request closed" as
+  sufficient. A specialist recognizes that remapping does not address the
+  underlying speed demand of rapid alternating button presses, and requires a
+  separate accommodation.
+expected_specialist_findings:
+  - Remapping lets a player choose which buttons perform the mash, but does not change how fast or how many times they must be pressed in three seconds; the speed demand itself is untouched.
+  - This is exactly the class of barrier that remapping alone cannot resolve — players who cannot physically mash buttons at the required rate remain blocked regardless of which buttons are assigned.
+  - The request should not be closed until a genuine alternative exists, such as a toggle or auto-mash option, a reduced difficulty/speed setting for this sequence, or a bypass for players who opt into an accessibility mode.
+  - Recommend reopening the request and implementing one of these alternatives rather than treating remapping as a complete fix.
+expected_uncertainty:
+  - Whether the boss fight has any existing difficulty setting that could be extended to cover this specific sequence — not stated.
+acceptable_source_ids: [xag-107-input]
+scoring_notes: >-
+  Pass only if the enriched run explicitly identifies that remapping does not
+  address the speed demand and requires a genuine alternative before the
+  request can be considered resolved. Accepting the remapping-only fix as
+  sufficient is a fail.

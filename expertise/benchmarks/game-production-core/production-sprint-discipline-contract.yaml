@@ -1,0 +1,31 @@
+schema_version: 1
+benchmark_id: production-sprint-discipline-contract
+pack_id: game-production-core
+applies_to_versions: ["1.1.0", "1.1.1"]
+capability_ids: [production_planning, scope_management]
+scenario: >-
+  A synthetic studio holds one weekly sprint-planning meeting for the entire
+  20-person team, covering art, engineering, design, and QA work items in a
+  single 90-minute session with everyone present. A producer defends this as
+  "everyone stays in the loop." Separately, task estimates are given as exact
+  hour counts up front, and once an estimate is set it is treated as fixed
+  for the rest of the sprint even after the task's real scope changes. A
+  reviewer is asked to assess this setup.
+discriminates: >-
+  A generic reviewer may accept "everyone stays in the loop" as a reasonable
+  justification for one big meeting. A specialist identifies that most
+  attendees are sitting through work that is not theirs, and separately flags
+  the fixed-hour-estimate practice as working against its own purpose.
+expected_specialist_findings:
+  - A single mixed-discipline meeting means most of the 20 attendees are present for work irrelevant to them for most of the session; "staying in the loop" does not require sitting through every discipline's planning discussion.
+  - Splitting into smaller, discipline-specific sessions with a limited attendee count would keep each meeting relevant to everyone actually in it.
+  - Fixed, precise hour estimates that cannot be revised as scope becomes clearer defeat the purpose of estimation as a planning tool; a relative sizing scale that is allowed to change is more useful than a precise number treated as unchangeable.
+  - Recommend splitting the meeting by discipline and switching to a revisable relative-sizing scale for estimates.
+expected_uncertainty:
+  - Whether there is a genuine cross-discipline dependency that requires some shared visibility beyond each discipline's own meeting — not stated, and would need its own separate, smaller forum rather than folding into the full-team meeting.
+acceptable_source_ids: [sandercock-production-secrets]
+scoring_notes: >-
+  Pass only if the enriched run identifies both the mixed-discipline meeting
+  size problem and the fixed-estimate problem as distinct issues, each with a
+  specific recommendation. Accepting "everyone stays in the loop" as
+  sufficient, or addressing only one of the two problems, is a fail.

@@ -1,0 +1,35 @@
+schema_version: 1
+benchmark_id: engineering-pattern-contract
+pack_id: game-engineering-core
+applies_to_versions: ["1.1.0"]
+capability_ids: [gameplay_engineering, dependency_analysis]
+scenario: >-
+  A synthetic project's boss-enemy system has a base Enemy class. Adding a
+  boss that both flies and regenerates health required a new
+  FlyingRegeneratingBoss subclass; an earlier boss that flies and has a shield
+  required FlyingShieldedBoss. The team now wants a boss that flies, has a
+  shield, and regenerates, and a separate one that only regenerates and has a
+  shield. A contributor proposes writing FlyingShieldedRegeneratingBoss and
+  ShieldedRegeneratingBoss as two more subclasses. The reviewer is asked
+  whether this approach will keep working as more behavior combinations are
+  requested.
+discriminates: >-
+  A generic reviewer may approve the two new subclasses since the code will
+  compile and work. A specialist recognizes the combinatorial inheritance
+  explosion and names the pattern that resolves it: composing enemies from
+  independent behavior components instead of one subclass per combination.
+expected_specialist_findings:
+  - Each new behavior combination is currently requiring a new named subclass; flying, shielded, and regenerating are independent optional behaviors, and the subclass count grows combinatorially as more are added.
+  - This is the inheritance-explosion problem that composing enemies from independent components (a flying component, a shield component, a regeneration component) is designed to avoid; a boss becomes a base Enemy plus whichever components it needs, with no new class required per combination.
+  - The proposed two-subclass fix works today but does not scale — a fourth optional behavior would require up to eight more subclasses to cover every combination.
+  - Recommend a migration only if a genuinely new combination is imminent; do not require reworking already-shipped boss classes without a concrete reason.
+expected_uncertainty:
+  - How many more behavior combinations are actually planned — not stated; affects whether the migration cost is justified now or later.
+acceptable_source_ids:
+  [game-programming-patterns-book, gan-engineering-invariants]
+scoring_notes: >-
+  Pass only if the enriched run names the inheritance-explosion problem
+  specifically and recommends component composition (or an equivalent named
+  decomposition) rather than approving another pair of subclasses. Generic
+  "consider refactoring for maintainability" advice without identifying the
+  actual mechanism is a fail.

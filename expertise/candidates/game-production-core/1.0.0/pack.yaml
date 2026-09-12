@@ -1,0 +1,133 @@
+# New candidate pack (K2 — first missing baseline slice).
+# state: draft — NOT installed, NOT reviewed, NOT trusted for routing.
+# Capability set mirrors the existing `production-lead` agent in
+# agents/builtin/roster.json exactly (production_planning, milestone_planning,
+# dependency_management, scope_management, risk_management), so this pack
+# substantiates a real consuming specialist rather than an invented one.
+# See docs/EXPERTISE_PACK_AUDIT.md and .ai/handoffs/claude-to-codex.md.
+#
+# Freshness note: the Scrum Guide's stewards revise roughly every 2-3 years;
+# the current official text is still the November 2020 revision as of
+# 2026-09-11 (checked live), though a newer one has been anticipated for a
+# while. `fresh_until` is set conservatively short (6 months) rather than
+# assumed evergreen, so this pack surfaces for a freshness check soon.
+schema_version: 1
+pack_id: game-production-core
+name: Game Production Core
+version: 1.0.0
+description: >-
+  Sprint-scoped production planning, explicit completion criteria, and
+  visible risk/impediment tracking for game production, grounded in the
+  Scrum Guide. `dependency_management` is intentionally the thinnest
+  capability here — Scrum covers single-team impediment surfacing but not
+  multi-team dependency scheduling; a dedicated cross-discipline coordination
+  source is a candidate for a future version.
+state: draft
+domain_ids: [production, game_production]
+capability_ids:
+  [
+    production_planning,
+    milestone_planning,
+    scope_management,
+    risk_management,
+    dependency_management,
+  ]
+sources:
+  - schema_version: 1
+    source_id: scrum-guide-2020
+    title: The Scrum Guide
+    author: Ken Schwaber and Jeff Sutherland
+    publisher: Scrum.org
+    uri: https://scrumguides.org/scrum-guide.html
+    source_type: standard
+    retrieved_at: "2026-09-11T00:00:00Z"
+    published_at: "2020-11-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: slow_changing
+    fresh_until: "2027-03-11T00:00:00Z"
+    license: Creative Commons Attribution Share-Alike 4.0 International (CC BY-SA 4.0)
+    applicable_capability_ids:
+      [
+        production_planning,
+        milestone_planning,
+        scope_management,
+        risk_management,
+        dependency_management,
+      ]
+methods:
+  - schema_version: 1
+    method_id: sprint-scoped-production-planning
+    title: Sprint-scoped production planning
+    purpose: Plan and track game production work in fixed-length increments with an inspectable backlog and explicit exit criteria, instead of open-ended scope against a bare date.
+    applicable_capability_ids:
+      [production_planning, milestone_planning, scope_management]
+    steps:
+      - Define the Sprint Goal and the Sprint Backlog — exactly which backlog items the increment commits to.
+      - Set a fixed increment length and a Definition of Done the increment must meet before it can be called complete.
+      - Track progress against the backlog continuously and surface blocking impediments as they appear, not only at the review.
+      - At the retrospective, record what changes for the next increment's planning, distinct from what shipped in this one.
+    evidence_requirements:
+      - The current backlog for the increment and its Definition of Done.
+      - The increment's actual start/end and what was delivered against the plan.
+    source_ids: [scrum-guide-2020]
+  - schema_version: 1
+    method_id: risk-and-impediment-review
+    title: Risk and impediment review
+    purpose: Surface production risks and cross-discipline blockers explicitly and often, instead of discovering them at a milestone deadline.
+    applicable_capability_ids: [risk_management, dependency_management]
+    steps:
+      - Identify current impediments blocking committed work, including cross-discipline dependencies such as art blocked on an engineering pipeline.
+      - Distinguish an increment-level impediment (blocks the current commitment) from a longer-range risk (threatens a later milestone).
+      - Record each impediment's owner and whether it is visibly tracked or still informal.
+      - Re-inspect open impediments at the next check-in rather than letting them go stale between updates.
+    evidence_requirements:
+      - The current impediment/risk list with an owner per item.
+      - Whether each impediment has been re-inspected since it was raised.
+    source_ids: [scrum-guide-2020]
+items:
+  - schema_version: 1
+    item_id: production-explicit-done
+    title: Increments need an explicit Definition of Done
+    kind: professional_knowledge
+    statement: A milestone or increment is only "done" when it meets an explicit, shared Definition of Done; without one, "done" silently means something different to each discipline reporting on it.
+    domain_ids: [production, game_production]
+    capability_ids: [production_planning, milestone_planning]
+    source_ids: [scrum-guide-2020]
+    method_ids: [sprint-scoped-production-planning]
+    freshness_class: slow_changing
+    confidence: 0.95
+  - schema_version: 1
+    item_id: production-scope-change-via-backlog
+    title: Scope changes belong in backlog refinement, not mid-increment
+    kind: standard
+    statement: New or changed scope should enter the backlog and be prioritized there; pulling new work into an already-committed increment without adjusting its goal undermines the increment's own exit criteria.
+    domain_ids: [production]
+    capability_ids: [scope_management, production_planning]
+    source_ids: [scrum-guide-2020]
+    method_ids: [sprint-scoped-production-planning]
+    freshness_class: slow_changing
+    confidence: 0.92
+  - schema_version: 1
+    item_id: production-date-without-done-is-not-a-plan
+    title: A milestone date without a Definition of Done is not a plan
+    kind: anti_pattern
+    statement: Naming a ship date without an explicit, shared completion criterion is a deadline, not a production plan; it hides disagreement about what "finished" means until the date arrives.
+    domain_ids: [production]
+    capability_ids: [milestone_planning, risk_management]
+    source_ids: [scrum-guide-2020]
+    method_ids: [sprint-scoped-production-planning]
+    freshness_class: slow_changing
+    confidence: 0.93
+  - schema_version: 1
+    item_id: production-impediment-owner-and-recheck
+    title: Impediments need an owner and a re-inspection point
+    kind: professional_knowledge
+    statement: A risk or cross-discipline dependency that is logged once but never re-inspected functions the same as an unlogged one; it needs an explicit owner and a recurring check-in until it is resolved.
+    domain_ids: [production]
+    capability_ids: [risk_management, dependency_management]
+    source_ids: [scrum-guide-2020]
+    method_ids: [risk-and-impediment-review]
+    freshness_class: slow_changing
+    confidence: 0.9
+evaluation_ids: [production-planning-contract, production-risk-contract]
+created_at: "2026-09-11T00:00:00Z"

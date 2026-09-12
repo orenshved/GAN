@@ -1,0 +1,138 @@
+# New candidate pack (K3). state: draft — NOT installed, NOT reviewed, NOT
+# trusted for routing. Foundational pack: WCAG's POUR taxonomy and
+# conformance-level structure, deliberately distinct from game-ux-core (which
+# uses WCAG for contrast/navigation review) and controller-navigation (which
+# uses Xbox Accessibility Guidelines for input specifics). This pack teaches
+# the underlying standards vocabulary those two apply.
+# See docs/K3_ENGINE_ART_ACCESSIBILITY_MODEL.md and
+# .ai/handoffs/claude-to-codex.md.
+schema_version: 1
+pack_id: game-accessibility-basics
+name: Game Accessibility Basics
+version: 1.0.0
+description: >-
+  The WCAG POUR principle taxonomy (Perceivable, Operable, Understandable,
+  Robust) and conformance-level structure (A, AA, AAA), applied to
+  classifying accessibility barriers and scoping accessibility claims
+  honestly, rather than treating "accessible" as an unscoped yes/no.
+state: draft
+domain_ids: [accessibility, game_ui]
+capability_ids: [accessibility_ux, accessibility_qa]
+sources:
+  - schema_version: 1
+    source_id: wcag-2-2
+    title: Web Content Accessibility Guidelines 2.2
+    author: W3C Accessibility Guidelines Working Group
+    publisher: World Wide Web Consortium
+    uri: https://www.w3.org/TR/WCAG22/
+    source_type: standard
+    retrieved_at: "2026-09-11T00:00:00Z"
+    published_at: "2023-10-05T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-11T00:00:00Z"
+    license: W3C Document License
+    applicable_capability_ids: [accessibility_ux, accessibility_qa]
+  - schema_version: 1
+    source_id: wcag-pour-intro
+    title: "Understanding WCAG 2.2: Introduction to the Four Principles"
+    author: W3C Accessibility Guidelines Working Group
+    publisher: World Wide Web Consortium
+    uri: https://www.w3.org/WAI/WCAG22/Understanding/intro
+    source_type: standard
+    retrieved_at: "2026-09-11T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-11T00:00:00Z"
+    license: W3C Document License
+    applicable_capability_ids: [accessibility_ux, accessibility_qa]
+  - schema_version: 1
+    source_id: wcag-conformance-levels
+    title: "Understanding WCAG 2.2: Conformance"
+    author: W3C Accessibility Guidelines Working Group
+    publisher: World Wide Web Consortium
+    uri: https://www.w3.org/WAI/WCAG22/Understanding/conformance
+    source_type: standard
+    retrieved_at: "2026-09-11T00:00:00Z"
+    authority: primary_standard
+    freshness_class: version_sensitive
+    fresh_until: "2027-09-11T00:00:00Z"
+    license: W3C Document License
+    applicable_capability_ids: [accessibility_ux, accessibility_qa]
+methods:
+  - schema_version: 1
+    method_id: pour-principle-classification
+    title: POUR principle classification
+    purpose: Classify an accessibility concern under the WCAG principle it actually belongs to — Perceivable, Operable, Understandable, or Robust — before proposing a fix, so the fix targets the barrier's real cause rather than a nearby symptom.
+    applicable_capability_ids: [accessibility_ux, accessibility_qa]
+    steps:
+      - State the specific barrier a player faces in terms of what they cannot perceive, operate, understand, or reliably access via assistive technology.
+      - Classify it under the POUR principle or principles it actually belongs to; most concerns map cleanly to one, some genuinely cross more than one.
+      - Confirm a proposed fix addresses that principle specifically — a Perceivable problem is not resolved by an Operable-style fix.
+      - Flag when a reported accessibility issue does not clearly map to any POUR principle, since that is a signal it may be a general usability complaint rather than an accessibility barrier specifically.
+    evidence_requirements:
+      - The specific barrier as reported or observed, described in terms of what a player cannot do.
+      - Which POUR principle or principles it maps to, and why.
+    source_ids: [wcag-pour-intro]
+  - schema_version: 1
+    method_id: conformance-level-scoping
+    title: Conformance level scoping
+    purpose: State an accessibility commitment at an explicit, defensible conformance level rather than an unscoped claim of "accessible," since the levels are cumulative and Level AAA is not achievable project-wide.
+    applicable_capability_ids: [accessibility_ux, accessibility_qa]
+    steps:
+      - Identify which conformance level the project is actually committing to for a given surface, most commonly Level AA.
+      - Confirm every applicable Level A criterion is met first; Level AA cannot be claimed while Level A gaps remain, since AA is cumulative on top of A.
+      - Do not commit to Level AAA project-wide; treat any AAA claim as scoped to specific content, not the whole game, since W3C's own guidance acknowledges AAA is not achievable for all content.
+      - Record which level is being claimed for which surface, rather than an unscoped statement that the game is accessible.
+    evidence_requirements:
+      - The specific conformance level being claimed and the surface, screen, mode, or whole game, it applies to.
+      - Confirmation that lower cumulative levels are satisfied before a higher one is claimed.
+    source_ids: [wcag-conformance-levels]
+items:
+  - schema_version: 1
+    item_id: accessibility-barriers-classify-under-pour
+    title: Accessibility barriers classify under one of four principles
+    kind: professional_knowledge
+    statement: Perceivable, Operable, Understandable, and Robust are not four separate checklists to run in parallel; they are the four ways a barrier can exist, and naming which one a specific barrier is helps target the right fix instead of a plausible-sounding but mismatched one.
+    domain_ids: [accessibility]
+    capability_ids: [accessibility_ux, accessibility_qa]
+    source_ids: [wcag-pour-intro]
+    method_ids: [pour-principle-classification]
+    freshness_class: version_sensitive
+    confidence: 0.9
+  - schema_version: 1
+    item_id: accessibility-conformance-is-cumulative
+    title: Conformance levels are cumulative, not independent tiers
+    kind: standard
+    statement: Level AA conformance requires satisfying Level A first; the levels build on each other rather than offering three independent bars, so a Level AA claim with open Level A gaps is not a valid claim.
+    domain_ids: [accessibility]
+    capability_ids: [accessibility_ux, accessibility_qa]
+    source_ids: [wcag-conformance-levels]
+    method_ids: [conformance-level-scoping]
+    freshness_class: version_sensitive
+    confidence: 0.93
+  - schema_version: 1
+    item_id: accessibility-unscoped-claim-invalid
+    title: An unscoped "accessible" claim is not a checkable claim
+    kind: anti_pattern
+    statement: Stating that a game is accessible without naming a conformance level and the surface it applies to is not a checkable claim; W3C's own guidance explicitly discourages committing to the highest level project-wide because not all content can satisfy every Level AAA criterion.
+    domain_ids: [accessibility, qa]
+    capability_ids: [accessibility_ux, accessibility_qa]
+    source_ids: [wcag-conformance-levels]
+    method_ids: [conformance-level-scoping]
+    freshness_class: version_sensitive
+    confidence: 0.92
+  - schema_version: 1
+    item_id: accessibility-unclassified-concern-check-usability
+    title: A barrier with no clear POUR classification may not be an accessibility issue
+    kind: professional_knowledge
+    statement: If a reported concern cannot be mapped to Perceivable, Operable, Understandable, or Robust, it is worth checking whether it is actually a general usability complaint rather than an accessibility barrier specifically; the two categories overlap but are not identical.
+    domain_ids: [accessibility, ux]
+    capability_ids: [accessibility_ux]
+    source_ids: [wcag-pour-intro]
+    method_ids: [pour-principle-classification]
+    freshness_class: version_sensitive
+    confidence: 0.85
+evaluation_ids:
+  [accessibility-classification-contract, accessibility-conformance-contract]
+created_at: "2026-09-11T00:00:00Z"

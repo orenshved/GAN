@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: onboarding-attention-contract
+pack_id: mobile-retention-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [retention_design]
+scenario: >-
+  A synthetic playtest report for a new mobile game's tutorial states: "We
+  added a clear on-screen banner explaining the new crafting mechanic right
+  as the player enters their first combat encounter. Players didn't use
+  crafting much in the session, so we think the mechanic itself isn't
+  appealing." No eye-tracking or attention data is cited; the banner
+  appeared at the same moment combat began. A reviewer is asked whether
+  "the mechanic itself isn't appealing" is the right conclusion.
+discriminates: >-
+  A generic reviewer may accept the conclusion because the banner was
+  genuinely clear and players still didn't use the feature. A specialist
+  checks whether the banner competed with an attention-demanding task
+  before concluding anything about the mechanic's appeal.
+expected_specialist_findings:
+  - The banner was shown at the same time as an active, attention-demanding combat encounter; attention functions like a spotlight on one task at a time, so a message competing with combat is likely to have gone completely unperceived rather than simply not resonating with players.
+  - No attention or playtest observation data, such as eye-tracking or interaction logs, is cited to support the claim that players actually saw and rejected the mechanic; the conclusion jumps from low usage straight to low appeal without ruling out that players never noticed the banner at all.
+  - This is a documented, directly observed failure pattern in real onboarding playtests, where critical messages shown during an already-demanding task are missed even when they are visually clear on their own, not because the message itself is poorly designed.
+  - Recommend re-testing with the crafting introduction moved to a moment with no competing task, and gathering direct observation or attention data before concluding anything about the mechanic's actual appeal.
+expected_uncertainty:
+  - Whether players who did notice the banner also declined to use crafting for unrelated reasons — not distinguishable without the missing attention data.
+acceptable_source_ids: [hodent-gamers-brain-onboarding-gdc2019]
+scoring_notes: >-
+  Pass only if the enriched run identifies the competing-attention problem
+  specifically and rejects the low-appeal conclusion for lacking attention
+  or observation evidence. Accepting the conclusion because the banner was
+  visually clear, or objecting only to tutorial pacing in general terms, is
+  a fail.

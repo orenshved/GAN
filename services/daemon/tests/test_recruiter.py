@@ -9,7 +9,7 @@ from gameagent.codex_bridge import CodexBridge
 from gameagent.constitution import ConstitutionError
 from gameagent.gm import make_plan
 from gameagent.knowledge import KnowledgeDirectory, KnowledgeFabric
-from gameagent.models.api import ObjectiveCommand
+from gameagent.models.api import DecisionCommand, ObjectiveCommand, RecruitmentCommand
 from gameagent.models.contracts import (
     AuditionReview,
     AuditionSubmission,
@@ -370,7 +370,7 @@ def test_untrusted_tool_request_rejects_audition(tmp_path):
     )
 
 
-def test_gm_automatically_auditions_instead_of_fabricating_capability(tmp_path):
+def test_gm_blocks_for_director_before_teaching_or_creating_specialist(tmp_path):
     initialize(tmp_path, Project.model_validate(PROFILE))
     store = ProjectStore(tmp_path, max_segment_bytes=1)
     service = recruiter(tmp_path)
@@ -436,9 +436,31 @@ def test_gm_automatically_auditions_instead_of_fabricating_capability(tmp_path):
         await bridge.gm_job
         snapshot = store.snapshot()
         assert snapshot.gm.state == "completed"
+        assert snapshot.plans[0].assignments[0].agent is None
+        assert snapshot.tasks[0].state == "BLOCKED_KNOWLEDGE"
+        assert snapshot.recruitments[0].state == "remediation_required"
+        decision = snapshot.decisions[0]
+        assert decision.options == [
+            "Teach the current agent",
+            "Create and teach a new specialist",
+        ]
+        assert decision.recommendation == "Create and teach a new specialist"
+        assert bridge.client.audition_starts == 0
+        store.resolve_decision(
+            DecisionCommand(
+                request_id="choose-learning-path",
+                decision_id=decision.decision_id,
+                selected_option="Create and teach a new specialist",
+                rationale="The missing capability should remain independently owned.",
+            )
+        )
+        recruited = await bridge.recruit(
+            RecruitmentCommand(request_id="resume-recruitment", task_id=snapshot.tasks[0].task_id)
+        )
+        assert recruited.state == "probation"
+        snapshot = store.snapshot()
         assert snapshot.plans[0].assignments[0].agent is not None
         assert snapshot.tasks[0].state == "READY"
-        assert snapshot.recruitments[0].state == "probation"
         assert bridge.client.audition_starts == 2
         await bridge.close()
 

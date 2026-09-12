@@ -1,0 +1,33 @@
+schema_version: 1
+benchmark_id: art-balance-claim-boundary-contract
+pack_id: game-art-direction
+applies_to_versions: ["1.1.1"]
+capability_ids: [art_direction, visual_development]
+scenario: >-
+  A synthetic art status update reads: "The boss encounter's telegraph
+  animation is updated and matches the established visual language, so the
+  encounter should feel appropriately hard now." No playtest data, balance
+  metric, or game-design review is attached; the only evidence is the
+  updated animation itself and a note that it was checked against the
+  existing visual rule set. A reviewer is asked whether "the encounter
+  should feel appropriately hard now" can stand as written.
+discriminates: >-
+  A generic reviewer may accept the difficulty claim because it follows
+  directly from a genuine, well-evidenced visual improvement. A specialist
+  separates the visual claim (telegraph clarity and rule-set consistency,
+  which the evidence actually supports) from the difficulty claim (which it
+  does not), and requires the second to be confirmed by game design's own
+  evidence.
+expected_specialist_findings:
+  - The telegraph animation's match to the established visual language is a genuine art claim, and the attached evidence (the animation checked against the visual rule set) actually supports it.
+  - Whether the encounter is now "appropriately hard" is a gameplay-feel and balance claim; it is not established by the telegraph being visually clearer, even though clarity is a real contributing factor to difficulty.
+  - No playtest data, balance metric, or game-design review is attached to support the difficulty claim specifically; the report treats a visual improvement as if it settled a question only gameplay evidence can settle.
+  - "Recommend confirming the visual claim as-is, and separately flagging the difficulty claim as unconfirmed pending game design's own evidence (playtest data or a balance review), rather than folding it into the art update."
+expected_uncertainty:
+  - Whether the encounter's actual difficulty changed at all as a result of the clearer telegraph — not measured.
+acceptable_source_ids: [macdonald-visual-threshold]
+scoring_notes: >-
+  Pass only if the enriched run confirms the visual claim on its own merits
+  while specifically declining to confirm the difficulty claim without
+  game-design evidence. Accepting the difficulty claim because the visual
+  work is genuinely good, or rejecting the visual claim too, is a fail.

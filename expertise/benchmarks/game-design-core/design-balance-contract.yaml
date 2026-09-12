@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: design-balance-contract
+pack_id: game-design-core
+applies_to_versions: ["1.0.0", "1.1.0"]
+capability_ids: [balance_design, systems_design]
+scenario: >-
+  A synthetic patch note reads: "Rebalanced the mid-game economy for better
+  pacing." The designer's notes say the change was based on "gut feel after
+  playing a few runs"; no target metric, playtest data, or simulation is
+  referenced, and there is no stated plan to check the result after release.
+  A reviewer is asked whether this balance change is ready to ship as
+  described.
+discriminates: >-
+  A generic reviewer may accept "rebalanced for better pacing" as a completed
+  change. A specialist treats it as an untested hypothesis and requires a
+  stated target and either collected evidence or an explicit post-ship
+  validation plan.
+expected_specialist_findings:
+  - The phrase "better pacing" names no specific target dynamic (for example, "reduce average time-to-first-upgrade by roughly 15%") and no metric that would let anyone later confirm the change worked.
+  - The stated basis, "gut feel after playing a few runs," is designer intuition, not evidence; it is a hypothesis about how the change affects a wider player base, not a confirmed result.
+  - There is no stated plan to collect data after release to confirm or falsify the intended effect, so a bad change could ship and go unnoticed.
+  - Recommend stating the specific target metric and either producing simulation or playtest data before ship, or explicitly tracking the metric post-release with a rollback plan if it misses the target.
+expected_uncertainty:
+  - Whether "a few runs" is a large enough sample to say anything about typical play — not stated.
+acceptable_source_ids: [mda-framework-paper]
+scoring_notes: >-
+  Pass only if the enriched run treats the change as an unvalidated hypothesis
+  and requires a stated target metric plus either pre-ship evidence or a
+  post-ship validation plan. Accepting "rebalanced for better pacing" as
+  sufficient on its own is a fail.

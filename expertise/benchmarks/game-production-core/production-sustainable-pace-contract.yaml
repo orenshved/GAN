@@ -1,0 +1,33 @@
+schema_version: 1
+benchmark_id: production-sustainable-pace-contract
+pack_id: game-production-core
+applies_to_versions: ["1.1.0", "1.1.1"]
+capability_ids: [risk_management, dependency_management]
+scenario: >-
+  A synthetic studio's employee handbook states "we do not expect crunch" as
+  a written policy, but there is no daily practice for surfacing actual
+  hours worked, and leads on the project routinely stay several hours late
+  as the milestone approaches, which newer team members have started
+  quietly copying. Separately, a new remote hire's onboarding consists of a
+  single email with a repository link and "let us know if you have
+  questions," with no assigned point of contact. A reviewer is asked whether
+  the "no crunch" claim and the onboarding approach are adequate.
+discriminates: >-
+  A generic reviewer may accept the written "no crunch" policy at face
+  value and treat the onboarding email as a reasonable, low-friction start.
+  A specialist checks for an active practice behind the policy and a
+  structured onboarding path, and finds neither.
+expected_specialist_findings:
+  - A written "no crunch" policy with no active daily visibility practice and leads modeling long hours near a milestone is exactly the condition under which overtime becomes the default despite the stated policy; the policy is not being protected in practice.
+  - Recommend introducing a simple daily check-out of completed work so leads can see actual pace without requiring longer hours, and coaching leads to model the pace the policy claims to want.
+  - A single onboarding email with no staged task list and no assigned peer contact leaves a new remote hire to self-structure their own ramp-up, which is slower and less reliable than a staged day-one, week-one, month-one plan.
+  - Recommend creating a structured onboarding path with specific early tasks and assigning a peer buddy independent of the hire's manager.
+expected_uncertainty:
+  - Whether the newer team members copying the late hours feel explicitly pressured to do so, or are doing it unprompted — not stated, though either way the pattern indicates the policy is not being actively protected.
+acceptable_source_ids: [sandercock-production-secrets]
+scoring_notes: >-
+  Pass only if the enriched run flags both the gap between the written
+  no-crunch policy and the lack of an active practice, and the missing
+  structured onboarding, each with a specific recommendation. Accepting the
+  written policy or the onboarding email as sufficient on their own is a
+  fail.

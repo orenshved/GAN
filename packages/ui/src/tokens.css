@@ -1,19 +1,38 @@
 :root {
   color-scheme: dark;
-  --ga-background: #172023;
-  --ga-surface: #1b262a;
-  --ga-foreground: #f2f3f5;
-  --ga-muted: #b5bdc6;
-  --ga-border: #344347;
-  --ga-focus: #93c5fd;
+  --ga-background: #061115;
+  --ga-surface: #0b1a1e;
+  --ga-surface-raised: #102328;
+  --ga-surface-selected: #12352f;
+  --ga-foreground: #f1f8f8;
+  --ga-muted: #9aadb4;
+  --ga-muted-strong: #bdcbd0;
+  --ga-border: rgb(132 196 198 / 17%);
+  --ga-border-strong: rgb(77 231 205 / 38%);
+  --ga-focus: #64f7dc;
+  --ga-accent: #31e5c2;
+  --ga-accent-soft: #8df8e2;
+  --ga-success: #37e3a1;
+  --ga-warning: #efb95e;
+  --ga-danger: #ff7272;
+  --ga-info: #63aef5;
+  --ga-radius-sm: 6px;
+  --ga-radius: 10px;
+  --ga-radius-lg: 14px;
+  --ga-shadow: 0 18px 50px rgb(0 0 0 / 24%);
   --ga-space: 1rem;
+  --accent: var(--ga-accent);
+  --font-display: "Segoe UI Variable Display", "Segoe UI", sans-serif;
+  --font-body: "Segoe UI Variable Text", "Segoe UI", sans-serif;
+  --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
 }
 body {
   margin: 0;
   background: var(--ga-background);
   color: var(--ga-foreground);
-  font-family: system-ui, sans-serif;
-  line-height: 1.6;
+  font-family: var(--font-body);
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
 }
 main {
   max-width: 52rem;
@@ -24,13 +43,13 @@ a {
   color: var(--ga-focus);
 }
 :focus-visible {
-  outline: 3px solid var(--ga-focus);
-  outline-offset: 4px;
+  outline: 2px solid var(--ga-focus);
+  outline-offset: 3px;
 }
 .ga-evidence {
   border: 1px solid var(--ga-border);
-  border-radius: 0.25rem;
-  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
 }
 @media (prefers-reduced-motion: reduce) {
   *,

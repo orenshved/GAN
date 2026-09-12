@@ -1,0 +1,136 @@
+# New candidate pack (K2 — first missing baseline slice).
+# state: draft — NOT installed, NOT reviewed, NOT trusted for routing.
+# Capability set mirrors the existing `game-design-lead` agent in
+# agents/builtin/roster.json exactly (mechanics_design, systems_design,
+# balance_design, game_direction, onboarding_design).
+# See docs/EXPERTISE_PACK_AUDIT.md and .ai/handoffs/claude-to-codex.md.
+#
+# Licensing note: the MDA paper (AAAI Workshop Papers, 2004) has no stated
+# open license found on either the authors' hosting page or the AAAI page for
+# it (checked live 2026-09-11) — standard academic copyright applies by
+# default. No text is reproduced or paraphrased-as-derivative anywhere in this
+# pack; the Mechanics-Dynamics-Aesthetics decomposition is described in
+# original wording and the paper is cited for attribution and further
+# reading, the same treatment any copyrighted paper gets.
+schema_version: 1
+pack_id: game-design-core
+name: Game Design Core
+version: 1.0.0
+description: >-
+  Mechanics-to-dynamics-to-aesthetics decomposition and evidence-scoped
+  balance change practice, grounded in the MDA framework (Hunicke, LeBlanc,
+  Zubek, 2004). `onboarding_design` is the thinnest capability here — MDA
+  addresses design generally, not onboarding specifically; a dedicated
+  onboarding/tutorial-design source is a candidate for a future version.
+state: draft
+domain_ids: [design, game_design]
+capability_ids:
+  [
+    mechanics_design,
+    systems_design,
+    balance_design,
+    game_direction,
+    onboarding_design,
+  ]
+sources:
+  - schema_version: 1
+    source_id: mda-framework-paper
+    title: "MDA: A Formal Approach to Game Design and Game Research"
+    author: Robin Hunicke, Marc LeBlanc, Robert Zubek
+    publisher: AAAI (Association for the Advancement of Artificial Intelligence), Workshop Papers
+    uri: https://aaai.org/papers/ws04-04-001-mda-a-formal-approach-to-game-design-and-game-research/
+    source_type: paper
+    retrieved_at: "2026-09-11T00:00:00Z"
+    published_at: "2004-01-01T00:00:00Z"
+    authority: peer_reviewed
+    freshness_class: stable
+    license: "No explicit open license found on the AAAI page or author hosting page (checked live). Standard academic copyright applies by default; cited for attribution and reference only, no text reproduced."
+    applicable_capability_ids:
+      [mechanics_design, systems_design, balance_design, game_direction]
+methods:
+  - schema_version: 1
+    method_id: mda-lens-decomposition-review
+    title: MDA lens decomposition review
+    purpose: Decompose a proposed feature into its Mechanics (the concrete rule), Dynamics (the emergent play behavior that rule produces), and Aesthetics (the player's actual experiential response), and check that the mechanic is justified by its effect on dynamics and aesthetics rather than treated as inherently good.
+    applicable_capability_ids:
+      [mechanics_design, systems_design, game_direction, onboarding_design]
+    steps:
+      - State the specific rule or system change as a Mechanic — the concrete rule, not a vibe or adjective.
+      - Predict the Dynamics — the emergent player behavior this mechanic actually produces during play.
+      - Name the target Aesthetic (for example challenge, fellowship, discovery, sensation) the change is meant to produce, and state how the predicted dynamics support it.
+      - Flag when a mechanic is justified only by reference to itself, such as "it's more strategic," without naming the dynamic or aesthetic it is meant to produce.
+    evidence_requirements:
+      - The exact rule or system change under review.
+      - Either playtest observation of the resulting dynamics, or an explicit, falsifiable prediction if untested.
+    source_ids: [mda-framework-paper]
+  - schema_version: 1
+    method_id: balance-change-evidence-plan
+    title: Balance change evidence plan
+    purpose: Treat a balance or progression change as a hypothesis about player dynamics that needs evidence, not an assertion of its own success.
+    applicable_capability_ids: [balance_design, systems_design]
+    steps:
+      - State which dynamic the balance change is intended to shift, and by how much.
+      - Identify what evidence would confirm or falsify the intended shift — playtest data, simulation, or expert judgment.
+      - Distinguish a change made from data already collected from one made as an untested hypothesis awaiting a playtest.
+    evidence_requirements:
+      - The specific numeric or qualitative target the change aims for.
+      - The evidence class backing the change, and whether it has actually been collected yet.
+    source_ids: [mda-framework-paper]
+items:
+  - schema_version: 1
+    item_id: design-mechanic-justified-by-dynamics
+    title: A mechanic is justified by its dynamics and aesthetic, not by itself
+    kind: professional_knowledge
+    statement: A rule change should be traced to the emergent player behavior it is expected to produce and the experiential goal that behavior is meant to serve; describing it only as "more X" without naming the dynamic is not a design justification.
+    domain_ids: [game_design]
+    capability_ids: [mechanics_design, systems_design, game_direction]
+    source_ids: [mda-framework-paper]
+    method_ids: [mda-lens-decomposition-review]
+    freshness_class: stable
+    confidence: 0.92
+  - schema_version: 1
+    item_id: design-aesthetic-before-mechanic
+    title: Aesthetic goals should be named before or alongside mechanics
+    kind: standard
+    statement: Choosing mechanics without naming the intended player experience — challenge, discovery, fellowship, and so on — inverts the design order and makes it hard to tell whether the mechanic is working; the target aesthetic should be explicit, not inferred after the fact.
+    domain_ids: [game_design]
+    capability_ids: [game_direction, systems_design]
+    source_ids: [mda-framework-paper]
+    method_ids: [mda-lens-decomposition-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: design-intuition-is-a-hypothesis
+    title: Designer intuition about dynamics is a hypothesis, not a result
+    kind: anti_pattern
+    statement: A designer's prediction of how players will actually behave under a new rule is a hypothesis until observed; presenting it as the outcome rather than as a prediction to be tested overstates certainty that a mechanic will produce its intended aesthetic.
+    domain_ids: [game_design, qa]
+    capability_ids: [mechanics_design, balance_design]
+    source_ids: [mda-framework-paper]
+    method_ids: [mda-lens-decomposition-review, balance-change-evidence-plan]
+    freshness_class: stable
+    confidence: 0.9
+  - schema_version: 1
+    item_id: design-balance-change-needs-target-and-evidence
+    title: Balance changes need a stated target and evidence class
+    kind: professional_knowledge
+    statement: A balance change should state the specific dynamic it targets and whether it is backed by already-collected data or simulation, or is an untested hypothesis awaiting a playtest; an unstated target makes it impossible to later say whether the change worked.
+    domain_ids: [game_design]
+    capability_ids: [balance_design, systems_design]
+    source_ids: [mda-framework-paper]
+    method_ids: [balance-change-evidence-plan]
+    freshness_class: stable
+    confidence: 0.91
+  - schema_version: 1
+    item_id: design-legible-early-dynamics
+    title: Early mechanics should produce a legible dynamic before layering complexity
+    kind: professional_knowledge
+    statement: The mechanics introduced in a game's first minutes should be simple enough that their dynamics are apparent to a new player almost immediately, before additional interacting systems are layered in; introducing several mechanics at once makes it hard for a player to attribute an outcome to any single rule.
+    domain_ids: [game_design]
+    capability_ids: [onboarding_design, mechanics_design]
+    source_ids: [mda-framework-paper]
+    method_ids: [mda-lens-decomposition-review]
+    freshness_class: stable
+    confidence: 0.85
+evaluation_ids: [design-mechanics-contract, design-balance-contract]
+created_at: "2026-09-11T00:00:00Z"

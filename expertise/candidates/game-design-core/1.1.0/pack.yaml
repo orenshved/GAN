@@ -1,0 +1,246 @@
+# Retrospective sourcing upgrade (K-retrospective, upgrade #3 of 4). state: draft
+# — NOT installed, NOT reviewed, NOT trusted for routing.
+# See docs/RETROSPECTIVE_SOURCING_AUDIT.md and .ai/handoffs/claude-to-codex.md.
+#
+# 1.0.0's primary source (the MDA framework paper) is abstract academic theory,
+# not a practitioner's account of balancing a specific shipped game at scale. The
+# audit's own rationale: "MDA is worth keeping as a citation, but pairing it with
+# a shipped-title design account would substantiate mechanics_design/balance_design
+# more concretely." MDA is RETAINED here (it is still correct and still the right
+# citation for the mechanics-dynamics-aesthetics decomposition itself); the new
+# source adds concrete, live-service-scale balance practice that MDA's own
+# abstraction cannot provide: how to target a balance change at a specific skill
+# population instead of an assumed universal "correct" tuning, how to avoid
+# over-trusting an aggregate win-rate number, and how to recognize when repeated
+# tuning on the same target signals a systemic cause rather than another isolated
+# fix. `onboarding_design` remains this pack's thinnest capability, unaffected by
+# this upgrade and still a candidate for a dedicated source in a future version.
+schema_version: 1
+pack_id: game-design-core
+name: Game Design Core
+version: 1.1.0
+supersedes_version: 1.0.0
+description: >-
+  Mechanics-to-dynamics-to-aesthetics decomposition and evidence-scoped balance
+  change practice, grounded in the MDA framework (Hunicke, LeBlanc, Zubek, 2004);
+  and, new in this version, skill-population-targeted balance tuning and
+  systemic-cause diagnosis, grounded in a shipped, live-service, mass-scale
+  balance practitioner's account (Greg "Ghostcrawler" Street — Lead Systems
+  Designer on World of Warcraft, Lead Game Designer for League of Legends).
+  `onboarding_design` remains the thinnest capability here — neither source
+  addresses onboarding/tutorial design specifically; a dedicated source is a
+  candidate for a future version.
+state: draft
+domain_ids: [design, game_design]
+capability_ids:
+  [
+    mechanics_design,
+    systems_design,
+    balance_design,
+    game_direction,
+    onboarding_design,
+  ]
+sources:
+  - schema_version: 1
+    source_id: mda-framework-paper
+    title: "MDA: A Formal Approach to Game Design and Game Research"
+    author: Robin Hunicke, Marc LeBlanc, Robert Zubek
+    publisher: AAAI (Association for the Advancement of Artificial Intelligence), Workshop Papers
+    uri: https://aaai.org/papers/ws04-04-001-mda-a-formal-approach-to-game-design-and-game-research/
+    source_type: paper
+    retrieved_at: "2026-09-11T00:00:00Z"
+    published_at: "2004-01-01T00:00:00Z"
+    authority: peer_reviewed
+    freshness_class: stable
+    license: "No explicit open license found on the AAAI page or author hosting page (checked live). Standard academic copyright applies by default; cited for attribution and reference only, no text reproduced."
+    applicable_capability_ids:
+      [mechanics_design, systems_design, balance_design, game_direction]
+  - schema_version: 1
+    source_id: street-lol-balance-gdc2017
+    title: "Balancing 'League of Legends' for Every Player, from Bronze to Bengi"
+    author: Greg "Ghostcrawler" Street
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=ii_Q4OCoHvU
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2017-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly. Cited for attribution; no transcript text reproduced, every item below is original distilled wording. Speaker credential verified via the GDC Vault listing (speaker: Greg Street, company: Riot Games) and the talk's own stated history: worked on the Age of Empires franchise at Ensemble Studios (10 years), Lead Systems Designer on the shipped, commercially successful World of Warcraft at Blizzard Entertainment (~6 years), and Lead Game Designer for the shipped, commercially successful League of Legends at Riot Games."
+    applicable_capability_ids: [balance_design, systems_design, game_direction]
+methods:
+  - schema_version: 1
+    method_id: mda-lens-decomposition-review
+    title: MDA lens decomposition review
+    purpose: Decompose a proposed feature into its Mechanics (the concrete rule), Dynamics (the emergent play behavior that rule produces), and Aesthetics (the player's actual experiential response), and check that the mechanic is justified by its effect on dynamics and aesthetics rather than treated as inherently good.
+    applicable_capability_ids:
+      [mechanics_design, systems_design, game_direction, onboarding_design]
+    steps:
+      - State the specific rule or system change as a Mechanic — the concrete rule, not a vibe or adjective.
+      - Predict the Dynamics — the emergent player behavior this mechanic actually produces during play.
+      - Name the target Aesthetic (for example challenge, fellowship, discovery, sensation) the change is meant to produce, and state how the predicted dynamics support it.
+      - Flag when a mechanic is justified only by reference to itself, such as "it's more strategic," without naming the dynamic or aesthetic it is meant to produce.
+    evidence_requirements:
+      - The exact rule or system change under review.
+      - Either playtest observation of the resulting dynamics, or an explicit, falsifiable prediction if untested.
+    source_ids: [mda-framework-paper]
+  - schema_version: 1
+    method_id: balance-change-evidence-plan
+    title: Balance change evidence plan
+    purpose: Treat a balance or progression change as a hypothesis about player dynamics that needs evidence, not an assertion of its own success.
+    applicable_capability_ids: [balance_design, systems_design]
+    steps:
+      - State which dynamic the balance change is intended to shift, and by how much.
+      - Identify what evidence would confirm or falsify the intended shift — playtest data, simulation, or expert judgment.
+      - Distinguish a change made from data already collected from one made as an untested hypothesis awaiting a playtest.
+    evidence_requirements:
+      - The specific numeric or qualitative target the change aims for.
+      - The evidence class backing the change, and whether it has actually been collected yet.
+    source_ids: [mda-framework-paper]
+  - schema_version: 1
+    method_id: skill-tier-balance-targeting-review
+    title: Skill-tier balance targeting review
+    purpose: Check that a balance change states which player population or skill segment it targets and is evaluated against data specific to that segment, rather than trusting a single aggregate metric as if it applied equally to every skill tier.
+    applicable_capability_ids: [balance_design, systems_design]
+    steps:
+      - Identify which population the change is meant to affect — the broad mass-market majority, a specific outlier tier (very low or very high skill), or competitive/spectator health — and check that this is stated, not assumed.
+      - Require the supporting data to be segmented by skill tier or by player experience with the specific element, not just reported as one aggregate figure.
+      - Before treating an outlier win rate as a real signal, check the sample size behind it; a small population that rarely uses a hard-to-learn element can produce an extreme number that is not representative.
+      - Check whether a change aimed at one population would collaterally affect a different one, and require that tradeoff to be stated explicitly rather than left unexamined.
+    evidence_requirements:
+      - The specific population or skill segment the change is targeted at.
+      - Win-rate or usage data segmented by that population, with the underlying sample size noted.
+    source_ids: [street-lol-balance-gdc2017]
+  - schema_version: 1
+    method_id: balance-decision-discipline-review
+    title: Balance decision discipline review
+    purpose: Check that a balance or systems change is driven by a stated goal or a diagnosed cause, rather than an ad hoc reaction to a single anecdote, or another isolated tuning pass repeating a fix that has already failed on the same target.
+    applicable_capability_ids: [balance_design, systems_design, game_direction]
+    steps:
+      - Check whether the change traces back to a specific, previously stated design goal or value, rather than an impulse reaction to one bad session or one piece of anecdotal feedback.
+      - If the same target has already been corrected more than once without success, look for a systemic co-factor (an interacting item, shared system, or rule) before proposing another isolated correction to the same target.
+      - Check whether the timing of the problem's onset lines up with a different systemic change made around the same time, rather than assuming the target itself is solely responsible.
+      - Distinguish a structural problem in the target's own design, which calls for a redesign rather than another tuning pass, from a simple tuning-value miss.
+    evidence_requirements:
+      - The stated design goal or value the change is meant to serve.
+      - The history of prior correction attempts on this same target, and whether a systemic co-factor was checked.
+    source_ids: [street-lol-balance-gdc2017]
+items:
+  - schema_version: 1
+    item_id: design-mechanic-justified-by-dynamics
+    title: A mechanic is justified by its dynamics and aesthetic, not by itself
+    kind: professional_knowledge
+    statement: A rule change should be traced to the emergent player behavior it is expected to produce and the experiential goal that behavior is meant to serve; describing it only as "more X" without naming the dynamic is not a design justification.
+    domain_ids: [game_design]
+    capability_ids: [mechanics_design, systems_design, game_direction]
+    source_ids: [mda-framework-paper]
+    method_ids: [mda-lens-decomposition-review]
+    freshness_class: stable
+    confidence: 0.92
+  - schema_version: 1
+    item_id: design-aesthetic-before-mechanic
+    title: Aesthetic goals should be named before or alongside mechanics
+    kind: standard
+    statement: Choosing mechanics without naming the intended player experience — challenge, discovery, fellowship, and so on — inverts the design order and makes it hard to tell whether the mechanic is working; the target aesthetic should be explicit, not inferred after the fact.
+    domain_ids: [game_design]
+    capability_ids: [game_direction, systems_design]
+    source_ids: [mda-framework-paper]
+    method_ids: [mda-lens-decomposition-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: design-intuition-is-a-hypothesis
+    title: Designer intuition about dynamics is a hypothesis, not a result
+    kind: anti_pattern
+    statement: A designer's prediction of how players will actually behave under a new rule is a hypothesis until observed; presenting it as the outcome rather than as a prediction to be tested overstates certainty that a mechanic will produce its intended aesthetic.
+    domain_ids: [game_design, qa]
+    capability_ids: [mechanics_design, balance_design]
+    source_ids: [mda-framework-paper]
+    method_ids: [mda-lens-decomposition-review, balance-change-evidence-plan]
+    freshness_class: stable
+    confidence: 0.9
+  - schema_version: 1
+    item_id: design-balance-change-needs-target-and-evidence
+    title: Balance changes need a stated target and evidence class
+    kind: professional_knowledge
+    statement: A balance change should state the specific dynamic it targets and whether it is backed by already-collected data or simulation, or is an untested hypothesis awaiting a playtest; an unstated target makes it impossible to later say whether the change worked.
+    domain_ids: [game_design]
+    capability_ids: [balance_design, systems_design]
+    source_ids: [mda-framework-paper]
+    method_ids: [balance-change-evidence-plan]
+    freshness_class: stable
+    confidence: 0.91
+  - schema_version: 1
+    item_id: design-legible-early-dynamics
+    title: Early mechanics should produce a legible dynamic before layering complexity
+    kind: professional_knowledge
+    statement: The mechanics introduced in a game's first minutes should be simple enough that their dynamics are apparent to a new player almost immediately, before additional interacting systems are layered in; introducing several mechanics at once makes it hard for a player to attribute an outcome to any single rule.
+    domain_ids: [game_design]
+    capability_ids: [onboarding_design, mechanics_design]
+    source_ids: [mda-framework-paper]
+    method_ids: [mda-lens-decomposition-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: balance-target-population-must-be-explicit
+    title: A balance change should name the skill population it targets
+    kind: professional_knowledge
+    statement: A single tuning value affects different skill tiers very differently, since the same rule can be trivial at low skill and dominant at high skill or vice versa; a balance change should state whether it targets the broad mass-market population, a specific outlier tier, or competitive and spectator health, rather than assuming one correct value serves every tier equally.
+    domain_ids: [game_design]
+    capability_ids: [balance_design, systems_design]
+    source_ids: [street-lol-balance-gdc2017]
+    method_ids: [skill-tier-balance-targeting-review]
+    freshness_class: stable
+    confidence: 0.9
+  - schema_version: 1
+    item_id: aggregate-win-rate-not-sufficient-alone
+    title: An aggregate win rate does not establish evidence of imbalance on its own
+    kind: anti_pattern
+    statement: A single aggregate win-rate figure can mask that a very different, and more decision-relevant, picture exists once the same data is segmented by skill tier and by player experience with the specific element under review; treating the aggregate number alone as sufficient evidence, without checking segment breakdown and sample size, risks a change that does not produce its intended effect once shipped.
+    domain_ids: [game_design, qa]
+    capability_ids: [balance_design]
+    source_ids: [street-lol-balance-gdc2017]
+    method_ids: [skill-tier-balance-targeting-review]
+    freshness_class: stable
+    confidence: 0.89
+  - schema_version: 1
+    item_id: balanced-metric-is-not-same-as-good-design
+    title: A balanced metric does not confirm a good player experience
+    kind: standard
+    statement: An element whose measured balance metric, such as win rate, sits within its target range can still be a poor design if it produces a frustrating experience or drives players away from the game entirely; the balance metric and the player-experience quality of the same element are separate questions and both need to be checked before calling the element healthy.
+    domain_ids: [game_design]
+    capability_ids: [balance_design, game_direction]
+    source_ids: [street-lol-balance-gdc2017]
+    method_ids: [skill-tier-balance-targeting-review]
+    freshness_class: stable
+    confidence: 0.86
+  - schema_version: 1
+    item_id: repeated-tuning-signals-systemic-cause
+    title: Repeated failed corrections on the same target point to a systemic cause
+    kind: professional_knowledge
+    statement: When the same element has already required more than one correction attempt without resolving the problem, the more productive next step is to check for an interacting systemic cause — a shared item, system, or rule change around the same time — rather than repeating another isolated tuning pass on the same element.
+    domain_ids: [game_design]
+    capability_ids: [balance_design, systems_design]
+    source_ids: [street-lol-balance-gdc2017]
+    method_ids: [balance-decision-discipline-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: explicit-design-values-prevent-ad-hoc-tinkering
+    title: Explicit, pre-agreed design values keep balance debates from being decided by anecdote
+    kind: professional_knowledge
+    statement: A team that has agreed in advance on explicit design goals and values for a system can resolve an individual balance debate against that shared standard; without a stated standard, decisions default to reacting to whichever anecdote, single bad session, or the most recent piece of feedback is loudest at the time.
+    domain_ids: [game_design]
+    capability_ids: [game_direction, systems_design]
+    source_ids: [street-lol-balance-gdc2017]
+    method_ids: [balance-decision-discipline-review]
+    freshness_class: stable
+    confidence: 0.85
+evaluation_ids:
+  [
+    design-mechanics-contract,
+    design-balance-contract,
+    balance-population-targeting-contract,
+    balance-repeated-tuning-contract,
+  ]
+created_at: "2026-09-12T00:00:00Z"

@@ -1,0 +1,33 @@
+schema_version: 1
+benchmark_id: quantization-tradeoff-contract
+pack_id: local-model-selection
+applies_to_versions: ["1.0.0"]
+capability_ids: [local_model_selection, resource_analysis]
+scenario: >-
+  A synthetic code-review task needs to catch subtle off-by-one and null-check
+  bugs. Two variants of the same model are installed: a q4_0-quantized
+  version and a q8_0-quantized version. The model's architecture is noted to
+  have a high grouped-query-attention count. Available hardware has enough
+  headroom to run either variant. A teammate proposes using the q4_0 variant
+  "because it downloaded faster and takes less disk space." A reviewer is
+  asked whether this is the right choice.
+discriminates: >-
+  A generic reviewer may accept "it still works" and pick the smaller,
+  faster-to-download variant. A specialist identifies the task as
+  precision-sensitive, notes the architecture's higher susceptibility to
+  quantization-driven precision loss, and recommends the higher-precision
+  variant given available headroom.
+expected_specialist_findings:
+  - Catching subtle off-by-one and null-check bugs is a precision-sensitive task; small precision losses from quantization are more likely to matter here than in casual chat or brainstorming use.
+  - This model's high grouped-query-attention count means it is more susceptible to quantization-driven precision loss than a low-GQA-count model would be at the same quantization level.
+  - Download speed and disk space are not relevant considerations once the model is already installed and hardware headroom exists to run the higher-precision variant.
+  - Recommend the q8_0 variant for this precision-sensitive task, given available memory headroom; q4_0 would be reasonable for a less precision-sensitive use case or under tighter memory constraints.
+expected_uncertainty:
+  - Whether the actual measured precision gap between q4_0 and q8_0 has been benchmarked for this specific model on this specific bug class — not stated, only the general architecture-dependent risk is known.
+acceptable_source_ids: [ollama-gpu-docs, ollama-faq-docs]
+scoring_notes: >-
+  Pass only if the enriched run identifies the task as precision-sensitive,
+  connects the high-GQA architecture to increased quantization risk, and
+  recommends q8_0 given available headroom. Accepting q4_0 for download-speed
+  reasons, or recommending q8_0 without naming the precision-sensitivity or
+  architecture reasoning, is a fail.

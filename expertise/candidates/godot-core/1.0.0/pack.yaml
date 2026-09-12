@@ -1,0 +1,152 @@
+# New candidate pack (K3). state: draft — NOT installed, NOT reviewed, NOT
+# trusted for routing. No owning agent currently requires this pack yet.
+# Reuses the already-verified Godot docs licensing mechanism (CC BY 3.0,
+# site-wide, confirmed for docs.godotengine.org in godot-ui-engineering) and
+# the already-registered `godot.cli` tool id — no new Codex tool/schema
+# conversation needed, unlike initially assumed in
+# docs/K3_ENGINE_ART_ACCESSIBILITY_MODEL.md §2.
+# See docs/K3_ENGINE_ART_ACCESSIBILITY_MODEL.md and
+# .ai/handoffs/claude-to-codex.md.
+schema_version: 1
+pack_id: godot-core
+name: Godot Core
+version: 1.0.0
+description: >-
+  Scene decoupling and signal-driven communication practice for Godot
+  project architecture, grounded in Godot's own official "Best Practices"
+  documentation — distinct from godot-ui-engineering, which covers Control
+  layout and focus/gamepad navigation specifically.
+state: draft
+domain_ids: [godot, engineering]
+capability_ids: [engine_architecture, gameplay_engineering, godot_development]
+required_tool_ids: [godot.cli]
+sources:
+  - schema_version: 1
+    source_id: godot-nodes-and-scenes-docs
+    title: Nodes and Scenes
+    author: Godot Engine contributors
+    publisher: Godot Engine
+    uri: https://docs.godotengine.org/en/stable/getting_started/step_by_step/nodes_and_scenes.html
+    source_type: official_documentation
+    retrieved_at: "2026-09-11T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-03-11T00:00:00Z"
+    license: CC BY 3.0
+    applicable_capability_ids: [engine_architecture, godot_development]
+  - schema_version: 1
+    source_id: godot-signals-docs
+    title: Signals
+    author: Godot Engine contributors
+    publisher: Godot Engine
+    uri: https://docs.godotengine.org/en/stable/getting_started/step_by_step/signals.html
+    source_type: official_documentation
+    retrieved_at: "2026-09-11T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-03-11T00:00:00Z"
+    license: CC BY 3.0
+    applicable_capability_ids:
+      [engine_architecture, gameplay_engineering, godot_development]
+  - schema_version: 1
+    source_id: godot-scene-organization-docs
+    title: Scene Organization
+    author: Godot Engine contributors
+    publisher: Godot Engine
+    uri: https://docs.godotengine.org/en/stable/tutorials/best_practices/scene_organization.html
+    source_type: official_documentation
+    retrieved_at: "2026-09-11T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-03-11T00:00:00Z"
+    license: CC BY 3.0
+    applicable_capability_ids: [engine_architecture, godot_development]
+methods:
+  - schema_version: 1
+    method_id: scene-decoupling-review
+    title: Scene decoupling review
+    purpose: Check whether a scene's dependencies on other nodes or scenes are structured as loose coupling — signals or dependency injection — rather than hard references that break when the scene is reused in a different context.
+    applicable_capability_ids: [engine_architecture, godot_development]
+    steps:
+      - Identify every reference this scene makes to nodes outside itself, whether parent, sibling, or global.
+      - Classify each reference as signal-based, injected at instantiation via a Callable, property, node reference, or NodePath, or a hard path-based reference reaching upward or sideways.
+      - Flag hard upward or sideways references as a coupling risk, since they break if the scene is instantiated in a different context.
+      - Confirm the scene functions with no dependencies as its default state, receiving what it needs from its context rather than assuming its context.
+    evidence_requirements:
+      - The scene's actual node references and any dependency-injection points.
+      - Whether the scene has been tested instantiated in more than one context.
+    source_ids: [godot-scene-organization-docs]
+  - schema_version: 1
+    method_id: signal-driven-communication-review
+    title: Signal-driven communication review
+    purpose: Confirm that reactive behavior between nodes is expressed through signals rather than one node polling or reaching directly into another's internal state.
+    applicable_capability_ids:
+      [engine_architecture, gameplay_engineering, godot_development]
+    steps:
+      - Identify where one node currently needs to react to something happening in another.
+      - Confirm the source node emits a signal for that event rather than the observing node polling its state every frame.
+      - Confirm the signal connection is made at the appropriate scope, usually the parent connecting to a child's signal, rather than a child reaching upward to call a parent method directly.
+      - Verify at runtime that the signal actually fires and the handler executes as expected, not just that the connection compiles.
+    evidence_requirements:
+      - The specific event being reacted to and how the connection is currently implemented.
+      - Runtime confirmation that the signal fires and is handled.
+    source_ids: [godot-signals-docs]
+items:
+  - schema_version: 1
+    item_id: godot-prefer-no-dependencies-then-injection
+    title: Prefer no dependencies, then injection, before hard references
+    kind: professional_knowledge
+    statement: A scene should default to needing nothing from its context; when it must interact with something external, provide that dependency to it through signals, an injected callable, a reference, or a NodePath at instantiation, rather than having the scene reach upward or sideways to find it.
+    domain_ids: [godot, engineering]
+    capability_ids: [engine_architecture, godot_development]
+    source_ids: [godot-scene-organization-docs]
+    method_ids: [scene-decoupling-review]
+    freshness_class: version_sensitive
+    confidence: 0.94
+  - schema_version: 1
+    item_id: godot-scenetree-is-relational
+    title: The SceneTree is relational, not just spatial
+    kind: standard
+    statement: A node's position in the scene tree should reflect an actual logical dependency, not just convenient placement; a node that can exist independently of its current parent should not be hierarchically nested under it, since that hierarchy implies a dependency that does not really exist.
+    domain_ids: [godot, engineering]
+    capability_ids: [engine_architecture, gameplay_engineering]
+    source_ids: [godot-scene-organization-docs]
+    method_ids: [scene-decoupling-review]
+    freshness_class: version_sensitive
+    confidence: 0.9
+  - schema_version: 1
+    item_id: godot-hard-references-break-on-reuse
+    title: Hard references break on reuse
+    kind: anti_pattern
+    statement: A node that reaches upward or sideways through a hard path reference to find another node will break the moment that scene is instantiated in a different context than the one it was authored in; this is a common, avoidable source of runtime errors when scenes are reused.
+    domain_ids: [godot, engineering]
+    capability_ids: [engine_architecture, godot_development]
+    source_ids: [godot-scene-organization-docs]
+    method_ids: [scene-decoupling-review]
+    freshness_class: version_sensitive
+    confidence: 0.92
+  - schema_version: 1
+    item_id: godot-signals-decouple
+    title: Signals decouple emitters from responders
+    kind: professional_knowledge
+    statement: A node emitting a signal does not need to know what, if anything, is listening; this lets game objects react to events without direct interdependencies, which is the core mechanism Godot provides for structuring reactive behavior without tight coupling.
+    domain_ids: [godot, engineering]
+    capability_ids:
+      [engine_architecture, gameplay_engineering, godot_development]
+    source_ids: [godot-signals-docs]
+    method_ids: [signal-driven-communication-review]
+    freshness_class: version_sensitive
+    confidence: 0.93
+  - schema_version: 1
+    item_id: godot-connection-not-same-as-verified-firing
+    title: A connection that compiles is not a connection verified to fire
+    kind: anti_pattern
+    statement: Confirming a signal is connected in code or the editor establishes that the wiring exists, not that the signal actually fires and the handler executes correctly at runtime under real gameplay conditions; that requires runtime verification, not code inspection alone.
+    domain_ids: [godot, engineering, qa]
+    capability_ids: [engine_architecture, godot_development]
+    source_ids: [godot-signals-docs]
+    method_ids: [signal-driven-communication-review]
+    freshness_class: version_sensitive
+    confidence: 0.9
+evaluation_ids: [godot-decoupling-contract, godot-signal-contract]
+created_at: "2026-09-11T00:00:00Z"

@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: model-selection-contract
+pack_id: local-model-selection
+applies_to_versions: ["1.0.0"]
+capability_ids: [local_model_selection, resource_analysis]
+scenario: >-
+  A synthetic task is a simple three-step file-lookup agent that must call a
+  "read_file" tool. Two models are installed locally: a 70B model with no
+  tool-calling support that just barely fits in available VRAM leaving almost
+  no headroom, and an 8B model with tool-calling support that fits
+  comfortably with room to spare. A teammate proposes routing the task to the
+  70B model "since it's the biggest and smartest model we have installed." A
+  reviewer is asked whether this routing choice is correct.
+discriminates: >-
+  A generic reviewer may accept "biggest and smartest" as the deciding
+  factor. A specialist checks the task's actual requirement (tool-calling)
+  first and disqualifies the 70B model on that basis alone, separately noting
+  its near-zero memory headroom as a second, independent problem.
+expected_specialist_findings:
+  - The 70B model has no tool-calling support, and the task requires calling a "read_file" tool; this disqualifies it regardless of parameter count.
+  - Fitting in available VRAM is a memory constraint, not a capability constraint; a model that loads is not automatically a model that can perform the task.
+  - The 70B model also leaves almost no memory headroom, which would be a separate problem for context growth or concurrency even if it did support tools.
+  - The 8B model is the correct choice since it has tool-calling support and fits comfortably, leaving headroom.
+expected_uncertainty:
+  - Whether the 8B model's tool-calling reliability has been benchmarked for this specific task type — not stated.
+acceptable_source_ids: [ollama-faq-docs]
+scoring_notes: >-
+  Pass only if the enriched run disqualifies the 70B model specifically for
+  lacking tool support (not merely for being "too big") and separately flags
+  its lack of memory headroom, then recommends the 8B model. Recommending the
+  70B model, or rejecting it only on memory grounds without addressing the
+  missing tool support, is a fail.

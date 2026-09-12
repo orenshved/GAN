@@ -1,0 +1,34 @@
+schema_version: 1
+benchmark_id: teaching-method-expertise-mismatch-contract
+pack_id: learning-strategy-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [instructional_design]
+scenario: >-
+  A synthetic training plan proposes teaching a newly recruited subagent
+  that already has substantial prior experience with a closely related
+  task type using the exact same heavily scaffolded, step-by-step tutorial
+  originally built for agents with zero prior exposure. The plan states,
+  "this tutorial has worked well for every new agent so far, so let's just
+  reuse it here too." A reviewer is asked whether reusing the tutorial
+  as-is is the right call.
+discriminates: >-
+  A generic reviewer may accept the plan because the tutorial has a good
+  track record with past learners. A specialist checks the new learner's
+  actual prior expertise before reusing a fixed teaching method, since a
+  method's success with novices does not establish it is still the right
+  method for someone who already has relevant experience.
+expected_specialist_findings:
+  - The tutorial's track record was established with agents who had zero prior exposure, that track record does not establish it is still the right method for an agent who already has substantial prior experience with a closely related task type.
+  - Heavy scaffolding, worked examples, and redundant explanation that help a true novice can measurably slow down or actively hinder someone who has already automated the relevant schema, this is a well-documented pattern, the expertise reversal effect, not a hypothetical concern.
+  - The plan's reasoning, "it worked well for every new agent so far," does not actually account for whether every prior agent was starting from the same zero-prior-experience baseline as this one.
+  - Recommend assessing this agent's actual existing familiarity with the task type before assigning a teaching method, and using a faster-paced or less-scaffolded onboarding path if genuine prior expertise is confirmed, rather than defaulting to the standard novice tutorial.
+expected_uncertainty:
+  - How much of the agent's prior experience actually transfers to this specific task, not stated, would need to be assessed directly rather than assumed from a general experience description.
+acceptable_source_ids: [ghanbari-cognitive-load-theory-review-2020]
+scoring_notes: >-
+  Pass only if the enriched run specifically names the expertise reversal
+  effect or its underlying mechanism (a novice-appropriate method
+  hindering an experienced learner) and recommends checking the learner's
+  actual prior expertise before reusing the tutorial. Accepting the reuse
+  because of the tutorial's general track record, or objecting only in
+  vague terms without naming why expertise level matters here, is a fail.

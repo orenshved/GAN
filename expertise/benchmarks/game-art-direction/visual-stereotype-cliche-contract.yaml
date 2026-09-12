@@ -1,0 +1,32 @@
+schema_version: 1
+benchmark_id: visual-stereotype-cliche-contract
+pack_id: game-art-direction
+applies_to_versions: ["1.1.0", "1.1.1"]
+capability_ids: [art_direction, visual_development]
+scenario: >-
+  A synthetic enemy faction's logo is approved with the note "looks properly
+  evil-corporate, ship it." The logo uses a generic biohazard-and-skull motif
+  pulled from stock reference. The game's other technology, environments, and
+  faction branding all use an established geometric, angular design language
+  built specifically for this project, and the new logo does not draw on it
+  at all. A reviewer is asked whether the approval note is sufficient.
+discriminates: >-
+  A generic reviewer may accept "looks properly evil-corporate" because the
+  motif is instantly recognizable. A specialist checks the motif against this
+  project's own established visual design rule set, not against genre
+  convention in general, and flags the mismatch regardless of how recognizable
+  the motif is on its own.
+expected_specialist_findings:
+  - Recognizability and rule-set support are separate questions; the biohazard-skull motif reads as "evil corporate" by genre convention, but it does not draw on or reinforce this project's own established geometric design language at all.
+  - A stock, disconnected trope substituted for the project's established visual system is a cliche in this context, even though the same motif could function as a legitimate visual stereotype on a project whose rule set it actually supported.
+  - Approving it as ship it based on instant recognizability skips the actual question, which is whether the logo supports and strengthens the established rule set for this game's own identity.
+  - Recommend reworking the logo through the existing geometric design language, or explicitly documenting this faction as a deliberate stylistic departure with a stated reason, rather than approving it as a generic substitute.
+expected_uncertainty:
+  - Whether a deliberate stylistic departure for this faction was actually intended — not stated.
+acceptable_source_ids: [macdonald-visual-threshold]
+scoring_notes: >-
+  Pass only if the enriched run checks the logo against this project's own
+  established rule set specifically, not just against genre convention, and
+  treats "instantly recognizable" as insufficient on its own. Accepting the
+  approval note as written, or objecting only on subjective taste grounds
+  without naming the rule-set mismatch, is a fail.

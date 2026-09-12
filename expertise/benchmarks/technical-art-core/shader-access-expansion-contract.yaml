@@ -1,0 +1,34 @@
+schema_version: 1
+benchmark_id: shader-access-expansion-contract
+pack_id: technical-art-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [technical_art]
+scenario: >-
+  A synthetic tools proposal for a mid-size studio's general-purpose shader
+  graph editor states, "the UI is intuitive enough now that we should give
+  every artist unrestricted access to build fully custom shaders from
+  scratch, rather than keeping them on the current library of preset
+  shaders." The proposal cites positive feedback on the editor's usability
+  as its main justification. A reviewer is asked whether this is the right
+  call.
+discriminates: >-
+  A generic reviewer may accept the proposal because an intuitive UI
+  sounds like it resolves the main barrier to artists building their own
+  shaders. A specialist recognizes that UI friendliness does not address
+  the separate risks of late-surfacing performance cost and cross-asset
+  visual inconsistency, and checks for those specifically before endorsing
+  unrestricted access.
+expected_specialist_findings:
+  - An intuitive interface does not address the actual risk, unrestricted custom shader creation tends to produce performance problems that only surface late in development, when they are most expensive to find and fix, regardless of how easy the tool is to use.
+  - Without an explicit performance indicator on what artists build, there is no way for an artist to know a shader's real cost while authoring it, the proposal's UI-usability framing does not mention performance visibility at all.
+  - Unrestricted custom shader access also risks the documented consistency problem, individually authored materials that look fine in a static editor preview can diverge sharply once placed under the game's real dynamic lighting or on a moving character, and a library of curated shaders is what currently prevents this.
+  - Recommend keeping custom shader creation restricted to a small, designated group of technical artists, and if broader access is wanted, first adding a visible performance indicator and a real-condition preview to the tool, since neither currently exists in the proposal as described.
+expected_uncertainty:
+  - Whether the studio's current shader library already covers the specific effects driving the request for custom access, not stated, would need to be checked before deciding whether expanded access is even necessary.
+acceptable_source_ids: [theodore-who-shall-build-this-shader-2009]
+scoring_notes: >-
+  Pass only if the enriched run identifies both the performance-visibility
+  gap and the real-condition-preview gap as reasons not to grant
+  unrestricted access on UI-usability grounds alone. Accepting the
+  proposal because the UI is intuitive, or objecting only in vague terms
+  without naming either specific risk, is a fail.

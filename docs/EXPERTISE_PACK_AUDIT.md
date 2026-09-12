@@ -13,9 +13,39 @@ human- or professionally qualified — they are not.
 
 **Update 2026-09-10 (post Codex cross-review):** benchmark folder + fixture schema
 accepted; all 10 fixtures now declare `schema_version: 1` and the six colon-bearing
-list items are quoted as strings; the `godot-ui-engineering 1.1.2` candidate's
+list items are quoted as strings; the `godot-ui-engineering 1.1.0` candidate's
 `required_tool_ids` is now `[godot.cli]`. The candidate stays `state: draft` —
 not installed, promoted, reviewed, activated, merged, committed, or pushed.
+
+**Update 2026-09-11 (Codex integration + K1 remainder complete):** Codex merged the
+fixture tree and integrated the Godot candidate on `codex/platform-runtime`
+(`codex-platform` worktree). Independent source review there found the cited
+rendered `class_control.html` page should be recorded as CC BY 3.0 — not MIT,
+which is the license of the Godot engine _source_ repo the docs are generated
+from — and superseded the draft as `godot-ui-engineering@1.1.2`. Claude verified
+this directly against the Codex-worktree file: all four sources correctly carry
+`license: CC BY 3.0`; no new issue found; **not touched, per instruction.**
+Codex completed all four automated auditions for 1.1.2 against the corrected
+digest; every candidate score beat its baseline and cleared the automated
+threshold. The Studio presents 1.1.2 as awaiting human review. The 1.1.0/1.1.1
+receipts remain historical and do not qualify 1.1.2.
+
+Claude then completed the K1 remainder on this worktree (`claude/professional-knowledge`,
+still uncommitted): draft `1.1.0` successors for all three remaining seed packs
+— `game-ux-core`, `game-engineering-core`, `game-qa-core` — each adding exactly
+one new, license-verified external source and one new discriminating benchmark
+scenario. Detail in §5–§7 below. All four seed packs now have a draft successor
+somewhere in the two worktrees; none are installed, reviewed, or promoted.
+
+**Update 2026-09-11 (K2 started):** K1 is complete. K2 (the first missing
+baseline slice) is underway: `game-production-core@1.0.0` and
+`game-design-core@1.0.0` are new draft candidates, each capability-matched to
+an existing agent in `agents/builtin/roster.json` and grounded in one
+license-verified external source (the Scrum Guide, CC BY-SA 4.0; the MDA
+framework paper, cited under standard copyright — no open license found).
+Full detail, including the honestly-scoped thin capabilities and the deferred
+third K2 pack, is in `docs/K2_BASELINE_PACKS.md` rather than duplicated here,
+since K2 packs are new, not audited successors of an installed version.
 
 ---
 
@@ -71,17 +101,69 @@ None of this makes the packs unsafe — the evidence-discipline content is genui
 ## 3. What this change delivers
 
 - **Audit table + question answers** (this file).
-- **One successor candidate:** `expertise/candidates/godot-ui-engineering/1.1.2/pack.yaml` — `state: draft`, `supersedes_version: 1.0.0`, **not** installed or reviewed. Version 1.1.2 supersedes the staged 1.1.0 and 1.1.1 drafts after source review clarified that the cited rendered `classes/class_control.html` artifact should be recorded as CC BY 3.0, while its underlying generated class-reference sources are MIT-derived. Chosen because every content fix is verifiable from official Godot documentation already cited by 1.0.0, with no new unverifiable sources:
+- **One successor candidate:** `expertise/candidates/godot-ui-engineering/1.1.0/pack.yaml` — `state: draft`, `supersedes_version: 1.0.0`, **not** installed or reviewed. Chosen because it is the pack where every fix is verifiable from official Godot documentation already cited by 1.0.0, with no new unverifiable sources:
   - explicit Godot 4.x target and version-sensitivity called out in `description` and items;
   - two added official Godot sources (GUI navigation; GUI skinning), same publisher/authority/licence as the existing two;
   - `required_tool_ids: [godot.cli]` — the canonical engine-adapter tool id confirmed by Codex 2026-09-10; it produces runtime PNG capture via the Godot adapter and `/runtime-capture`. It does **not** record video or capture arbitrary scenes, so the pack's evidence requirements stay scoped to PNG capture at discrete steps;
   - added methods for focus/gamepad navigation and Theme consistency;
   - added items on cross-container focus neighbours, `ui_*` joypad bindings, the assistive-technology limitation, and Theme provenance;
   - two added `evaluation_ids` with scenarios.
-- **First benchmark scenario set:** `expertise/benchmarks/<pack_id>/<evaluation_id>.yaml` — 10 discriminating synthetic scenarios covering every `evaluation_id` of the four seed packs plus the two new `godot-ui-engineering 1.1.x` ids. Layout and fixture schema **accepted by Codex 2026-09-10**; each fixture now carries explicit `schema_version: 1`. The runner receives only the pack reference and `benchmark_id`; the runtime loads the canonical `scenario` and maps the remaining fields into the independent evaluator rubric.
+- **First benchmark scenario set:** `expertise/benchmarks/<pack_id>/<evaluation_id>.yaml` — 10 discriminating synthetic scenarios covering every `evaluation_id` of the four seed packs plus the two new `godot-ui-engineering 1.1.0` ids. Layout and fixture schema **accepted by Codex 2026-09-10**; each fixture now carries explicit `schema_version: 1`. The runner receives only the pack reference and `benchmark_id`; the runtime loads the canonical `scenario` and maps the remaining fields into the independent evaluator rubric.
 
 ## 4. Not done here (deliberately)
 
-- No successor for `game-ux-core`, `game-engineering-core`, `game-qa-core`. Their fixes require external sources (game accessibility guidance; a reputable engineering reference; a QA/testing standard) that need a proper research pass, not invented citations. Documented above; queued in `.ai/NEXT_BEST_ACTIONS.md`.
-- No new packs from the ten missing baseline slice (`game-production-core`, etc.). Out of scope for this first assignment per the handoff.
+- No new packs from the ten missing baseline slice (`game-production-core`, etc.). Out of scope for this first assignment per the handoff; K2.
 - No edits to `expertise/builtin/*` — the `1.0.0` manifests are immutable.
+- No edits to the Codex-integrated `godot-ui-engineering@1.1.2` — reviewed directly in the Codex worktree, no issue found.
+- K1's four seed packs now all have draft successors (§5–§7 below). None are installed, reviewed, or promoted.
+
+## 5. K1 remainder — `game-ux-core 1.1.0` (2026-09-11)
+
+**Candidate:** `expertise/candidates/game-ux-core/1.1.0/pack.yaml` — `state: draft`, `supersedes_version: 1.0.0`, not installed or reviewed.
+
+**New source:** Xbox Accessibility Guidelines (Microsoft, `learn.microsoft.com/en-us/xbox/accessibility/guidelines`), fetched and checked 2026-09-11. `source_type: official_documentation`, `authority: official_documentation`, `freshness_class: version_sensitive` (current published version 3.2, 2023-06-08; `fresh_until` set 12 months out).
+
+**Licensing checked, not assumed:** Microsoft Learn's site-wide Terms of Use (`learn.microsoft.com/en-us/legal/termsofuse`, checked 2026-09-11) grant only personal/non-commercial use and state no open content license for this page — unlike some other Microsoft Learn doc sets, there is no CC BY statement here. The pack's `license` field records that restriction accurately instead of assuming an open license. No guideline text is reproduced anywhere in the pack; every method/item is original wording describing a professional practice, with the source cited for attribution and further reading — the same treatment a paywalled paper or book would get.
+
+**What this fixes from the audit table:** `accessibility_ux`, `controller_navigation`, and `onboarding_ux` were claimed but under-supported in 1.0.0. Added:
+
+- method `game-accessibility-scoping-review` — determine which accessibility guideline areas a game's actual mechanics require before claiming coverage, instead of a single pass/fail checkbox;
+- items on mechanic-scoped accessibility coverage, input-remapping verification, and testable instruction/tutorial clarity;
+- one new `evaluation_id` (`ux-accessibility-scoping`) with a discriminating scenario: a game claims "full accessibility support" from a remap screen and subtitles while a boss mechanic telegraphs two different attacks using color alone — a specialist must scope per-mechanic and catch the untested colorblind-signaling gap that remap/subtitles don't cover.
+- also reclassified `gan-ux-evidence-policy`'s `source_type` from `standard` to `project_document`, applying finding #1/Q2 from this same audit to the pack's own internal source.
+
+`interaction_design` remains backed only by the original `ux-task-flow-review` method (unchanged from 1.0.0) — still the pack's thinnest capability; a dedicated interaction-design source is a candidate for a future pass.
+
+## 6. K1 remainder — `game-engineering-core 1.1.0` (2026-09-11)
+
+**Candidate:** `expertise/candidates/game-engineering-core/1.1.0/pack.yaml` — `state: draft`, `supersedes_version: 1.0.0`.
+
+**New source:** _Game Programming Patterns_ by Robert Nystrom (`gameprogrammingpatterns.com`), fetched and checked 2026-09-11. This was the pack's core provenance gap — 1.0.0 had **zero** external engineering authority, only GAN's own internal policy.
+
+**Licensing checked, not assumed:** fetched the repository's actual `LICENSE` file (`github.com/munificent/game-programming-patterns`) rather than trusting a search summary. The book's prose (`.markdown`/`.html` files) is **CC BY-NC-ND 4.0** — NonCommercial, NoDerivatives; its code samples are MIT. Given ND, no prose is reproduced or paraphrased-as-derivative anywhere in the pack. The patterns cited (component composition, explicit game-loop ordering, service-locator trade-offs) are general, decades-old game/software patterns predating this book (Gang of Four and earlier) — every item is original wording describing the pattern, with the book cited as a reputable game-specific exposition and further-reading reference, the same treatment a citation of any copyrighted text gets.
+
+**What this fixes from the audit table:** `gameplay_engineering` was listed as a capability with zero supporting content — the audit's sharpest finding for this pack. Added:
+
+- method `game-architecture-pattern-review` — compare a subsystem's actual structure against a named pattern instead of judging architecture only against abstract "good practice";
+- items on component-vs-inheritance composition, explicit game-loop update ordering, and the coupling risk of global service-locator access;
+- one new `evaluation_id` (`engineering-pattern-contract`) with a discriminating scenario: a boss-enemy system hitting combinatorial subclass explosion (`FlyingShieldedRegeneratingBoss`) where a generic reviewer approves "just add two more subclasses" and a specialist names the inheritance-explosion problem and recommends component composition;
+- reclassified both internal GAN sources' `source_type` from `standard` to `project_document` (applying finding #1/Q2 to this pack, same fix already made in `game-ux-core`).
+
+`ui_engineering`, `tooling`, and `build_engineering` remain backed only by the original `engineering-change-plan`/`dependency-boundary-review` methods — sound per the audit, but still GAN-internal-only; a language/build-tooling-specific external source is a candidate for a future pass.
+
+## 7. K1 remainder — `game-qa-core 1.1.0` (2026-09-11)
+
+**Candidate:** `expertise/candidates/game-qa-core/1.1.0/pack.yaml` — `state: draft`, `supersedes_version: 1.0.0`.
+
+**New source:** W3C's **WCAG Evaluation Methodology (WCAG-EM) 2.0** (`w3.org/TR/WCAG-EM/`), a W3C Group Note published 2026-07-23, fetched and checked 2026-09-11. `license: W3C Document License` — same license mechanism already verified for `wcag-2-2` in `game-ux-core`, so no new licensing risk. Chosen after two verification attempts on the ISTQB Glossary (`glossary.istqb.org`) failed to independently confirm its license — the site is JS-rendered and unreachable via static fetch, and a PDF mirror had a certificate error; rather than repeat the earlier mistake of trusting a search-engine summary's license claim, that source was dropped, not used on faith.
+
+**What this fixes from the audit table:** 1.0.0 had one method and one internal source stretched across five capabilities, with `visual_regression` and `accessibility_qa` having no dedicated content. Added:
+
+- method `wcag-em-scoped-evaluation` — a structured scope → disclosed sample → per-item evaluate → report methodology, generalized from WCAG-EM's accessibility-evaluation process to any claim-based QA task;
+- items on claims being bounded by their declared scope, sampling needing disclosure, and aggregate pass/fail verdicts hiding per-item failures;
+- one new `evaluation_id` (`qa-scoped-evaluation-contract`) with a discriminating scenario: a report claims "all menus pass visual regression" from 3-of-40 undisclosed sampling, with one sampled screenshot's minor diff buried inside an aggregate PASS — a specialist must reject the overreaching scope claim and separately surface the buried per-item discrepancy;
+- reclassified `gan-qa-policy`'s `source_type` from `standard` to `project_document`, same fix as the other two packs.
+
+`automated_testing` and `ux_testing` remain backed only by `claim-evidence-matrix` and GAN's internal policy — a dedicated automated-testing or playtesting-methodology source is a candidate for a future pass.
+
+**Still queued:** K2 — the ten missing baseline packs, starting with `game-production-core` / `game-design-core` / `project-intelligence-analysis`.

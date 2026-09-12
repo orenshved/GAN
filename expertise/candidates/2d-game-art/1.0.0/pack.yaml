@@ -1,0 +1,169 @@
+# New candidate pack (K3 — final pack of this slice). state: draft — NOT
+# installed, NOT reviewed, NOT trusted for routing. No owning agent requires
+# this pack yet.
+#
+# Built per GAN_CLAUDE_RESEARCH_SOURCING_STRATEGY.md, same practitioner-
+# evidence model used for pixel-art-production: this craft has no equivalent
+# to a WCAG or Scrum Guide.
+#
+# Source 1 is a GDC talk's actual transcript, extracted with yt-dlp (native
+# captions), not reasoned from title or summary. Source 2 is a substantive
+# interview about a second, independent shipped title, chosen specifically
+# because it contributes a genuinely different principle (cultural
+# authenticity in art direction) rather than restating the first source.
+#
+# Every claim below is original wording distilled from the acquired
+# material, not transcript or article text reproduced verbatim.
+schema_version: 1
+pack_id: 2d-game-art
+name: 2D Game Art
+version: 1.0.0
+description: >-
+  Concept-art-to-in-game production pipeline and character iconography/
+  redesign practice for stylized 2D games, distilled from a shipped-title
+  creative director's GDC talk and a second shipped-title's account of
+  culturally-grounded art direction. Practitioner-sourced by design, the
+  same as pixel-art-production — this craft has no formal written standard.
+state: draft
+domain_ids: [art, game_art]
+capability_ids: [illustration, character_art]
+sources:
+  - schema_version: 1
+    source_id: child-of-light-gdc-talk
+    title: The Art of Child of Light
+    author: Patrick Plourde
+    publisher: GDC (Game Developers Conference), official YouTube channel
+    uri: https://www.youtube.com/watch?v=st7giW3wqwM
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    published_at: "2014-01-01T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard YouTube/GDC terms; no open content license found. Transcript acquired via yt-dlp native captions and read directly. Cited for attribution; no transcript text reproduced, every item below is original distilled wording. Speaker credential verified: Patrick Plourde, creative director at Ubisoft Montreal, on the shipped, commercially released game Child of Light."
+    applicable_capability_ids: [illustration, character_art]
+  - schema_version: 1
+    source_id: guacamelee-art-interview
+    title: "How They Make the Guac: An Interview With DrinkBox Studios"
+    author: Augusto Quijano (interviewee), DrinkBox Studios
+    publisher: SUPERJUMP Magazine
+    uri: https://www.superjumpmagazine.com/how-they-make-the-guac-an-interview-with-drinkbox-studios/
+    source_type: article
+    retrieved_at: "2026-09-12T00:00:00Z"
+    authority: industry_reference
+    freshness_class: stable
+    license: "Standard web article copyright; no open content license found. Cited for attribution; no article text reproduced. Interviewee credential verified: Augusto Quijano, concept lead at DrinkBox Studios on the shipped, commercially released game Guacamelee!. Chosen specifically because it contributes a distinct principle (cultural authenticity via team background, not surface aesthetic borrowing) not covered by the Child of Light source, per the cross-verification discipline in GAN_CLAUDE_RESEARCH_SOURCING_STRATEGY.md."
+    applicable_capability_ids: [character_art]
+methods:
+  - schema_version: 1
+    method_id: concept-to-ingame-pipeline-review
+    title: Concept-to-in-game pipeline review
+    purpose: Check that a game's environment or character art has a traceable path from mood board and concept art into the actual in-game asset, rather than concept art existing only as a disconnected pre-production reference.
+    applicable_capability_ids: [illustration]
+    steps:
+      - Confirm a mood board or early concept exists establishing the intended mood or style for the environment or asset before detailed concept art begins.
+      - Confirm the concept art directly informed, or was directly integrated into, the in-game asset, for example through a paint-over pass on an actual level-design screenshot, rather than remaining a separate, disconnected reference image.
+      - Identify whether a single polished target render milestone exists that stakeholders can use to judge whether production art is on track toward the intended final quality.
+      - Where feedback on the art direction is vague, for example only "it's beautiful," press for a specific, nameable point of visual identity the style can be summarized by, rather than accepting general praise as sufficient direction.
+    evidence_requirements:
+      - The actual mood board or concept art and the in-game asset it is meant to have informed, side by side.
+      - Whether a target render milestone exists and what stage of production it was created at.
+    source_ids: [child-of-light-gdc-talk]
+  - schema_version: 1
+    method_id: character-iconography-consistency-review
+    title: Character iconography consistency review
+    purpose: Evaluate whether a character design remains recognizable through iteration and in-fiction visual change by checking for a small set of preserved, iconic identifying elements rather than overall painterly likeness.
+    applicable_capability_ids: [character_art]
+    steps:
+      - Identify the specific elements, such as silhouette, a signature prop, hairstyle, or color, intended to make the character recognizable even at small scale or high abstraction.
+      - Confirm those specific elements are preserved across major redesign iterations or in-fiction transformations, even when other aspects of the design change substantially.
+      - When a redesign is prompted by feedback such as "make the character more X," check the requested change against the project's own established creative pillars before adopting it, rather than accepting all external notes by default.
+      - For a culturally-derived character concept, verify it is grounded in an actual informed source, such as a team member's lived background or documented folklore research, rather than a surface-level aesthetic borrowing.
+    evidence_requirements:
+      - The character's design across its iteration history, with the preserved identifying elements called out explicitly.
+      - For culturally-derived designs, the specific source of authority behind the cultural elements used.
+    source_ids: [child-of-light-gdc-talk, guacamelee-art-interview]
+items:
+  - schema_version: 1
+    item_id: art-concept-needs-traceable-path
+    title: Concept art should have a traceable path into the final asset
+    kind: professional_knowledge
+    statement: Concept art is most valuable in production when it directly informs or is directly integrated into the final in-game asset, for example painted over an actual level-design screenshot, rather than existing only as a disconnected pre-production reference the final art loosely resembles.
+    domain_ids: [art, game_art]
+    capability_ids: [illustration]
+    source_ids: [child-of-light-gdc-talk]
+    method_ids: [concept-to-ingame-pipeline-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: art-target-render-milestone
+    title: A target render milestone tests the direction before full production
+    kind: standard
+    statement: Producing one polished, representative image early establishes a concrete milestone stakeholders can judge, distinct from the disconnected uncertainty of reviewing only early sketches or written descriptions of an intended style.
+    domain_ids: [art, production]
+    capability_ids: [illustration]
+    source_ids: [child-of-light-gdc-talk]
+    method_ids: [concept-to-ingame-pipeline-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: art-vague-praise-not-direction
+    title: Vague praise is not art direction feedback
+    kind: anti_pattern
+    statement: Feedback that a style is generically appealing without naming what specifically distinguishes it does not give the team an actionable target; useful feedback names a specific, nameable point of visual identity the work can be judged against.
+    domain_ids: [art, production]
+    capability_ids: [illustration]
+    source_ids: [child-of-light-gdc-talk]
+    method_ids: [concept-to-ingame-pipeline-review]
+    freshness_class: stable
+    confidence: 0.85
+  - schema_version: 1
+    item_id: art-recognizability-needs-few-elements
+    title: Recognizability depends on a few preserved iconic elements, not overall fidelity
+    kind: professional_knowledge
+    statement: A character stays recognizable across redesigns, abstraction, or in-fiction transformation by preserving a small set of specific identifying elements, such as silhouette, a signature prop, hairstyle, or color, not by preserving the overall painterly likeness of any single version.
+    domain_ids: [art, game_art]
+    capability_ids: [character_art]
+    source_ids: [child-of-light-gdc-talk]
+    method_ids: [character-iconography-consistency-review]
+    freshness_class: stable
+    confidence: 0.88
+  - schema_version: 1
+    item_id: art-weigh-feedback-against-pillars
+    title: Weigh redesign feedback against the project's own creative pillars
+    kind: standard
+    statement: External feedback requesting a character be made more generically appealing, for example "more badass," should be evaluated against whether it fits the specific project's established creative intent, not adopted by default; a change that does not serve the project's own identity can be declined even when it is common advice elsewhere.
+    domain_ids: [art, production]
+    capability_ids: [character_art]
+    source_ids: [child-of-light-gdc-talk]
+    method_ids: [character-iconography-consistency-review]
+    freshness_class: stable
+    confidence: 0.82
+  - schema_version: 1
+    item_id: art-cultural-authenticity-needs-informed-source
+    title: Cultural authenticity comes from an actual informed source, not aesthetic borrowing
+    kind: professional_knowledge
+    statement: A culturally-grounded art style and character concept is more defensible when it is driven by a team member's actual lived background or documented research into the specific culture, rather than an externally applied aesthetic without that grounding.
+    domain_ids: [art, game_art]
+    capability_ids: [character_art]
+    source_ids: [guacamelee-art-interview]
+    method_ids: [character-iconography-consistency-review]
+    freshness_class: stable
+    confidence: 0.8
+  - schema_version: 1
+    item_id: art-constraint-solved-without-abandoning-style
+    title: A technical constraint can be solved without abandoning the intended style
+    kind: heuristic
+    statement: When a desired visual effect is not achievable within the primary medium's direct limitations, for example flowing hair animated naively in 2D, a mixed-technique workaround such as compositing a limited 3D element into a 2D scene can preserve the intended look without compromising the overall style, at the cost of a bounded, deliberately time-boxed technical investment to validate feasibility first.
+    domain_ids: [art, engineering]
+    capability_ids: [illustration]
+    source_ids: [child-of-light-gdc-talk]
+    method_ids: [concept-to-ingame-pipeline-review]
+    freshness_class: stable
+    confidence: 0.83
+evaluation_ids:
+  [
+    concept-pipeline-contract,
+    character-iconography-contract,
+    cultural-authenticity-contract,
+  ]
+created_at: "2026-09-12T00:00:00Z"

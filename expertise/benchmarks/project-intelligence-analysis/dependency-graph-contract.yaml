@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: dependency-graph-contract
+pack_id: project-intelligence-analysis
+applies_to_versions: ["1.0.0"]
+capability_ids: [dependency_analysis]
+scenario: >-
+  A synthetic subsystem has three modules: ModuleA imports from ModuleB,
+  ModuleB imports from ModuleC, and ModuleC imports back from ModuleA. Each
+  individual file's import list looks unremarkable on its own, and no
+  reviewer noticed a problem when reviewing the modules file by file. A
+  contributor says: "Each file's imports look reasonable on their own, so
+  this is fine." A reviewer is asked to assess this codebase for structural
+  risk.
+discriminates: >-
+  A generic reviewer may accept that each file's imports look fine
+  individually. A specialist assembles the full dependency graph and
+  identifies the three-module cycle that is only visible from the graph's
+  overall structure.
+expected_specialist_findings:
+  - ModuleA to ModuleB to ModuleC and back to ModuleA is a circular dependency; each individual import looks reasonable in isolation, but the cycle is only visible once the dependencies are assembled into a full graph.
+  - The claim that each file's imports look reasonable on their own is exactly the blind spot circular-dependency risk hides in; file-by-file review cannot surface a cycle spanning multiple files.
+  - This cycle indicates entanglement between the three modules that will resist safe incremental change to any one of them without affecting the others.
+  - Recommend building the actual dependency graph for this subsystem, naming the specific cycle, and planning a restructuring that breaks it, for example by extracting a shared interface one of the modules can depend on instead of depending directly on another.
+expected_uncertainty:
+  - Whether this cycle has already caused a concrete production issue, or is a latent risk not yet triggered — not stated.
+acceptable_source_ids: [understandlegacycode-dependency-graphs]
+scoring_notes: >-
+  Pass only if the enriched run identifies the specific three-module circular
+  dependency and explains why file-by-file review missed it. Accepting "each
+  file looks reasonable" as sufficient assurance is a fail.
