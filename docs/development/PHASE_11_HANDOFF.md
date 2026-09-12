@@ -1,6 +1,7 @@
 # Phase 11 handoff
 
-Phase 11 is complete. Phase 12 desktop packaging has not started.
+Phase 11 is complete. Phase 12 was subsequently authorized on 2026-09-10 and is
+documented in `PHASE_12_HANDOFF.md`.
 
 ## Delivered
 
@@ -42,5 +43,6 @@ Disciplines workspace open.
 
 ## Boundary for the next phase
 
-Do not begin Phase 12 without explicit Director approval. Desktop packaging must
-preserve the same local daemon authority and command-line/headless operation.
+This boundary was satisfied: the Director explicitly approved Phase 12, and the
+desktop implementation preserves local daemon authority plus command-line/headless
+operation.

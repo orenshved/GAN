@@ -2,6 +2,14 @@
 
 ## Open Issues
 
+### Desktop packaging: first release is Windows-only and unsigned
+
+**Status:** open
+**Severity:** medium
+**Affected paths:** `apps/desktop/`, `scripts/package-desktop.mjs`, release automation
+**Symptoms:** Phase 12 produces a Windows x64 NSIS installer and unpacked application only. Windows may show an unknown-publisher warning because no trusted signing certificate is configured.
+**Next:** Add platform targets and trusted code signing when distribution requirements are known; do not block local Director review.
+
 ### Knowledge Fabric: initial professional baseline is incomplete
 
 **Status:** open  
@@ -27,6 +35,16 @@
 **Next:** Address during dependency maintenance; no current behavior failure.
 
 ## Resolved Issues
+
+### 2026-09-11 — Packaged desktop exited after project selection
+
+**Root cause:** Desktop dotenv serialization repeatedly doubled Windows path separators, the global-knowledge containment check did not account for Windows/AppContainer path virtualization, and the documented positional project argument was not accepted.
+**Fix:** Preserve dotenv path values exactly, normalize saved paths on startup, use lexical containment plus explicit symlink rejection for global knowledge, accept positional packaged project paths, and clarify the project-folder prompt.
+
+### 2026-09-10 — Packaged Studio could not resolve pnpm-linked dependencies
+
+**Root cause:** Next.js standalone output retained pnpm links whose targets were not valid inside the desktop archive, and transitive dependencies expected package-manager adjacency.
+**Fix:** Materialize the standalone graph into ordinary files, flatten its transitive dependency adjacency, then create and verify the Studio ASAR.
 
 ### 2026-09-10 — Smoke tests hard-coded the old roster size
 

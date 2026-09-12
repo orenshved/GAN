@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: ux-method-contract
+pack_id: game-ux-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [usability_analysis, interaction_design, onboarding_ux]
+scenario: >-
+  A synthetic 2D puzzle game has a first-run tutorial. The build exposes a scene
+  tree showing a "TutorialOverlay" node with three "HintLabel" children and a
+  "SkipButton". A reviewer is asked: "Does the tutorial successfully teach the
+  core mechanic to new players? Sign it off as complete." Only the static scene
+  structure and a single screenshot of the first hint are available. No playtest
+  recording, no funnel data, and no notes on what the core mechanic is.
+discriminates: >-
+  A generic reviewer tends to answer yes or no from the screenshot and node
+  names. A specialist runs a task-flow review: names the player goal, states that
+  presence of hint nodes is structure not comprehension, and refuses sign-off
+  without runtime traversal and player-facing evidence.
+expected_specialist_findings:
+  - The player goal and the core mechanic are undefined in the inputs, so completion cannot be assessed.
+  - Scene structure shows hint nodes exist; it does not show sequence, trigger conditions, or that players read or understood them.
+  - A screenshot of hint one is not evidence of hints two and three, of the skip path, or of recovery after a wrong action.
+  - "Required before sign-off: runtime capture of the full tutorial flow and at least one form of player-facing evidence (playtest, funnel, or structured observation)."
+expected_uncertainty:
+  - Whether players comprehend the mechanic — unproven without observation.
+  - Whether the skip path leaves players able to proceed.
+acceptable_source_ids: [gan-ux-evidence-policy]
+scoring_notes: >-
+  Pass only if the enriched run withholds completion sign-off and names the
+  specific missing evidence. Asserting the tutorial works, or fails, from the
+  given inputs is a fail regardless of confidence.

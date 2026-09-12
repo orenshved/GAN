@@ -213,19 +213,10 @@ try {
   await page.goto(studioUrl);
   await page.getByRole("heading", { name: "Director Desk" }).waitFor();
   assert.equal(await page.getByText(/^EVENT \d+$/).count(), 0);
-  const dividerAlignment = await page.evaluate(() => {
-    const topbar = globalThis.document
-      .querySelector(".topbar")
-      ?.getBoundingClientRect();
-    const inspectorHeader = globalThis.document
-      .querySelector(".inspector > .section-heading")
-      ?.getBoundingClientRect();
-    return {
-      topbarBottom: topbar?.bottom,
-      inspectorBottom: inspectorHeader?.bottom,
-    };
-  });
-  assert.equal(dividerAlignment.inspectorBottom, dividerAlignment.topbarBottom);
+  assert.equal(await page.locator(".inspector").count(), 0);
+  await page.getByRole("heading", { name: "Needs your attention" }).waitFor();
+  await page.getByRole("heading", { name: "Current work" }).waitFor();
+  await page.getByRole("heading", { name: "What changed" }).waitFor();
   await page.getByRole("button", { name: "Switch or import project" }).click();
   await page.getByLabel("Add local repository").fill(secondTemporary);
   await page.getByRole("button", { name: "Import and inspect" }).click();
@@ -258,7 +249,11 @@ try {
   await page.getByRole("button", { name: "Remove project" }).click();
   assert.equal((await removalResponse).status(), 200);
   await page.getByText("Smoke Game / Director Desk").waitFor();
-  await page.getByRole("button", { name: "+ Propose task" }).click();
+  await page
+    .locator("nav")
+    .getByRole("button", { name: "Production", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Add task manually" }).click();
   await page.getByLabel("Title").fill("Verify the opening turn");
   await page
     .getByLabel("Desired outcome")
@@ -269,9 +264,22 @@ try {
   await page
     .getByRole("heading", { name: "Verify the opening turn" })
     .waitFor();
+  const dividerAlignment = await page.evaluate(() => {
+    const topbar = globalThis.document
+      .querySelector(".topbar")
+      ?.getBoundingClientRect();
+    const inspectorHeader = globalThis.document
+      .querySelector(".inspector > .section-heading")
+      ?.getBoundingClientRect();
+    return {
+      topbarBottom: topbar?.bottom,
+      inspectorBottom: inspectorHeader?.bottom,
+    };
+  });
+  assert.equal(dividerAlignment.inspectorBottom, dividerAlignment.topbarBottom);
   await page
     .locator("nav")
-    .getByRole("button", { name: /Disciplines/ })
+    .getByRole("button", { name: "Discipline checks", exact: true })
     .click();
   await page
     .getByRole("heading", { name: "Production discipline audits" })
@@ -287,7 +295,7 @@ try {
     .getByRole("button", { name: "Run read-only audit" })
     .click();
   assert.equal((await domainResponse).status(), 200);
-  await levelDomain.getByText("passed", { exact: true }).waitFor();
+  await levelDomain.getByText("Passed", { exact: true }).waitFor();
   await levelDomain.getByText(/1 files/).waitFor();
   await page
     .locator("nav")
@@ -295,6 +303,10 @@ try {
     .click();
   const agentNetwork = page.locator('[aria-label="Agent network"]');
   await agentNetwork.getByRole("heading", { name: "Agent network" }).waitFor();
+  const exploreAll = agentNetwork.getByRole("button", {
+    name: "Explore all agents",
+  });
+  if (await exploreAll.isVisible()) await exploreAll.click();
   await agentNetwork
     .locator(".agent-index")
     .getByRole("button", { name: "Engineering Lead" })
@@ -303,6 +315,7 @@ try {
     .locator(".agent-knowledge-list")
     .getByText("game-engineering-core", { exact: true })
     .waitFor();
+  await agentNetwork.getByText("TECHNICAL KNOWLEDGE DETAIL").click();
   await agentNetwork
     .locator(".agent-retrieval-list")
     .getByText("professional knowledge", { exact: true })
@@ -325,9 +338,12 @@ try {
   await agentNetwork.getByRole("button", { name: /All agents/ }).click();
   await page
     .locator("nav")
-    .getByRole("button", { name: /Project Intelligence/ })
+    .getByRole("button", { name: "Project understanding", exact: true })
     .click();
-  await page.getByRole("heading", { name: "Repository index" }).waitFor();
+  await page
+    .getByRole("heading", { name: "What GAN knows about this project" })
+    .waitFor();
+  await page.getByText("Specialist knowledge tools", { exact: true }).click();
   await page.getByRole("heading", { name: "Expertise library" }).waitFor();
   await page
     .getByRole("heading", { name: "Learning from production" })
@@ -343,6 +359,11 @@ try {
   );
   await page.getByRole("button", { name: "Index project" }).click();
   assert.equal((await indexResponse).status(), 200);
+  await page.getByRole("button", { name: "Refresh index" }).waitFor();
+  await page
+    .locator("summary")
+    .filter({ hasText: "Browse indexed project files" })
+    .click();
   await page.getByText("README.md", { exact: true }).waitFor();
   const contextResponse = page.waitForResponse((response) =>
     response.url().includes("/api/daemon/task-context"),
@@ -413,8 +434,11 @@ try {
     )
     .waitFor();
   await page.getByRole("button", { name: /Activity/ }).click();
-  await page.getByText("task / proposed").waitFor();
-  await page.getByRole("button", { name: /Network/ }).click();
+  await page.getByText("New work was proposed").first().waitFor();
+  await page
+    .locator("nav")
+    .getByRole("button", { name: "Dependencies", exact: true })
+    .click();
   const graph = page.locator('[aria-label="Task dependency graph"]');
   await graph.waitFor();
   assert.equal(await graph.locator(".react-flow__node").count(), 1);

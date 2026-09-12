@@ -84,7 +84,7 @@ export function AgentNetwork({
   error: string | null;
   selectTask: (id: string) => void;
 }) {
-  const [filter, setFilter] = useState<AgentFilter>("all");
+  const [filter, setFilter] = useState<AgentFilter>("used");
   const [query, setQuery] = useState("");
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
 
@@ -219,7 +219,7 @@ export function AgentNetwork({
             <div className="agent-node-label agent-root-label">
               <span className="agent-node-mark">GAN</span>
               <strong>{snapshot.project.project.name}</strong>
-              <small>{visibleAgents.length} agents shown</small>
+              <small>{visibleAgents.length} relevant agents</small>
             </div>
           ),
         },
@@ -313,8 +313,7 @@ export function AgentNetwork({
           <p className="eyebrow">PRODUCTION · AGENT NETWORK</p>
           <h2>Agent network</h2>
           <p className="muted">
-            Explore the roster, current engagements, and the project history
-            behind each agent.
+            See who is working, who is waiting, and where production needs help.
           </p>
         </div>
         <div
@@ -387,35 +386,54 @@ export function AgentNetwork({
           </div>
         </aside>
         <div className="agent-network-canvas">
-          <ReactFlow
-            nodes={graph.nodes}
-            edges={graph.edges}
-            fitView
-            fitViewOptions={{ padding: 0.24 }}
-            nodesConnectable={false}
-            onNodeClick={(_, node) => {
-              if (node.id.startsWith("agent:"))
-                setSelectedAgentId(node.id.slice("agent:".length));
-              if (node.id.startsWith("task:"))
-                selectTask(node.id.slice("task:".length));
-            }}
-            colorMode="dark"
-            minZoom={0.2}
-            maxZoom={2.1}
-          >
-            <Background gap={26} color="#263236" />
-            <Controls showInteractive={false} />
-          </ReactFlow>
-          <div
-            className="agent-network-legend"
-            aria-label="Agent status legend"
-          >
-            {(Object.keys(agentStateLabels) as AgentState[]).map((state) => (
-              <span key={state}>
-                <i className={statusClass(state)} /> {agentStateLabels[state]}
-              </span>
-            ))}
-          </div>
+          {visibleAgents.length ? (
+            <>
+              <ReactFlow
+                key={filter}
+                nodes={graph.nodes}
+                edges={graph.edges}
+                fitView
+                fitViewOptions={{ padding: 0.24 }}
+                nodesConnectable={false}
+                onNodeClick={(_, node) => {
+                  if (node.id.startsWith("agent:"))
+                    setSelectedAgentId(node.id.slice("agent:".length));
+                  if (node.id.startsWith("task:"))
+                    selectTask(node.id.slice("task:".length));
+                }}
+                colorMode="dark"
+                minZoom={0.2}
+                maxZoom={2.1}
+              >
+                <Background gap={26} color="#263236" />
+                <Controls showInteractive={false} />
+              </ReactFlow>
+              <div
+                className="agent-network-legend"
+                aria-label="Agent status legend"
+              >
+                {(Object.keys(agentStateLabels) as AgentState[]).map(
+                  (state) => (
+                    <span key={state}>
+                      <i className={statusClass(state)} />{" "}
+                      {agentStateLabels[state]}
+                    </span>
+                  ),
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="agent-map-empty">
+              <strong>No specialists are engaged in this project yet.</strong>
+              <p>
+                Give GAN a production outcome to assemble a team, or explore the
+                specialists available to hire.
+              </p>
+              <button type="button" onClick={() => setFilter("all")}>
+                Explore all agents
+              </button>
+            </div>
+          )}
         </div>
         <aside className="agent-context-lens" aria-label="Agent context lens">
           <div className="agent-context-heading">
@@ -435,7 +453,7 @@ export function AgentNetwork({
               <h3>{selectedAgent.agent.name}</h3>
               <p>{selectedAgent.agent.description}</p>
               <dl className="details agent-context-metrics">
-                <dt>Version</dt>
+                <dt>Definition version</dt>
                 <dd>{selectedAgent.agent.version}</dd>
                 <dt>Engagement</dt>
                 <dd>
@@ -443,9 +461,9 @@ export function AgentNetwork({
                     ? "Used by this project"
                     : "Not hired yet"}
                 </dd>
-                <dt>Recorded history</dt>
-                <dd>{selectedAgent.history.length} events</dd>
-                <dt>Expertise coverage</dt>
+                <dt>Recent work records</dt>
+                <dd>{selectedAgent.history.length}</dd>
+                <dt>Professional knowledge</dt>
                 <dd>
                   {!selectedKnowledge
                     ? "Not loaded"
@@ -456,7 +474,7 @@ export function AgentNetwork({
                 </dd>
               </dl>
               <div className="agent-context-section">
-                <span className="eyebrow">CAPABILITIES</span>
+                <span className="eyebrow">WHAT THIS SPECIALIST CAN DO</span>
                 <div className="agent-capabilities">
                   {selectedAgent.agent.capabilities.map((capability) => (
                     <span key={capability}>
@@ -466,10 +484,10 @@ export function AgentNetwork({
                 </div>
               </div>
               <div className="agent-context-section">
-                <span className="eyebrow">EXPERTISE PREVIEW</span>
+                <span className="eyebrow">KNOWLEDGE AVAILABLE</span>
                 <p className="muted">
-                  Retrieved for the current project context. This preview is not
-                  evidence that a worker used these items.
+                  Relevant professional knowledge available for this project.
+                  Usage evidence remains in the technical record.
                 </p>
                 {selectedKnowledge?.resolved_packs.length ? (
                   <ul className="agent-knowledge-list">
@@ -540,9 +558,9 @@ export function AgentNetwork({
                 </div>
               )}
               <div className="agent-context-section">
-                <details className="agent-knowledge-details" open>
+                <details className="agent-knowledge-details">
                   <summary>
-                    <span className="eyebrow">RETRIEVED KNOWLEDGE</span>
+                    <span className="eyebrow">TECHNICAL KNOWLEDGE DETAIL</span>
                     <span>{selectedKnowledge?.packet.items?.length ?? 0}</span>
                   </summary>
                   {selectedKnowledge?.packet.items?.length ? (

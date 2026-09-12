@@ -10,3 +10,4 @@ pnpm-lock.yaml
 **/src/generated.ts
 **/next-env.d.ts
 Game Agent Network - Product Requirements & Technical Architecture.md
+GAN_UI_UX_AUDIT_PROMPT.md

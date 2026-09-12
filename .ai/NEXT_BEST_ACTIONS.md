@@ -2,9 +2,8 @@
 
 ## Immediate
 
-- [ ] **Review the Codex/Claude workload split** — confirm ownership before another large implementation phase.
-  - _Context:_ `docs/AI_WORK_SPLIT.md`, `.ai/handoffs/codex-to-claude.md`
-- [ ] **Create isolated worktrees from the verified checkpoint** — use `codex/platform-runtime` and `claude/professional-knowledge` branches without sharing edited paths.
+- [ ] **Director: review the packaged Windows desktop application** — use the verified preview and Phase 12 handoff, then accept or return specific packaging issues.
+- [ ] **Codex: integrate Claude's corrected benchmark scenarios** — run repository validation after the six YAML scalar fixes land in the Claude worktree.
 
 ## High Priority
 
@@ -21,12 +20,14 @@
 
 ## Blocked
 
-- [ ] **Phase 12 desktop packaging** — blocked by explicit Director decision until the system feels ready and complete.
+- None.
 
 ## Completed
 
 - [x] **2026-09-10: Install RepoDoctor and create focused project memory.**
 - [x] **2026-09-10: Stabilize the current Knowledge Fabric checkpoint and pass `pnpm check`.**
+- [x] **2026-09-10: Establish isolated Codex and Claude worktrees with explicit ownership.**
+- [x] **2026-09-10: Package Studio and Daemon for Windows while preserving headless operation.**
 
 ---
 

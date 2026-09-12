@@ -16,10 +16,13 @@
     "test": "turbo run test",
     "protocol:generate": "node scripts/protocol.mjs",
     "protocol:check": "node scripts/protocol.mjs --check",
+    "desktop:package": "node scripts/package-desktop.mjs",
+    "desktop:package:dir": "node scripts/package-desktop.mjs --dir",
     "check": "pnpm format:check && pnpm lint && pnpm protocol:check && pnpm typecheck && pnpm test && pnpm build && pnpm smoke",
     "smoke": "node scripts/smoke.mjs"
   },
   "devDependencies": {
+    "@electron/asar": "4.3.0",
     "@eslint/js": "10.0.1",
     "@playwright/test": "^1.63.0",
     "@types/node": "^24.0.0",

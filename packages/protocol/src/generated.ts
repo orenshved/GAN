@@ -1267,341 +1267,22 @@ export type SchemaVersion74 = 1;
 export type Sequence33 = number;
 export type TaskId54 = string | null;
 export type Timestamp33 = string;
-export type CapturedAt2 = string;
-export type Cpu = string;
-export type DriverVersion = string | null;
-export type MemoryBytes = number | null;
-export type Name3 = string;
-export type Vendor = string;
-export type Graphics = GraphicsDevice[];
-export type LogicalCoreCount = number;
-export type MachineId = string;
-export type OperatingSystem = string;
-export type PhysicalCoreCount = number | null;
-export type RamBytes = number | null;
-export type SchemaVersion75 = 1;
-export type Detail11 = string;
-export type Endpoint = string;
-export type InspectedAt1 = string;
-export type ContextLimit = number | null;
-export type Digest1 = string;
-export type FitsMemory = boolean;
+export type AcceptableSourceIds = string[];
 /**
  * @minItems 1
  */
-export type Modalities = ["text" | "image" | "audio", ...("text" | "image" | "audio")[]];
-export type ModifiedAt = string;
-export type Name4 = string;
-export type ParameterSize = string | null;
-export type QuantizationLevel = string | null;
-export type SizeBytes = number;
-export type ToolSupport = boolean;
-export type Models = LocalModel[];
-export type RuntimeId = "ollama";
-export type SchemaVersion76 = 1;
-export type State12 = "available" | "unavailable";
-export type Version6 = string | null;
-export type Action1 = "install" | "keep_installed" | "no_recommendation";
-export type Description4 = string;
-export type EstimatedSizeBytes = number;
-export type Family1 = string;
-export type Installed = boolean;
-export type MemoryTier = "full_gpu" | "hybrid" | "system" | "unfit";
-/**
- * @minItems 1
- */
-export type Modalities1 = ["text" | "image" | "audio", ...("text" | "image" | "audio")[]];
-export type Name5 = string;
-export type ParameterSize1 = string;
-export type Reason9 = string;
-export type SourceUrl = string;
-export type SuitabilityScore = number;
-export type ThinkingSupport = boolean;
-export type ToolSupport1 = boolean;
-export type Alternatives1 = ModelCatalogCandidate[];
-export type CatalogCheckedAt = string;
-export type CatalogSha256 = string | null;
-export type CatalogState = "live" | "unavailable";
-export type CatalogUrl = string;
-export type InstallCommand = string | null;
-export type Installed1 = boolean;
-export type ProjectId63 = string;
-export type Reason10 = string;
-export type RecommendationId = string;
-export type RecommendedModelName = string | null;
-/**
- * @minItems 1
- */
-export type RequiredCapabilityIds1 = [string, ...string[]];
-export type SchemaVersion77 = 1;
-export type TaskId55 = string;
-/**
- * @minItems 1
- */
-export type AcceptedExtensions = [string, ...string[]];
+export type AppliesToVersions = [string, ...string[]];
+export type BenchmarkId1 = string;
 /**
  * @minItems 1
  */
 export type CapabilityIds6 = [string, ...string[]];
-export type Description5 = string;
-export type DomainId1 = string;
-/**
- * @minItems 1
- */
-export type GateIds = [string, ...string[]];
-export type SchemaVersion78 = 1;
-export type Title8 = string;
-/**
- * @minItems 1
- */
-export type ToolIds1 = [string, ...string[]];
-export type Version7 = string;
-/**
- * @minItems 1
- */
-export type AllowedProducerTypes = ["tool" | "model" | "human", ...("tool" | "model" | "human")[]];
-export type Claim1 = "technical" | "visual" | "subjective" | "fun";
-export type Description6 = string;
-export type Discipline = "ui" | "engineering" | "gameplay" | "level_design" | "art" | "audio" | "narrative";
-export type GateId2 = string;
-/**
- * @minItems 1
- */
-export type RequiredEvidenceClasses = [
-  "deterministic" | "measured" | "comparative" | "heuristic" | "human",
-  ...("deterministic" | "measured" | "comparative" | "heuristic" | "human")[]
-];
-export type RequiresIndependentVerification = boolean;
-export type RequiresRuntimeCapture = boolean;
-export type SchemaVersion79 = 1;
-export type Title9 = string;
-export type Version8 = string;
-export type CompletionState = "passed" | "blocked" | "human_rejected";
-export type Explanation = string;
-/**
- * @minItems 1
- */
-export type Gates = [QAGateStatus, ...QAGateStatus[]];
-export type EvidenceIds5 = string[];
-export type Explanation1 = string;
-export type LatestEvaluationId = string | null;
-export type Required = boolean;
-export type State13 = "missing" | "passed" | "failed" | "inconclusive" | "advisory" | "waived";
-export type WaiverId1 = string | null;
-export type GeneratedAt = string;
-export type PassedGateCount = number;
-export type ProjectId64 = string;
-export type ReportId = string;
-export type RequiredGateCount = number;
-export type SchemaVersion80 = 1;
-export type TaskId56 = string;
-export type WaivedGateCount = number;
-/**
- * @minItems 1
- */
-export type Capabilities2 = [string, ...string[]];
-export type HealthCheck = string;
-export type InputContract = string;
-export type InstallState = "missing" | "installed" | "unhealthy";
-export type Invocation = "cli" | "http" | "sdk" | "mcp";
-export type Location = "local" | "cloud";
-export type OutputContract1 = string;
-export type SchemaVersion81 = 1;
-export type ToolId2 = string;
-export type Version9 = string;
-export type AgentId7 = string;
-export type FailedCount1 = number;
-export type InconclusiveCount = number;
-export type Interpretation = "observed_correlation_not_causation";
-export type PassedCount1 = number;
-export type Subject = string;
-export type TaskCount1 = number;
-export type MethodPerformance = KnowledgePerformanceSummary[];
-export type Methods2 = KnowledgeMethod[];
-export type PackPerformance = KnowledgePerformanceSummary[];
-export type QualificationState = "expertise_available" | "missing_required_expertise";
-export type RecordedPackets = KnowledgePacket[];
-export type RequiredPackIds1 = string[];
-export type ResolvedPacks = ExpertisePackRef[];
-export type Profiles = AgentKnowledgeProfile[];
-export type Entries1 = AgentRegistryEntry[];
-export type AvailableCents = number;
-export type BudgetCents = number;
-export type Month1 = string;
-export type ReservedCents = number;
-export type SettledCents = number;
-export type TaskId57 = string;
-export type DecisionId3 = string;
-export type Rationale3 = string;
-export type RequestId5 = string;
-export type SelectedOption2 = string;
-export type NodeType = string;
-export type Path2 = string;
-export type Scene = string;
-export type ApprovedAssets = SourceRef[];
-export type EngineVersion = string;
-export type InspectedAt2 = string;
-export type MainScene = string;
-export type ProjectId65 = string;
-export type ProjectPath = string;
-export type TaskId58 = string;
-export type UiNodes = EngineNodeInspection[];
-export type Cursor = number;
-export type Events = (
-  | TaskEvent
-  | AgentEvent
-  | EvaluationEvent
-  | DecisionEvent
-  | ArtifactEvent
-  | WorkspaceBaselineEvent
-  | ExternalChangeEvent
-  | ProjectReconciledEvent
-  | SpendEvent
-  | ProviderEvent
-  | ProviderConfiguredEvent
-  | SpendApprovedEvent
-  | BudgetReservationEvent
-  | PaidInvocationEvent
-  | CommitEvent
-  | ProjectInitializedEvent
-  | TaskProposedEvent
-  | PolicyUpdatedEvent
-  | WorkerEvent
-  | GMEvent
-  | PlanEvent
-  | InboxEvent
-  | IntelligenceEvent
-  | EvidenceRecordedEvent
-  | EvaluationRecordedEvent
-  | RecruitmentEvent
-  | GateWaivedEvent
-  | ModelBenchmarkEvent
-  | ModelRoutingEvent
-  | ProductionDomainInspectionEvent
-  | OnboardingEvent
-  | ExperienceObservedEvent
-  | ExperienceLessonEvent
-  | WorldResearchEvent
-)[];
-export type HasMore = boolean;
-export type PackId2 = string;
-export type State14 = "missing" | "draft" | "trusted" | "unavailable";
-export type Version10 = string | null;
-export type GateId3 = string;
-export type Reason11 = string;
-export type RequestId6 = string;
-export type TaskId59 = string;
-export type Applicability1 = string;
-/**
- * @minItems 1
- */
-export type CapabilityIds7 = [string, ...string[]];
-export type Confidence8 = number;
-/**
- * @minItems 1
- */
-export type EvidenceDigests = [string, ...string[]];
-export type LessonId1 = string;
-/**
- * @minItems 1
- */
-export type Limitations1 = [string, ...string[]];
-export type ReviewedAt2 = string;
-export type ReviewerId1 = "human";
-export type SchemaVersion82 = 1;
-export type Scope2 = "global" | "domain" | "engine";
-export type ScopeConstraint = string | null;
-export type Statement6 = string;
-export type GateId4 = string;
-export type RequestId7 = string;
-export type Summary6 = string;
-export type SupportingEvidenceIds = string[];
-export type TaskId60 = string;
-export type Verdict = "approved" | "rejected" | "observation";
-export type RequestId8 = string;
-export type AuditionId1 = string;
-export type BaselineScore = number;
-export type BenchmarkId1 = string;
-export type CandidateScore = number;
-export type CandidateSha256 = string;
-export type Detail12 = string;
-export type EvidenceClass2 = "human" | "heuristic";
-export type RecordedAt1 = string;
-export type ReviewerId2 = "human" | "expertise-curator";
-export type SchemaVersion83 = 1;
-export type Auditions = PackAudition[];
-export type Baseline = ExpertiseBaselineStatus[];
-export type Candidates1 = ExpertisePack[];
-export type GlobalExperience1 = GlobalExperience[];
-export type Reason12 = string;
-export type RecordId = string;
-export type RecordedAt2 = string;
-export type ReviewerId3 = "human";
-export type SchemaVersion84 = 1;
-export type State15 = "active" | "deprecated" | "disputed" | "expired";
-export type Lifecycle1 = PackLifecycleRecord[];
-export type MaintenanceFlags = string[];
-export type Packs = ExpertisePack[];
-export type CandidateSha2561 = string;
-export type ContradictionsChecked = boolean;
-export type Decision2 = "approved" | "rejected";
-export type Detail13 = string;
-export type LicensingChecked = boolean;
-export type PrivacyChecked = boolean;
-export type ProvenanceChecked = boolean;
-export type ReviewedAt3 = string;
-export type ReviewerId4 = "human";
-export type SchemaVersion85 = 1;
-export type Reviews = PackReview[];
-export type BenchmarkRegressions = string[];
-export type BrokenSources = string[];
-export type ContradictionCandidates = string[];
-export type DeprecatedVersions = string[];
-export type RanAt = string;
-export type RebuiltFullTextIndex = boolean;
-export type RunId = string;
-export type StaleSources = string[];
-export type State16 = "passed" | "attention";
-export type Detail14 = string | null;
-export type Enabled = boolean;
-export type LastCompletedAt = string | null;
-export type LastStartedAt = string | null;
-export type State17 = "disabled" | "idle" | "waiting_for_idle" | "running" | "failed";
-export type Applicability2 = string;
-export type GeneralizationReviewed = true;
-export type LessonId2 = string;
-/**
- * @minItems 1
- */
-export type Limitations2 = [string, ...string[]];
-export type PrivacyChecked1 = true;
-export type Scope3 = "global" | "domain" | "engine";
-export type ScopeConstraint1 = string | null;
-export type Statement7 = string;
-export type Decision3 = "validated" | "rejected" | "expired" | "superseded";
-export type Detail15 = string;
-export type LessonId3 = string;
-export type ModelName2 = string | null;
-export type RequestId9 = string;
-export type TaskId61 = string;
-export type RequestId10 = string;
-export type TaskId62 = string;
-export type RequestId11 = string;
-export type TaskId63 = string;
-export type Urgency1 = "low" | "normal" | "high";
-export type Objective3 = string;
-export type RequestId12 = string;
-export type BaselineScore1 = number;
-export type BenchmarkId2 = string;
-export type CandidateScore1 = number;
-export type Detail16 = string;
-export type EvidenceText = string;
-export type BenchmarkId3 = string;
+export type Discriminates = string;
 /**
  * @minItems 1
  * @maxItems 20
  */
-export type ExpectedFindings =
+export type ExpectedSpecialistFindings =
   | [string]
   | [string, string]
   | [string, string, string]
@@ -1733,8 +1414,342 @@ export type ExpectedFindings =
       string,
       string
     ];
+export type ExpectedUncertainty = string[];
+export type PackId2 = string;
 export type Scenario = string;
+export type SchemaVersion75 = 1;
+export type ScoringNotes = string;
+export type CapturedAt2 = string;
+export type Cpu = string;
+export type DriverVersion = string | null;
+export type MemoryBytes = number | null;
+export type Name3 = string;
+export type Vendor = string;
+export type Graphics = GraphicsDevice[];
+export type LogicalCoreCount = number;
+export type MachineId = string;
+export type OperatingSystem = string;
+export type PhysicalCoreCount = number | null;
+export type RamBytes = number | null;
+export type SchemaVersion76 = 1;
+export type Detail11 = string;
+export type Endpoint = string;
+export type InspectedAt1 = string;
+export type ContextLimit = number | null;
+export type Digest1 = string;
+export type FitsMemory = boolean;
+/**
+ * @minItems 1
+ */
+export type Modalities = ["text" | "image" | "audio", ...("text" | "image" | "audio")[]];
+export type ModifiedAt = string;
+export type Name4 = string;
+export type ParameterSize = string | null;
+export type QuantizationLevel = string | null;
+export type SizeBytes = number;
+export type ToolSupport = boolean;
+export type Models = LocalModel[];
+export type RuntimeId = "ollama";
+export type SchemaVersion77 = 1;
+export type State12 = "available" | "unavailable";
+export type Version6 = string | null;
+export type Action1 = "install" | "keep_installed" | "no_recommendation";
+export type Description4 = string;
+export type EstimatedSizeBytes = number;
+export type Family1 = string;
+export type Installed = boolean;
+export type MemoryTier = "full_gpu" | "hybrid" | "system" | "unfit";
+/**
+ * @minItems 1
+ */
+export type Modalities1 = ["text" | "image" | "audio", ...("text" | "image" | "audio")[]];
+export type Name5 = string;
+export type ParameterSize1 = string;
+export type Reason9 = string;
+export type SourceUrl = string;
+export type SuitabilityScore = number;
+export type ThinkingSupport = boolean;
+export type ToolSupport1 = boolean;
+export type Alternatives1 = ModelCatalogCandidate[];
+export type CatalogCheckedAt = string;
+export type CatalogSha256 = string | null;
+export type CatalogState = "live" | "unavailable";
+export type CatalogUrl = string;
+export type InstallCommand = string | null;
+export type Installed1 = boolean;
+export type ProjectId63 = string;
+export type Reason10 = string;
+export type RecommendationId = string;
+export type RecommendedModelName = string | null;
+/**
+ * @minItems 1
+ */
+export type RequiredCapabilityIds1 = [string, ...string[]];
+export type SchemaVersion78 = 1;
+export type TaskId55 = string;
+/**
+ * @minItems 1
+ */
+export type AcceptedExtensions = [string, ...string[]];
+/**
+ * @minItems 1
+ */
+export type CapabilityIds7 = [string, ...string[]];
+export type Description5 = string;
+export type DomainId1 = string;
+/**
+ * @minItems 1
+ */
+export type GateIds = [string, ...string[]];
+export type SchemaVersion79 = 1;
+export type Title8 = string;
+/**
+ * @minItems 1
+ */
+export type ToolIds1 = [string, ...string[]];
+export type Version7 = string;
+/**
+ * @minItems 1
+ */
+export type AllowedProducerTypes = ["tool" | "model" | "human", ...("tool" | "model" | "human")[]];
+export type Claim1 = "technical" | "visual" | "subjective" | "fun";
+export type Description6 = string;
+export type Discipline = "ui" | "engineering" | "gameplay" | "level_design" | "art" | "audio" | "narrative";
+export type GateId2 = string;
+/**
+ * @minItems 1
+ */
+export type RequiredEvidenceClasses = [
+  "deterministic" | "measured" | "comparative" | "heuristic" | "human",
+  ...("deterministic" | "measured" | "comparative" | "heuristic" | "human")[]
+];
+export type RequiresIndependentVerification = boolean;
+export type RequiresRuntimeCapture = boolean;
+export type SchemaVersion80 = 1;
+export type Title9 = string;
+export type Version8 = string;
+export type CompletionState = "passed" | "blocked" | "human_rejected";
+export type Explanation = string;
+/**
+ * @minItems 1
+ */
+export type Gates = [QAGateStatus, ...QAGateStatus[]];
+export type EvidenceIds5 = string[];
+export type Explanation1 = string;
+export type LatestEvaluationId = string | null;
+export type Required = boolean;
+export type State13 = "missing" | "passed" | "failed" | "inconclusive" | "advisory" | "waived";
+export type WaiverId1 = string | null;
+export type GeneratedAt = string;
+export type PassedGateCount = number;
+export type ProjectId64 = string;
+export type ReportId = string;
+export type RequiredGateCount = number;
+export type SchemaVersion81 = 1;
+export type TaskId56 = string;
+export type WaivedGateCount = number;
+/**
+ * @minItems 1
+ */
+export type Capabilities2 = [string, ...string[]];
+export type HealthCheck = string;
+export type InputContract = string;
+export type InstallState = "missing" | "installed" | "unhealthy";
+export type Invocation = "cli" | "http" | "sdk" | "mcp";
+export type Location = "local" | "cloud";
+export type OutputContract1 = string;
+export type SchemaVersion82 = 1;
+export type ToolId2 = string;
+export type Version9 = string;
+export type AgentId7 = string;
+export type FailedCount1 = number;
+export type InconclusiveCount = number;
+export type Interpretation = "observed_correlation_not_causation";
+export type PassedCount1 = number;
+export type Subject = string;
+export type TaskCount1 = number;
+export type MethodPerformance = KnowledgePerformanceSummary[];
+export type Methods2 = KnowledgeMethod[];
+export type PackPerformance = KnowledgePerformanceSummary[];
+export type QualificationState = "expertise_available" | "missing_required_expertise";
+export type RecordedPackets = KnowledgePacket[];
+export type RequiredPackIds1 = string[];
+export type ResolvedPacks = ExpertisePackRef[];
+export type Profiles = AgentKnowledgeProfile[];
+export type Entries1 = AgentRegistryEntry[];
+export type AvailableCents = number;
+export type BudgetCents = number;
+export type Month1 = string;
+export type ReservedCents = number;
+export type SettledCents = number;
+export type TaskId57 = string;
+export type DecisionId3 = string;
+export type Rationale3 = string;
+export type RequestId5 = string;
+export type SelectedOption2 = string;
+export type NodeType = string;
+export type Path2 = string;
+export type Scene = string;
+export type ApprovedAssets = SourceRef[];
+export type EngineVersion = string;
+export type InspectedAt2 = string;
+export type MainScene = string;
+export type ProjectId65 = string;
+export type ProjectPath = string;
+export type TaskId58 = string;
+export type UiNodes = EngineNodeInspection[];
+export type Cursor = number;
+export type Events = (
+  | TaskEvent
+  | AgentEvent
+  | EvaluationEvent
+  | DecisionEvent
+  | ArtifactEvent
+  | WorkspaceBaselineEvent
+  | ExternalChangeEvent
+  | ProjectReconciledEvent
+  | SpendEvent
+  | ProviderEvent
+  | ProviderConfiguredEvent
+  | SpendApprovedEvent
+  | BudgetReservationEvent
+  | PaidInvocationEvent
+  | CommitEvent
+  | ProjectInitializedEvent
+  | TaskProposedEvent
+  | PolicyUpdatedEvent
+  | WorkerEvent
+  | GMEvent
+  | PlanEvent
+  | InboxEvent
+  | IntelligenceEvent
+  | EvidenceRecordedEvent
+  | EvaluationRecordedEvent
+  | RecruitmentEvent
+  | GateWaivedEvent
+  | ModelBenchmarkEvent
+  | ModelRoutingEvent
+  | ProductionDomainInspectionEvent
+  | OnboardingEvent
+  | ExperienceObservedEvent
+  | ExperienceLessonEvent
+  | WorldResearchEvent
+)[];
+export type HasMore = boolean;
 export type PackId3 = string;
+export type State14 = "missing" | "draft" | "trusted" | "unavailable";
+export type Version10 = string | null;
+export type GateId3 = string;
+export type Reason11 = string;
+export type RequestId6 = string;
+export type TaskId59 = string;
+export type Applicability1 = string;
+/**
+ * @minItems 1
+ */
+export type CapabilityIds8 = [string, ...string[]];
+export type Confidence8 = number;
+/**
+ * @minItems 1
+ */
+export type EvidenceDigests = [string, ...string[]];
+export type LessonId1 = string;
+/**
+ * @minItems 1
+ */
+export type Limitations1 = [string, ...string[]];
+export type ReviewedAt2 = string;
+export type ReviewerId1 = "human";
+export type SchemaVersion83 = 1;
+export type Scope2 = "global" | "domain" | "engine";
+export type ScopeConstraint = string | null;
+export type Statement6 = string;
+export type GateId4 = string;
+export type RequestId7 = string;
+export type Summary6 = string;
+export type SupportingEvidenceIds = string[];
+export type TaskId60 = string;
+export type Verdict = "approved" | "rejected" | "observation";
+export type RequestId8 = string;
+export type AuditionId1 = string;
+export type BaselineScore = number;
+export type BenchmarkId2 = string;
+export type CandidateScore = number;
+export type CandidateSha256 = string;
+export type Detail12 = string;
+export type EvidenceClass2 = "human" | "heuristic";
+export type RecordedAt1 = string;
+export type ReviewerId2 = "human" | "expertise-curator";
+export type SchemaVersion84 = 1;
+export type Auditions = PackAudition[];
+export type Baseline = ExpertiseBaselineStatus[];
+export type Candidates1 = ExpertisePack[];
+export type GlobalExperience1 = GlobalExperience[];
+export type Reason12 = string;
+export type RecordId = string;
+export type RecordedAt2 = string;
+export type ReviewerId3 = "human";
+export type SchemaVersion85 = 1;
+export type State15 = "active" | "deprecated" | "disputed" | "expired";
+export type Lifecycle1 = PackLifecycleRecord[];
+export type MaintenanceFlags = string[];
+export type Packs = ExpertisePack[];
+export type CandidateSha2561 = string;
+export type ContradictionsChecked = boolean;
+export type Decision2 = "approved" | "rejected";
+export type Detail13 = string;
+export type LicensingChecked = boolean;
+export type PrivacyChecked = boolean;
+export type ProvenanceChecked = boolean;
+export type ReviewedAt3 = string;
+export type ReviewerId4 = "human";
+export type SchemaVersion86 = 1;
+export type Reviews = PackReview[];
+export type BenchmarkRegressions = string[];
+export type BrokenSources = string[];
+export type ContradictionCandidates = string[];
+export type DeprecatedVersions = string[];
+export type RanAt = string;
+export type RebuiltFullTextIndex = boolean;
+export type RunId = string;
+export type StaleSources = string[];
+export type State16 = "passed" | "attention";
+export type Detail14 = string | null;
+export type Enabled = boolean;
+export type LastCompletedAt = string | null;
+export type LastStartedAt = string | null;
+export type State17 = "disabled" | "idle" | "waiting_for_idle" | "running" | "failed";
+export type Applicability2 = string;
+export type GeneralizationReviewed = true;
+export type LessonId2 = string;
+/**
+ * @minItems 1
+ */
+export type Limitations2 = [string, ...string[]];
+export type PrivacyChecked1 = true;
+export type Scope3 = "global" | "domain" | "engine";
+export type ScopeConstraint1 = string | null;
+export type Statement7 = string;
+export type Decision3 = "validated" | "rejected" | "expired" | "superseded";
+export type Detail15 = string;
+export type LessonId3 = string;
+export type ModelName2 = string | null;
+export type RequestId9 = string;
+export type TaskId61 = string;
+export type RequestId10 = string;
+export type TaskId62 = string;
+export type RequestId11 = string;
+export type TaskId63 = string;
+export type Urgency1 = "low" | "normal" | "high";
+export type Objective3 = string;
+export type RequestId12 = string;
+export type BaselineScore1 = number;
+export type BenchmarkId3 = string;
+export type CandidateScore1 = number;
+export type Detail16 = string;
+export type EvidenceText = string;
+export type BenchmarkId4 = string;
+export type PackId4 = string;
 export type TaskId64 = string;
 export type Version11 = string;
 export type Reason13 = string;
@@ -1814,7 +1829,7 @@ export type GitDiffSummary1 = string | null;
 export type Paths3 = [string, ...string[]];
 export type ProjectId69 = string;
 export type ReconciledAt = string | null;
-export type SchemaVersion86 = 1;
+export type SchemaVersion87 = 1;
 export type State19 = "unresolved" | "reconciled";
 export type TaskId66 = string | null;
 export type Reconciliations = ReconciliationRecord[];
@@ -1945,6 +1960,7 @@ export interface ProtocolDocument {
   event?: Event;
   evidence?: Evidence | null;
   experience_observation?: ExperienceObservation | null;
+  expertise_benchmark_scenario?: ExpertiseBenchmarkScenario | null;
   expertise_pack?: ExpertisePack | null;
   gate_waiver?: GateWaiver | null;
   hardware_inventory?: LocalHardwareInventory | null;
@@ -3768,6 +3784,23 @@ export interface WorldResearch {
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
+ * via the `definition` "ExpertiseBenchmarkScenario".
+ */
+export interface ExpertiseBenchmarkScenario {
+  acceptable_source_ids?: AcceptableSourceIds;
+  applies_to_versions: AppliesToVersions;
+  benchmark_id: BenchmarkId1;
+  capability_ids: CapabilityIds6;
+  discriminates: Discriminates;
+  expected_specialist_findings: ExpectedSpecialistFindings;
+  expected_uncertainty?: ExpectedUncertainty;
+  pack_id: PackId2;
+  scenario: Scenario;
+  schema_version?: SchemaVersion75;
+  scoring_notes: ScoringNotes;
+}
+/**
+ * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "LocalHardwareInventory".
  */
 export interface LocalHardwareInventory {
@@ -3779,7 +3812,7 @@ export interface LocalHardwareInventory {
   operating_system: OperatingSystem;
   physical_core_count?: PhysicalCoreCount;
   ram_bytes?: RamBytes;
-  schema_version?: SchemaVersion75;
+  schema_version?: SchemaVersion76;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -3801,7 +3834,7 @@ export interface LocalModelInventory {
   inspected_at: InspectedAt1;
   models?: Models;
   runtime_id?: RuntimeId;
-  schema_version?: SchemaVersion76;
+  schema_version?: SchemaVersion77;
   state: State12;
   version?: Version6;
 }
@@ -3840,7 +3873,7 @@ export interface LocalModelRecommendation {
   recommendation_id: RecommendationId;
   recommended_model_name?: RecommendedModelName;
   required_capability_ids: RequiredCapabilityIds1;
-  schema_version?: SchemaVersion77;
+  schema_version?: SchemaVersion78;
   task_id: TaskId55;
 }
 /**
@@ -3868,11 +3901,11 @@ export interface ModelCatalogCandidate {
  */
 export interface ProductionDomainDefinition {
   accepted_extensions: AcceptedExtensions;
-  capability_ids: CapabilityIds6;
+  capability_ids: CapabilityIds7;
   description: Description5;
   domain_id: DomainId1;
   gate_ids: GateIds;
-  schema_version?: SchemaVersion78;
+  schema_version?: SchemaVersion79;
   title: Title8;
   tool_ids: ToolIds1;
   version: Version7;
@@ -3890,7 +3923,7 @@ export interface QAGateDefinition {
   required_evidence_classes: RequiredEvidenceClasses;
   requires_independent_verification?: RequiresIndependentVerification;
   requires_runtime_capture?: RequiresRuntimeCapture;
-  schema_version?: SchemaVersion79;
+  schema_version?: SchemaVersion80;
   title: Title9;
   version: Version8;
 }
@@ -3907,7 +3940,7 @@ export interface QAReport {
   project_id: ProjectId64;
   report_id: ReportId;
   required_gate_count: RequiredGateCount;
-  schema_version?: SchemaVersion80;
+  schema_version?: SchemaVersion81;
   task_id: TaskId56;
   waived_gate_count: WaivedGateCount;
 }
@@ -3938,7 +3971,7 @@ export interface ToolDefinition {
   location: Location;
   output_contract: OutputContract1;
   permissions: Permissions;
-  schema_version?: SchemaVersion81;
+  schema_version?: SchemaVersion82;
   tool_id: ToolId2;
   version: Version9;
 }
@@ -4049,7 +4082,7 @@ export interface EventPage {
  * via the `definition` "ExpertiseBaselineStatus".
  */
 export interface ExpertiseBaselineStatus {
-  pack_id: PackId2;
+  pack_id: PackId3;
   state: State14;
   version?: Version10;
 }
@@ -4069,14 +4102,14 @@ export interface GateWaiverCommand {
  */
 export interface GlobalExperience {
   applicability: Applicability1;
-  capability_ids: CapabilityIds7;
+  capability_ids: CapabilityIds8;
   confidence: Confidence8;
   evidence_digests: EvidenceDigests;
   lesson_id: LessonId1;
   limitations: Limitations1;
   reviewed_at: ReviewedAt2;
   reviewer_id?: ReviewerId1;
-  schema_version?: SchemaVersion82;
+  schema_version?: SchemaVersion83;
   scope: Scope2;
   scope_constraint?: ScopeConstraint;
   statement: Statement6;
@@ -4121,7 +4154,7 @@ export interface KnowledgeCatalog {
 export interface PackAudition {
   audition_id: AuditionId1;
   baseline_score: BaselineScore;
-  benchmark_id: BenchmarkId1;
+  benchmark_id: BenchmarkId2;
   candidate_score: CandidateScore;
   candidate_sha256: CandidateSha256;
   detail: Detail12;
@@ -4130,7 +4163,7 @@ export interface PackAudition {
   pack: ExpertisePackRef;
   recorded_at: RecordedAt1;
   reviewer_id?: ReviewerId2;
-  schema_version?: SchemaVersion83;
+  schema_version?: SchemaVersion84;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4142,7 +4175,7 @@ export interface PackLifecycleRecord {
   record_id: RecordId;
   recorded_at: RecordedAt2;
   reviewer_id?: ReviewerId3;
-  schema_version?: SchemaVersion84;
+  schema_version?: SchemaVersion85;
   state: State15;
 }
 /**
@@ -4160,7 +4193,7 @@ export interface PackReview {
   provenance_checked: ProvenanceChecked;
   reviewed_at: ReviewedAt3;
   reviewer_id?: ReviewerId4;
-  schema_version?: SchemaVersion85;
+  schema_version?: SchemaVersion86;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
@@ -4260,7 +4293,7 @@ export interface ObjectiveCommand {
  */
 export interface PackAuditionCommand {
   baseline_score: BaselineScore1;
-  benchmark_id: BenchmarkId2;
+  benchmark_id: BenchmarkId3;
   candidate_score: CandidateScore1;
   detail: Detail16;
   evidence_text: EvidenceText;
@@ -4271,17 +4304,15 @@ export interface PackAuditionCommand {
  * via the `definition` "PackAutomatedAuditionCommand".
  */
 export interface PackAutomatedAuditionCommand {
-  benchmark_id: BenchmarkId3;
-  expected_findings: ExpectedFindings;
+  benchmark_id: BenchmarkId4;
   pack: ExpertisePackRef;
-  scenario: Scenario;
 }
 /**
  * This interface was referenced by `ProtocolDocument`'s JSON-Schema
  * via the `definition` "PackBuildCommand".
  */
 export interface PackBuildCommand {
-  pack_id: PackId3;
+  pack_id: PackId4;
   task_id: TaskId64;
   version: Version11;
 }
@@ -4455,7 +4486,7 @@ export interface ReconciliationRecord {
   paths: Paths3;
   project_id: ProjectId69;
   reconciled_at?: ReconciledAt;
-  schema_version?: SchemaVersion86;
+  schema_version?: SchemaVersion87;
   state?: State19;
   task_id?: TaskId66;
 }

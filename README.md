@@ -3,7 +3,7 @@
 A local-first production orchestration foundation for turning human game direction
 into accountable tasks, specialist work and inspectable evidence.
 
-**Status: Phases 7–11 complete.** The persistent project GM turns objectives into
+**Status: Phases 7–12 implemented.** The persistent project GM turns objectives into
 typed multidisciplinary plans, while Project Intelligence indexes repository
 files, design documents, decisions, and asset references into bounded,
 provenance-aware worker context. The first Godot adapter now inspects nested Godot
@@ -41,6 +41,10 @@ freshness, retrieved context and observed method/pack outcomes. Worker results e
 an expandable evidence-separated “Why?” view. Missing required expertise moves a
 planned task or onboarding assessment to `BLOCKED_KNOWLEDGE`; it does not masquerade
 as a generic failure. Project Intelligence is never copied into the global expertise store.
+Phase 12 packages the same local architecture as a Windows x64 desktop application.
+Electron owns the Studio and daemon process lifecycle but no production decisions;
+the authenticated daemon remains authoritative. A separate headless daemon bundle
+preserves CLI and service workflows without Electron.
 
 ## Architecture
 
@@ -156,18 +160,20 @@ task in `REVIEW` and records Git context plus content-addressed surviving files.
 
 ## Development
 
-| Command                  | Purpose                                                                        |
-| ------------------------ | ------------------------------------------------------------------------------ |
-| `pnpm check`             | Format/lint/schema drift/types/tests/build plus Studio↔daemon Playwright smoke |
-| `pnpm test`              | Cross-language contracts and Python constitution/boundary tests                |
-| `pnpm protocol:generate` | Regenerate JSON Schema and TypeScript after model changes                      |
-| `pnpm format`            | Format owned files; preserves the original PRD                                 |
-| `pnpm build`             | Build all TS packages, Studio, Python wheel and source distribution            |
-| `pnpm dev`               | Run the configured daemon and Studio together                                  |
-| `gameagent status PATH`  | Replay canonical history and print the current project snapshot                |
-| `gameagent rebuild PATH` | Recreate the SQLite projection from canonical events                           |
-| `gameagent task …`       | Start, inspect, block, or report completion of meaningful direct work          |
-| `gameagent reconcile`    | Attribute detected work that happened without prior registration               |
+| Command                    | Purpose                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------ |
+| `pnpm check`               | Format/lint/schema drift/types/tests/build plus Studio↔daemon Playwright smoke |
+| `pnpm test`                | Cross-language contracts and Python constitution/boundary tests                |
+| `pnpm protocol:generate`   | Regenerate JSON Schema and TypeScript after model changes                      |
+| `pnpm format`              | Format owned files; preserves the original PRD                                 |
+| `pnpm build`               | Build all TS packages, Studio, Python wheel and source distribution            |
+| `pnpm dev`                 | Run the configured daemon and Studio together                                  |
+| `pnpm desktop:package:dir` | Build an unpacked Windows x64 desktop application                              |
+| `pnpm desktop:package`     | Build the Windows x64 NSIS installer and headless daemon bundle                |
+| `gameagent status PATH`    | Replay canonical history and print the current project snapshot                |
+| `gameagent rebuild PATH`   | Recreate the SQLite projection from canonical events                           |
+| `gameagent task …`         | Start, inspect, block, or report completion of meaningful direct work          |
+| `gameagent reconcile`      | Attribute detected work that happened without prior registration               |
 
 ## Design records
 
@@ -206,7 +212,7 @@ task in `REVIEW` and records Git context plus content-addressed surviving files.
 | 8      | Complete: local model expert and explainable model router           |
 | 9      | Complete: verified-cap provider budget and execution gateway        |
 | 11     | Complete: gameplay, level design, art, audio and narrative slices   |
-| 12     | Desktop packaging                                                   |
+| 12     | Implemented: Windows desktop shell, installer and headless daemon   |
 
 The eventual public portfolio can host the Studio presentation layer separately.
 The local daemon owns filesystem access and durable project state, so it is not a

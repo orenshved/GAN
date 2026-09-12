@@ -1,0 +1,28 @@
+schema_version: 1
+benchmark_id: engineering-method-contract
+pack_id: game-engineering-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [ui_engineering, gameplay_engineering, tooling]
+scenario: >-
+  A synthetic project generates a typed client from a canonical schema. A
+  contributor proposes: "Add a 'difficulty' field to the settings payload. I will
+  edit the generated TypeScript type and the settings screen directly so the UI
+  work is unblocked today; we can update the schema later." The reviewer is asked
+  whether this plan is safe to start. The repo has a schema-drift check in CI.
+discriminates: >-
+  A generic reviewer may approve the fast path or object only on style. A
+  specialist applies a bounded change plan: identifies the canonical contract as
+  the authoritative edit point, predicts the drift-check failure, and sequences
+  schema-first then regenerate then verify.
+expected_specialist_findings:
+  - The canonical schema owns cross-boundary meaning; editing generated output first inverts the dependency and will diverge from the source of truth.
+  - The described plan is predicted to fail the existing schema-drift check in CI.
+  - "Correct order: change the schema contract, regenerate the client, then implement and verify the smallest UI slice against the new type."
+  - Deferring the schema change leaves the generated artifact and the contract in conflict in the interim.
+expected_uncertainty:
+  - Whether other consumers of the settings payload also need updates — depends on the dependency graph, not stated.
+acceptable_source_ids: [gan-engineering-invariants, gan-evidence-contract]
+scoring_notes: >-
+  Pass only if the enriched run rejects editing generated output ahead of the
+  contract and gives the schema-first sequence. Approving the plan, or objecting
+  only on naming or tidiness, is a fail.

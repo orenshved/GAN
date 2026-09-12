@@ -1,0 +1,29 @@
+schema_version: 1
+benchmark_id: engineering-boundary-contract
+pack_id: game-engineering-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [dependency_analysis, tooling, build_engineering]
+scenario: >-
+  A synthetic codebase declares that its core domain layer must not import
+  adapters, UI, or provider SDKs. A pull request adds, inside a core module, a
+  direct import of an HTTP provider SDK to "cache the model list so onboarding is
+  faster," plus a call that writes that list to a file under the core package.
+  The reviewer is asked to assess whether this belongs in core and how to verify
+  the boundary afterwards.
+discriminates: >-
+  A generic reviewer may accept it as a pragmatic optimization. A specialist runs
+  a dependency-boundary review: names the ownership rule, identifies both the
+  import and the write as boundary violations, relocates them to an adapter, and
+  requires a repeatable boundary test.
+expected_specialist_findings:
+  - The provider SDK import in core violates the stated dependency direction; infrastructure concerns must not become domain truth.
+  - Writing the model list from within core is a second boundary crossing (core owning a side effect that belongs to an adapter or cache layer).
+  - "Correct placement: an adapter or dedicated cache module outside core, with core depending only on an interface it defines."
+  - The corrected boundary needs an automated import-direction test so the regression cannot silently return.
+expected_uncertainty:
+  - Whether an existing adapter already covers model listing — not stated; check before adding a new one.
+acceptable_source_ids: [gan-engineering-invariants]
+scoring_notes: >-
+  Pass only if the enriched run flags both the import and the write, moves them
+  out of core, and calls for a boundary test. Accepting the change for
+  performance, or catching only the import, is a fail.

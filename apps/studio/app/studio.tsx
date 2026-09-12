@@ -50,22 +50,69 @@ const AgentNetwork = dynamic(
     ssr: false,
   },
 );
-const views = [
-  "Director Desk",
-  "Production",
-  "Disciplines",
-  "QA",
-  "Needs Oren",
-  "Workers",
-  "Network",
-  "Project Intelligence",
-  "Agents",
-  "Models",
-  "Providers",
-  "Activity",
-  "Settings",
-] as const;
-type View = (typeof views)[number];
+type View =
+  | "Director Desk"
+  | "Production"
+  | "Disciplines"
+  | "QA"
+  | "Needs Oren"
+  | "Workers"
+  | "Network"
+  | "Project Intelligence"
+  | "Agents"
+  | "Models"
+  | "Providers"
+  | "Activity"
+  | "Settings";
+const navigationGroups: ReadonlyArray<{
+  label: string;
+  items: ReadonlyArray<{ view: View; label?: string }>;
+}> = [
+  { label: "Overview", items: [{ view: "Director Desk" }] },
+  {
+    label: "Production",
+    items: [
+      { view: "Production" },
+      { view: "Needs Oren" },
+      { view: "QA" },
+      { view: "Network", label: "Dependencies" },
+    ],
+  },
+  {
+    label: "Team",
+    items: [
+      { view: "Workers", label: "Agent work" },
+      { view: "Agents" },
+      { view: "Models" },
+    ],
+  },
+  {
+    label: "Knowledge",
+    items: [
+      { view: "Project Intelligence", label: "Project understanding" },
+      { view: "Disciplines", label: "Discipline checks" },
+    ],
+  },
+  {
+    label: "System",
+    items: [{ view: "Providers" }, { view: "Activity" }, { view: "Settings" }],
+  },
+];
+const viewLabels: Record<View, string> = {
+  "Director Desk": "Director Desk",
+  Production: "Production",
+  Disciplines: "Discipline checks",
+  QA: "QA",
+  "Needs Oren": "Needs Oren",
+  Workers: "Agent work",
+  Network: "Dependencies",
+  "Project Intelligence": "Project understanding",
+  Agents: "Agents",
+  Models: "Models",
+  Providers: "Providers",
+  Activity: "Activity",
+  Settings: "Settings",
+};
 type Connection = { websocketUrl: string };
 type HistoryEvent = EventPage["events"][number];
 
@@ -96,14 +143,16 @@ async function request<T>(
     headers: { "Content-Type": "application/json" },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     signal: AbortSignal.timeout(
-      path === "/runtime-capture" ||
-        path === "/project-import" ||
-        path === "/recruit" ||
-        path === "/model-benchmark" ||
-        path === "/model-recommend" ||
-        path === "/production-domain-run"
-        ? 120000
-        : 10000,
+      path === "/pack-audition-run"
+        ? 360000
+        : path === "/runtime-capture" ||
+            path === "/project-import" ||
+            path === "/recruit" ||
+            path === "/model-benchmark" ||
+            path === "/model-recommend" ||
+            path === "/production-domain-run"
+          ? 120000
+          : 10000,
     ),
   });
   const value = await response.json();
@@ -277,7 +326,10 @@ function Desk(connection: Connection) {
   const selectTask = (id: string) => setSelection({ type: "task", id });
   const events = history.data?.events ?? [];
   return (
-    <div className="workspace">
+    <div className={`workspace ${selection ? "inspector-open" : ""}`}>
+      <a className="skip-link" href="#studio-main">
+        Skip to project content
+      </a>
       <aside className="sidebar" aria-label="Main navigation">
         <div className="brand">
           <Image
@@ -304,18 +356,20 @@ function Desk(connection: Connection) {
               : ""}
           </span>
         </button>
-        <nav>
-          {views.map((item, index) => (
-            <button
-              key={item}
-              aria-current={view === item ? "page" : undefined}
-              onClick={() => setView(item)}
-            >
-              <span className="nav-index">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              {item}
-            </button>
+        <nav aria-label="Studio sections">
+          {navigationGroups.map((group) => (
+            <section className="nav-group" key={group.label}>
+              <span className="nav-group-label">{group.label}</span>
+              {group.items.map((item) => (
+                <button
+                  key={item.view}
+                  aria-current={view === item.view ? "page" : undefined}
+                  onClick={() => setView(item.view)}
+                >
+                  {item.label ?? item.view}
+                </button>
+              ))}
+            </section>
           ))}
         </nav>
         <div className="sidebar-footer">
@@ -331,23 +385,23 @@ function Desk(connection: Connection) {
         <header className="topbar">
           <span>
             {snapshot?.project.project.name ?? "Game Agent Network"}{" "}
-            <span className="separator">/</span> {view}
+            <span className="separator">/</span> {viewLabels[view]}
           </span>
         </header>
-        <main className="desk">
+        <main className="desk" id="studio-main" tabIndex={-1}>
           <div className="page-heading">
             <div>
               <p className="eyebrow">PRODUCTION WORKSPACE</p>
-              <h1>{view}</h1>
+              <h1>{viewLabels[view]}</h1>
               <p className="muted">
                 {view === "Director Desk"
                   ? "Intent, work, and the history behind every decision."
                   : descriptions[view]}
               </p>
             </div>
-            {snapshot && view !== "Settings" && (
+            {snapshot && view !== "Settings" && view !== "Director Desk" && (
               <button className="primary" onClick={() => setProposing(true)}>
-                + Propose task
+                Add task manually
               </button>
             )}
           </div>
@@ -390,83 +444,26 @@ function Desk(connection: Connection) {
                   connection={connection}
                 />
               )}
-              {view === "Director Desk" && (
-                <GMPanel
-                  key={activeProjectId}
-                  snapshot={snapshot}
-                  connection={connection}
-                  select={selectTask}
-                />
-              )}
               {view === "Workers" && (
                 <Workers snapshot={snapshot} connection={connection} />
               )}
               {view === "Director Desk" && (
                 <>
-                  <div className="metrics">
-                    <Metric
-                      label="Task proposals"
-                      value={
-                        tasks.filter((task) => task.state === "PROPOSED").length
-                      }
-                    />
-                    <Metric
-                      label="Blocked tasks"
-                      value={
-                        tasks.filter((task) => task.state === "BLOCKED").length
-                      }
-                    />
-                    <Metric label="Recorded events" value={snapshot.cursor} />
-                    <div>
-                      <span className="eyebrow">CURRENT MILESTONE</span>
-                      <strong className="milestone">
-                        {snapshot.project.production.current_milestone ??
-                          "Not set"}
-                      </strong>
-                    </div>
-                  </div>
-                  <section className="panel">
-                    <div className="section-heading">
-                      <h2>Production queue</h2>
-                      <button
-                        className="text-button"
-                        onClick={() => setView("Production")}
-                      >
-                        View all →
-                      </button>
-                    </div>
-                    <TaskTable tasks={tasks} select={selectTask} />
-                  </section>
-                  <div className="two-column">
-                    <section className="panel">
-                      <h2>Recent activity</h2>
-                      <EventList
-                        events={events.slice(-5).reverse()}
-                        select={(event) =>
-                          setSelection({ type: "event", id: event.event_id })
-                        }
-                      />
-                    </section>
-                    <section className="panel">
-                      <h2>Project direction</h2>
-                      <p>{snapshot.project.project.description}</p>
-                      <dl className="details">
-                        <dt>Stage</dt>
-                        <dd>{snapshot.project.production.stage}</dd>
-                        <dt>Visual direction</dt>
-                        <dd>{snapshot.project.visual.direction}</dd>
-                        <dt>Authority</dt>
-                        <dd>
-                          {
-                            policyLabels[
-                              snapshot.policy.authority ??
-                                "recommend_and_proceed"
-                            ]
-                          }
-                        </dd>
-                      </dl>
-                    </section>
-                  </div>
+                  <DirectorOverview
+                    snapshot={snapshot}
+                    events={events}
+                    selectTask={selectTask}
+                    selectEvent={(event) =>
+                      setSelection({ type: "event", id: event.event_id })
+                    }
+                    navigate={setView}
+                  />
+                  <GMPanel
+                    key={activeProjectId}
+                    snapshot={snapshot}
+                    connection={connection}
+                    select={selectTask}
+                  />
                 </>
               )}
               {view === "Production" && (
@@ -585,7 +582,7 @@ function Desk(connection: Connection) {
                   <div className="section-heading">
                     <h2>Project history</h2>
                     <span className="muted">
-                      Canonical events · oldest first
+                      Meaningful changes · newest first
                     </span>
                   </div>
                   {history.isError && (
@@ -594,7 +591,7 @@ function Desk(connection: Connection) {
                     </p>
                   )}
                   <EventList
-                    events={events}
+                    events={events.slice().reverse()}
                     select={(event) =>
                       setSelection({ type: "event", id: event.event_id })
                     }
@@ -639,71 +636,79 @@ function Desk(connection: Connection) {
           )}
         </main>
       </div>
-      <aside className="inspector" aria-label="Inspector">
-        <div className="section-heading">
-          <h2>Inspector</h2>
-          {selection && (
+      {selection && (
+        <aside className="inspector" aria-label="Inspector">
+          <div className="section-heading">
+            <h2>Details</h2>
             <button
-              aria-label="Close inspector selection"
+              aria-label="Close details"
               onClick={() => setSelection(null)}
             >
               ×
             </button>
-          )}
-        </div>
-        <div className="inspector-body">
-          {selectedTask ? (
-            <>
-              <p className="eyebrow">TASK CONTRACT</p>
-              <h3>{selectedTask.title}</h3>
-              <Status state={selectedTask.state ?? "PROPOSED"} />
-              <p>{selectedTask.objective}</p>
-              <dl className="details">
-                <dt>Capabilities</dt>
-                <dd>{selectedTask.required_capabilities.join(", ")}</dd>
-                <dt>Deliverables</dt>
-                <dd>{selectedTask.deliverables.join("; ")}</dd>
-                <dt>Required gates</dt>
-                <dd>{selectedTask.required_evaluations.join(", ")}</dd>
-                <dt>Dependencies</dt>
-                <dd>
-                  {selectedTask.dependency_ids.length
-                    ? selectedTask.dependency_ids
-                        .map(
-                          (id) =>
-                            tasks.find((task) => task.task_id === id)?.title ??
-                            id,
-                        )
-                        .join(", ")
-                    : "None"}
-                </dd>
-              </dl>
-              <details>
-                <summary>Full contract</summary>
-                <pre>{JSON.stringify(selectedTask, null, 2)}</pre>
-              </details>
-            </>
-          ) : selectedEvent ? (
-            <>
-              <p className="eyebrow">PROJECT EVENT</p>
-              <h3>{selectedEvent.event_type}</h3>
-              <p>
-                {selectedEvent.actor_id} · {selectedEvent.timestamp}
-              </p>
-              <pre>{JSON.stringify(selectedEvent, null, 2)}</pre>
-            </>
-          ) : (
-            <div className="inspector-empty">
-              <span className="inspection-mark">↗</span>
-              <h3>Follow the evidence.</h3>
-              <p>
-                Select a task or event to inspect its context, requirements, and
-                underlying record.
-              </p>
-            </div>
-          )}
-        </div>
-      </aside>
+          </div>
+          <div className="inspector-body">
+            {selectedTask ? (
+              <>
+                <p className="eyebrow">PRODUCTION TASK</p>
+                <h3>{selectedTask.title}</h3>
+                <Status state={selectedTask.state ?? "PROPOSED"} />
+                <p>{selectedTask.objective}</p>
+                <dl className="details">
+                  <dt>Specialist skills needed</dt>
+                  <dd>
+                    {selectedTask.required_capabilities
+                      .map(humanizeIdentifier)
+                      .join(", ")}
+                  </dd>
+                  <dt>Expected result</dt>
+                  <dd>{selectedTask.deliverables.join("; ")}</dd>
+                  <dt>Quality checks</dt>
+                  <dd>
+                    {selectedTask.required_evaluations
+                      .map(humanizeIdentifier)
+                      .join(", ")}
+                  </dd>
+                  <dt>Waiting on</dt>
+                  <dd>
+                    {selectedTask.dependency_ids.length
+                      ? selectedTask.dependency_ids
+                          .map(
+                            (id) =>
+                              tasks.find((task) => task.task_id === id)
+                                ?.title ?? id,
+                          )
+                          .join(", ")
+                      : "None"}
+                  </dd>
+                </dl>
+                <details className="technical-details">
+                  <summary>Technical task record</summary>
+                  <pre>{JSON.stringify(selectedTask, null, 2)}</pre>
+                </details>
+              </>
+            ) : selectedEvent ? (
+              <>
+                <p className="eyebrow">PROJECT CHANGE</p>
+                <h3>{eventLabel(selectedEvent.event_type)}</h3>
+                <p>
+                  {actorLabel(selectedEvent.actor_id)} ·{" "}
+                  {new Date(selectedEvent.timestamp).toLocaleString()}
+                </p>
+                <details className="technical-details">
+                  <summary>Technical event record</summary>
+                  <pre>{JSON.stringify(selectedEvent, null, 2)}</pre>
+                </details>
+              </>
+            ) : (
+              <div className="inspector-empty">
+                <h3>This item is no longer in the current view.</h3>
+                <p>Close Details and select another task or project change.</p>
+              </div>
+            )}
+          </div>
+        </aside>
+      )}
       {proposing && snapshot && (
         <ProposalDialog
           connection={connection}
@@ -747,6 +752,221 @@ function Desk(connection: Connection) {
   );
 }
 
+const taskStatePriority: Record<string, number> = {
+  NEEDS_HUMAN: 0,
+  BLOCKED: 1,
+  BLOCKED_KNOWLEDGE: 1,
+  RUNNING: 2,
+  READY: 3,
+  QUEUED: 4,
+  REVIEW: 5,
+  PROPOSED: 6,
+};
+
+function DirectorOverview({
+  snapshot,
+  events,
+  selectTask,
+  selectEvent,
+  navigate,
+}: {
+  snapshot: ProjectSnapshot;
+  events: HistoryEvent[];
+  selectTask: (id: string) => void;
+  selectEvent: (event: HistoryEvent) => void;
+  navigate: (view: View) => void;
+}) {
+  const pendingDecisions = (snapshot.decisions ?? []).filter(
+    (decision) => !decision.selected_option,
+  );
+  const blockedTasks = snapshot.tasks.filter((task) =>
+    ["BLOCKED", "BLOCKED_KNOWLEDGE", "NEEDS_HUMAN"].includes(task.state ?? ""),
+  );
+  const currentTasks = snapshot.tasks
+    .filter((task) => (task.state ?? "PROPOSED") in taskStatePriority)
+    .slice()
+    .sort(
+      (left, right) =>
+        (taskStatePriority[left.state ?? "PROPOSED"] ?? 99) -
+        (taskStatePriority[right.state ?? "PROPOSED"] ?? 99),
+    )
+    .slice(0, 6);
+  const workingCount = snapshot.tasks.filter((task) =>
+    ["RUNNING", "READY", "QUEUED"].includes(task.state ?? ""),
+  ).length;
+  const reviewCount = snapshot.tasks.filter(
+    (task) => task.state === "REVIEW",
+  ).length;
+  const attentionCount =
+    pendingDecisions.length +
+    blockedTasks.length +
+    (snapshot.requires_reconciliation ? 1 : 0);
+  const firstDecision = pendingDecisions.at(0);
+  const firstBlockedTask = blockedTasks.at(0);
+  const nextMessage = firstDecision
+    ? `Production is waiting for your decision on ${firstDecision.title}.`
+    : firstBlockedTask
+      ? `${firstBlockedTask.title} needs help before work can continue.`
+      : workingCount
+        ? `${workingCount} ${workingCount === 1 ? "task is" : "tasks are"} moving through production now.`
+        : reviewCount
+          ? `${reviewCount} ${reviewCount === 1 ? "result is" : "results are"} ready for review.`
+          : "Give GAN a production outcome when you are ready to begin the next piece of work.";
+
+  return (
+    <div className="director-overview">
+      <section className="director-pulse" aria-labelledby="project-pulse-title">
+        <div>
+          <p className="eyebrow">PROJECT PULSE</p>
+          <h2 id="project-pulse-title">
+            {attentionCount
+              ? `${attentionCount} ${attentionCount === 1 ? "item needs" : "items need"} your attention`
+              : workingCount
+                ? `${workingCount} ${workingCount === 1 ? "task is" : "tasks are"} in progress`
+                : reviewCount
+                  ? `${reviewCount} ${reviewCount === 1 ? "result is" : "results are"} moving through review`
+                  : "Production is clear to continue"}
+          </h2>
+          <p>{nextMessage}</p>
+        </div>
+        <div className="pulse-metrics" aria-label="Current project state">
+          <Metric
+            label="Milestone"
+            value={
+              snapshot.project.production.current_milestone ?? "Not set yet"
+            }
+          />
+          <Metric label="In progress" value={workingCount} />
+          <Metric label="Awaiting review" value={reviewCount} />
+          <Metric label="Your decisions" value={pendingDecisions.length} />
+        </div>
+      </section>
+
+      <div className="director-grid">
+        <section
+          className="attention-section"
+          aria-labelledby="attention-title"
+        >
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">FIRST LOOK</p>
+              <h2 id="attention-title">Needs your attention</h2>
+            </div>
+            {pendingDecisions.length > 0 && (
+              <button
+                className="text-button"
+                onClick={() => navigate("Needs Oren")}
+              >
+                Review decisions →
+              </button>
+            )}
+          </div>
+          {attentionCount === 0 ? (
+            <div className="calm-state">
+              <strong>Nothing is waiting on you.</strong>
+              <span>GAN can continue within the current project policy.</span>
+            </div>
+          ) : (
+            <ul className="attention-list">
+              {snapshot.requires_reconciliation && (
+                <li data-tone="warning">
+                  <div>
+                    <strong>Unregistered project changes</strong>
+                    <span>
+                      Explain the external work so production history stays
+                      trustworthy.
+                    </span>
+                  </div>
+                  <span>Action required</span>
+                </li>
+              )}
+              {pendingDecisions.slice(0, 3).map((decision) => (
+                <li key={decision.decision_id}>
+                  <button onClick={() => navigate("Needs Oren")}>
+                    <strong>{decision.title}</strong>
+                    <span>{decision.reason}</span>
+                  </button>
+                  <span>Your decision</span>
+                </li>
+              ))}
+              {blockedTasks.slice(0, 3).map((task) => (
+                <li key={task.task_id} data-tone="warning">
+                  <button onClick={() => selectTask(task.task_id)}>
+                    <strong>{task.title}</strong>
+                    <span>{task.objective}</span>
+                  </button>
+                  <Status state={task.state ?? "BLOCKED"} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section
+          className="direction-summary"
+          aria-labelledby="direction-title"
+        >
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">PROJECT DIRECTION</p>
+              <h2 id="direction-title">What the team is building toward</h2>
+            </div>
+          </div>
+          <p>{snapshot.project.project.description}</p>
+          <dl className="details compact-details">
+            <dt>Stage</dt>
+            <dd>{humanizeIdentifier(snapshot.project.production.stage)}</dd>
+            <dt>Visual direction</dt>
+            <dd>
+              {snapshot.project.visual.direction || "Not established yet"}
+            </dd>
+            <dt>How GAN may proceed</dt>
+            <dd>
+              {
+                policyLabels[
+                  snapshot.policy.authority ?? "recommend_and_proceed"
+                ]
+              }
+            </dd>
+          </dl>
+          <button className="text-button" onClick={() => navigate("Settings")}>
+            Change collaboration settings →
+          </button>
+        </section>
+      </div>
+
+      <section className="current-work" aria-labelledby="current-work-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">RIGHT NOW</p>
+            <h2 id="current-work-title">Current work</h2>
+          </div>
+          <button
+            className="text-button"
+            onClick={() => navigate("Production")}
+          >
+            Open production →
+          </button>
+        </div>
+        <TaskTable tasks={currentTasks} select={selectTask} compact />
+      </section>
+
+      <section className="change-briefing" aria-labelledby="changes-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">SINCE THE LATEST ACTIVITY</p>
+            <h2 id="changes-title">What changed</h2>
+          </div>
+          <button className="text-button" onClick={() => navigate("Activity")}>
+            Open full history →
+          </button>
+        </div>
+        <EventList events={events.slice(-5).reverse()} select={selectEvent} />
+      </section>
+    </div>
+  );
+}
+
 function GMPanel({
   snapshot,
   connection,
@@ -785,15 +1005,19 @@ function GMPanel({
   return (
     <section className="panel gm-panel">
       <div className="section-heading">
-        <h2>Direct the project</h2>
-        <span className="eyebrow">PROJECT GM</span>
+        <div>
+          <p className="eyebrow">GIVE GAN DIRECTION</p>
+          <h2>What outcome do you want next?</h2>
+        </div>
+        <span className="muted">GAN plans the production work</span>
       </div>
       <p>
-        Describe the outcome. The GM will map the work, find specialists and
-        surface choices that need your judgment.
+        Describe the result in your own words. GAN will inspect the project,
+        plan the work, choose specialists, and bring back only the choices that
+        need your judgment.
       </p>
       <form onSubmit={(event) => void submit(event)}>
-        <label htmlFor="gm-objective">Production objective</label>
+        <label htmlFor="gm-objective">Desired outcome</label>
         <textarea
           id="gm-objective"
           required
@@ -813,7 +1037,7 @@ function GMPanel({
             !objective.trim()
           }
         >
-          {busy ? "Starting…" : "Create production plan"}
+          {busy ? "Planning the work…" : "Plan and start work"}
         </button>
       </form>
       {error && (
@@ -826,52 +1050,60 @@ function GMPanel({
           <Status state={snapshot.gm.state} /> {snapshot.gm.detail}
         </p>
       )}
-      {(snapshot.plans ?? [])
-        .slice()
-        .reverse()
-        .map((plan) => (
-          <article key={plan.plan_id} className="plan-card">
-            <h3>{plan.objective}</h3>
-            <p>{plan.summary}</p>
-            <p className="muted">
-              {plan.tasks.length} tasks ·{" "}
-              {snapshot.decisions?.filter(
-                (d) => d.plan_id === plan.plan_id && !d.selected_option,
-              ).length ?? 0}{" "}
-              decisions pending
-            </p>
-            <ul>
-              {plan.tasks.map((task) => {
-                const assignment = plan.assignments.find(
-                  (a) => a.task_id === task.task_id,
-                );
-                const state =
-                  snapshot.tasks.find((t) => t.task_id === task.task_id)
-                    ?.state ?? task.state;
-                return (
-                  <li key={task.task_id}>
-                    <button
-                      className="text-button"
-                      onClick={() => select(task.task_id)}
-                    >
-                      {task.title}
-                    </button>{" "}
-                    <Status state={state ?? "QUEUED"} />
-                    <p>
-                      {assignment?.agent
-                        ? `${assignment.agent.name} · v${assignment.agent.version}`
-                        : `Capability gap: ${assignment?.missing_capabilities.join(", ")}`}
-                    </p>
-                  </li>
-                );
-              })}
-            </ul>
-            <details>
-              <summary>Plan record</summary>
-              <pre>{JSON.stringify(plan, null, 2)}</pre>
-            </details>
-          </article>
-        ))}
+      {!!snapshot.plans?.length && (
+        <details className="plan-history">
+          <summary>
+            Previous production plans
+            <span>{snapshot.plans.length}</span>
+          </summary>
+          {snapshot.plans
+            .slice()
+            .reverse()
+            .map((plan) => (
+              <article key={plan.plan_id} className="plan-card">
+                <h3>{plan.objective}</h3>
+                <p>{plan.summary}</p>
+                <p className="muted">
+                  {plan.tasks.length} tasks ·{" "}
+                  {snapshot.decisions?.filter(
+                    (d) => d.plan_id === plan.plan_id && !d.selected_option,
+                  ).length ?? 0}{" "}
+                  decisions pending
+                </p>
+                <ul>
+                  {plan.tasks.map((task) => {
+                    const assignment = plan.assignments.find(
+                      (a) => a.task_id === task.task_id,
+                    );
+                    const state =
+                      snapshot.tasks.find((t) => t.task_id === task.task_id)
+                        ?.state ?? task.state;
+                    return (
+                      <li key={task.task_id}>
+                        <button
+                          className="text-button"
+                          onClick={() => select(task.task_id)}
+                        >
+                          {task.title}
+                        </button>{" "}
+                        <Status state={state ?? "QUEUED"} />
+                        <p>
+                          {assignment?.agent
+                            ? `${assignment.agent.name} · v${assignment.agent.version}`
+                            : `Capability gap: ${assignment?.missing_capabilities.join(", ")}`}
+                        </p>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <details className="technical-details">
+                  <summary>Technical plan record</summary>
+                  <pre>{JSON.stringify(plan, null, 2)}</pre>
+                </details>
+              </article>
+            ))}
+        </details>
+      )}
     </section>
   );
 }
@@ -883,12 +1115,35 @@ function DecisionInbox({
   snapshot: ProjectSnapshot;
   connection: Connection;
 }) {
+  const pending = (snapshot.decisions ?? []).filter(
+    (decision) => !decision.selected_option,
+  );
+  const resolved = (snapshot.decisions ?? []).filter(
+    (decision) => decision.selected_option,
+  );
   return (
-    <section className="panel">
-      <h2>Needs Oren</h2>
-      <p>Your choices become durable project decisions.</p>
-      {!snapshot.decisions?.length && <p>No decisions need your attention.</p>}
-      {(snapshot.decisions ?? []).map((decision) => (
+    <section className="decision-inbox">
+      <div className="decision-intro">
+        <p className="eyebrow">YOUR JUDGMENT</p>
+        <h2>
+          {pending.length
+            ? `${pending.length} ${pending.length === 1 ? "decision needs" : "decisions need"} you`
+            : "Nothing is waiting on you"}
+        </h2>
+        <p>
+          GAN handles production complexity. This inbox contains only choices
+          that affect intent, taste, scope, money, or another boundary you own.
+        </p>
+      </div>
+      {!pending.length && (
+        <div className="calm-state">
+          <strong>Production can continue within your current policy.</strong>
+          <span>
+            New decisions will appear here with a recommendation and impact.
+          </span>
+        </div>
+      )}
+      {pending.map((decision) => (
         <DecisionCard
           key={decision.decision_id}
           decision={decision}
@@ -896,6 +1151,21 @@ function DecisionInbox({
           connection={connection}
         />
       ))}
+      {!!resolved.length && (
+        <details className="resolved-decisions">
+          <summary>
+            Previous decisions <span>{resolved.length}</span>
+          </summary>
+          {resolved.map((decision) => (
+            <DecisionCard
+              key={decision.decision_id}
+              decision={decision}
+              snapshot={snapshot}
+              connection={connection}
+            />
+          ))}
+        </details>
+      )}
     </section>
   );
 }
@@ -939,15 +1209,26 @@ function DecisionCard({
     }
   }
   return (
-    <article className="plan-card">
+    <article className="decision-card">
+      <p className="eyebrow">DECISION</p>
       <h3>{decision.title}</h3>
-      <p>{decision.reason}</p>
-      <p>
-        <strong>GM recommendation:</strong> {decision.recommendation}
-      </p>
-      <p>{decision.consequences.join(" · ")}</p>
-      <p className="muted">
-        Affects:{" "}
+      <p className="decision-reason">{decision.reason}</p>
+      <div className="recommendation">
+        <span className="eyebrow">GAN RECOMMENDS</span>
+        <strong>{decision.recommendation}</strong>
+      </div>
+      {!!decision.consequences.length && (
+        <div className="decision-impact">
+          <strong>What this changes</strong>
+          <ul>
+            {decision.consequences.map((consequence) => (
+              <li key={consequence}>{consequence}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <p className="muted decision-affects">
+        Work affected:{" "}
         {decision.task_ids
           .map(
             (id) => snapshot.tasks.find((t) => t.task_id === id)?.title ?? id,
@@ -962,7 +1243,7 @@ function DecisionCard({
       ) : (
         <form onSubmit={(event) => void resolve(event)}>
           <label>
-            Choose an option
+            Your decision
             <select
               required
               value={option}
@@ -978,7 +1259,7 @@ function DecisionCard({
             </select>
           </label>
           <label>
-            Rationale or discussion notes
+            Why this is the right call
             <textarea
               required
               value={rationale}
@@ -988,8 +1269,11 @@ function DecisionCard({
               }}
             />
           </label>
-          <button disabled={busy || !option || !rationale.trim()}>
-            Record decision
+          <button
+            className="primary"
+            disabled={busy || !option || !rationale.trim()}
+          >
+            Confirm decision
           </button>
         </form>
       )}
@@ -1003,24 +1287,24 @@ function DecisionCard({
 }
 
 const descriptions: Record<Exclude<View, "Director Desk">, string> = {
-  "Needs Oren": "Resolve the human choices holding production work.",
-  Workers: "Run and resume read-only Codex analysis for a proposed task.",
+  "Needs Oren": "Make the choices that only you can make.",
+  Workers: "See what specialist agents are doing and what they returned.",
   Production:
-    "Live agent topology, engine runs, runtime evidence, and task contracts.",
+    "See who is working, what is blocked, and how current work connects.",
   Disciplines:
-    "Gameplay, level design, art, audio, and narrative audits with evidence-backed history.",
-  QA: "Required gates, evidence provenance, human judgment, and explicit waivers.",
-  Network: "The actual dependencies between project tasks.",
+    "Check gameplay, level design, art, audio, and narrative for important risks.",
+  QA: "Understand whether work is ready and what the evidence actually proves.",
+  Network: "See which pieces of work depend on one another.",
   "Project Intelligence":
-    "Indexed facts, decisions, references, and task-scoped context.",
+    "See what GAN understands about this project and where it is uncertain.",
   Agents:
-    "Capability gaps, sandbox auditions, probation, and the global production roster.",
-  Models:
-    "Local hardware, installed models, representative benchmarks, and explainable routing.",
+    "Manage the specialist team, missing skills, auditions, and hiring history.",
+  Models: "See which AI is best suited to the work and why GAN recommends it.",
   Providers:
-    "Verified provider caps, secure credentials, monthly reservations, and paid invocation history.",
-  Activity: "Every recorded action, attributable and inspectable.",
-  Settings: "Define how the project may proceed.",
+    "Control paid AI services and keep external spending inside hard limits.",
+  Activity:
+    "Review what changed, who did it, and inspect the underlying record.",
+  Settings: "Choose how GAN works with you and what it may do.",
 };
 const policyLabels: Record<NonNullable<Policy["authority"]>, string> = {
   ask_first: "Ask first",
@@ -1035,33 +1319,64 @@ function Metric({ label, value }: { label: string; value: string | number }) {
     </div>
   );
 }
+function humanizeIdentifier(value: string) {
+  return value
+    .replaceAll("_", " ")
+    .replaceAll(".", " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+const statusLabels: Record<string, string> = {
+  PROPOSED: "Not started",
+  QUEUED: "Queued",
+  READY: "Ready to start",
+  RUNNING: "In progress",
+  BLOCKED: "Blocked",
+  BLOCKED_KNOWLEDGE: "Missing information",
+  NEEDS_HUMAN: "Needs your decision",
+  REVIEW: "Awaiting review",
+  PASSED: "Passed",
+  FAILED: "Needs revision",
+  INTEGRATE: "Ready to integrate",
+  COMPLETE: "Complete",
+  CANCELLED: "Cancelled",
+  SUPERSEDED: "Superseded",
+};
+function statusLabel(state: string) {
+  return statusLabels[state.toLocaleUpperCase()] ?? humanizeIdentifier(state);
+}
 function Status({ state }: { state: string }) {
-  return <span className="status">{state.replaceAll("_", " ")}</span>;
+  return (
+    <span className={`status status-${state.toLocaleLowerCase()}`}>
+      {statusLabel(state)}
+    </span>
+  );
 }
 function TaskTable({
   tasks,
   select,
+  compact = false,
 }: {
   tasks: TaskContract[];
   select: (id: string) => void;
+  compact?: boolean;
 }) {
   if (!tasks.length)
     return (
       <div className="empty">
         <h3>A clear brief is the first step.</h3>
         <p>
-          Propose a task with an objective and deliverable. It will be recorded
-          in your project history.
+          Tell GAN the outcome you want. It will plan the production work and
+          bring back anything that needs your judgment.
         </p>
       </div>
     );
   return (
-    <div className="table-scroll">
+    <div className={`table-scroll ${compact ? "compact-task-table" : ""}`}>
       <table>
         <thead>
           <tr>
             <th>Task / desired outcome</th>
-            <th>Capability</th>
+            {!compact && <th>Specialist skill</th>}
             <th>Status</th>
           </tr>
         </thead>
@@ -1077,7 +1392,13 @@ function TaskTable({
                 </button>
                 <span className="task-objective">{task.objective}</span>
               </td>
-              <td>{task.required_capabilities.join(", ")}</td>
+              {!compact && (
+                <td>
+                  {task.required_capabilities
+                    .map(humanizeIdentifier)
+                    .join(", ")}
+                </td>
+              )}
               <td>
                 <Status state={task.state ?? "PROPOSED"} />
               </td>
@@ -1099,15 +1420,17 @@ function EventList({
     <ol className="event-list">
       {events.map((event) => (
         <li key={event.event_id}>
-          <span className="event-sequence">
-            {String(event.sequence).padStart(3, "0")}
-          </span>
           <button onClick={() => select(event)}>
-            <strong>{event.event_type.replaceAll(".", " / ")}</strong>
+            <strong>{eventLabel(event.event_type)}</strong>
             <span>
-              {event.actor_id} ·{" "}
+              {actorLabel(event.actor_id)} ·{" "}
               <time dateTime={event.timestamp}>
-                {new Date(event.timestamp).toLocaleTimeString()}
+                {new Date(event.timestamp).toLocaleString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}
               </time>
             </span>
           </button>
@@ -1115,6 +1438,41 @@ function EventList({
       ))}
     </ol>
   );
+}
+
+const eventLabels: Record<string, string> = {
+  "task.proposed": "New work was proposed",
+  "task.created": "A task was created",
+  "task.started": "Work started",
+  "task.blocked": "Work became blocked",
+  "task.completed": "Work moved to review",
+  "task.cancelled": "Work was cancelled",
+  "decision.requested": "Your decision was requested",
+  "decision.resolved": "A decision was recorded",
+  "agent.assigned": "A specialist joined the work",
+  "agent.hired": "A new specialist was hired",
+  "agent.failed": "A specialist needs help",
+  "evaluation.started": "Quality review started",
+  "evaluation.failed": "Quality review found an issue",
+  "evaluation.passed": "Quality review passed",
+  "project.initialized": "Project connected to GAN",
+  "project.baseline_recorded": "Project changes were recorded",
+  "project.intelligence_indexed": "Project understanding was refreshed",
+  "project.external_change_detected": "Unregistered changes were found",
+  "project.reconciled": "External changes were reconciled",
+};
+function eventLabel(eventType: string) {
+  return eventLabels[eventType] ?? humanizeIdentifier(eventType);
+}
+function actorLabel(actorId: string) {
+  const labels: Record<string, string> = {
+    "local-director": "You",
+    "workspace-watcher": "GAN",
+    "project-indexer": "Project Intelligence",
+    "qa-fabric": "QA",
+    recruiter: "Recruiter",
+  };
+  return labels[actorId] ?? humanizeIdentifier(actorId);
 }
 function ReconciliationPanel({
   records,
@@ -1723,11 +2081,6 @@ function KnowledgePanel({ connection }: { connection: Connection }) {
             ? {
                 pack,
                 benchmark_id: String(data.get("benchmark_id")),
-                scenario: String(data.get("scenario")),
-                expected_findings: String(data.get("expected_findings"))
-                  .split("\n")
-                  .map((line) => line.trim())
-                  .filter(Boolean),
               }
             : kind === "lifecycle"
               ? {
@@ -1930,6 +2283,27 @@ function KnowledgePanel({ connection }: { connection: Connection }) {
             item.pack.pack_id === pack.pack_id &&
             item.pack.version === pack.version,
         );
+        const packAuditions = (catalog.data?.auditions ?? [])
+          .filter(
+            (item) =>
+              item.pack.pack_id === pack.pack_id &&
+              item.pack.version === pack.version,
+          )
+          .sort((left, right) =>
+            left.recorded_at.localeCompare(right.recorded_at),
+          );
+        const latestByBenchmark = new Map(
+          packAuditions.map((item) => [item.benchmark_id, item]),
+        );
+        const latestAuditions = pack.evaluation_ids
+          .map((benchmarkId) => latestByBenchmark.get(benchmarkId))
+          .filter((item) => item !== undefined);
+        const latestAuditionIds = new Set(
+          latestAuditions.map((item) => item.audition_id),
+        );
+        const supersededAuditions = packAuditions.filter(
+          (item) => !latestAuditionIds.has(item.audition_id),
+        );
         return (
           <details key={`candidate-${pack.pack_id}@${pack.version}`}>
             <summary>
@@ -1938,19 +2312,53 @@ function KnowledgePanel({ connection }: { connection: Connection }) {
             </summary>
             <p>{pack.description}</p>
             <p>Benchmarks: {pack.evaluation_ids.join(", ")}</p>
-            {(catalog.data?.auditions ?? [])
-              .filter(
-                (item) =>
-                  item.pack.pack_id === pack.pack_id &&
-                  item.pack.version === pack.version,
-              )
-              .map((item) => (
-                <p key={item.audition_id}>
-                  {item.benchmark_id}: baseline {item.baseline_score}, candidate{" "}
-                  {item.candidate_score}. {item.evidence_class} evidence.{" "}
-                  {item.detail} Evidence digest: {item.evidence.sha256}
+            <h3>Latest qualification evidence</h3>
+            {latestAuditions.length ? (
+              latestAuditions.map((item) => {
+                const passes =
+                  item.candidate_score >= 0.8 &&
+                  item.candidate_score >= item.baseline_score;
+                return (
+                  <details key={item.audition_id}>
+                    <summary>
+                      {item.benchmark_id} · baseline {item.baseline_score} ·
+                      candidate {item.candidate_score} ·{" "}
+                      {passes ? "Pass" : "Needs work"}
+                    </summary>
+                    <p>
+                      {item.evidence_class} evidence. {item.detail}
+                    </p>
+                    <p>Evidence digest: {item.evidence.sha256}</p>
+                  </details>
+                );
+              })
+            ) : (
+              <p>No audition evidence recorded yet.</p>
+            )}
+            {supersededAuditions.length > 0 && (
+              <details>
+                <summary>
+                  Earlier audition attempts ({supersededAuditions.length})
+                </summary>
+                <p className="muted">
+                  Preserved for audit history. Qualification uses the latest
+                  receipt for each benchmark.
                 </p>
-              ))}
+                {supersededAuditions.map((item) => (
+                  <details key={item.audition_id}>
+                    <summary>
+                      {item.benchmark_id} · baseline {item.baseline_score} ·
+                      candidate {item.candidate_score} ·{" "}
+                      {new Date(item.recorded_at).toLocaleString()}
+                    </summary>
+                    <p>
+                      {item.evidence_class} evidence. {item.detail}
+                    </p>
+                    <p>Evidence digest: {item.evidence.sha256}</p>
+                  </details>
+                ))}
+              </details>
+            )}
             {review ? (
               <p>{review.detail}</p>
             ) : (
@@ -1960,10 +2368,11 @@ function KnowledgePanel({ connection }: { connection: Connection }) {
                   <input type="hidden" name="version" value={pack.version} />
                   <h3>Run comparative audition</h3>
                   <p>
-                    Runs a synthetic scenario with and without this draft, then
-                    requests a separate model evaluation. Uses your signed-in
-                    model account. Results are heuristic; publication still
-                    requires independent human review.
+                    Loads the selected repository benchmark, runs it with and
+                    without this draft, then requests a separate model
+                    evaluation. Uses your signed-in model account. Results are
+                    heuristic; publication still requires independent human
+                    review.
                   </p>
                   <label>
                     Benchmark
@@ -1972,19 +2381,6 @@ function KnowledgePanel({ connection }: { connection: Connection }) {
                         <option key={id}>{id}</option>
                       ))}
                     </select>
-                  </label>
-                  <label>
-                    Synthetic scenario (no private project information)
-                    <textarea
-                      name="scenario"
-                      minLength={10}
-                      maxLength={8000}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Expected findings (one per line, up to 20)
-                    <textarea name="expected_findings" required />
                   </label>
                   <button disabled={busy || !pack.evaluation_ids.length}>
                     {busy
@@ -2376,6 +2772,16 @@ function ProjectIntelligencePanel({
     },
     {},
   );
+  const knowledgeCounts = intelligence?.knowledge.reduce<
+    Record<string, number>
+  >((total, entry) => {
+    total[entry.kind] = (total[entry.kind] ?? 0) + 1;
+    return total;
+  }, {});
+  const highlightedKnowledge =
+    intelligence?.knowledge
+      .filter((entry) => !entry.statement.includes(' begins with "'))
+      .slice(0, 6) ?? [];
 
   async function refresh() {
     setBusy(true);
@@ -2472,8 +2878,8 @@ function ProjectIntelligencePanel({
     }
   }
 
-  return (
-    <div className="intelligence-view">
+  const advancedTools = (
+    <div className="advanced-tools-body">
       <KnowledgePanel connection={connection} />
       <section className="panel">
         <h2>Expertise Pack Builder</h2>
@@ -2572,22 +2978,28 @@ function ProjectIntelligencePanel({
           </details>
         ))}
       </section>
+    </div>
+  );
+
+  return (
+    <div className="intelligence-view">
       {snapshot.onboarding ? (
-        <section className="panel">
+        <section className="project-understanding-panel">
           <ProjectUnderstanding
             projectName={snapshot.project.project.name}
             onboarding={snapshot.onboarding}
           />
         </section>
       ) : null}
-      <section className="panel">
+      <section className="panel repository-panel">
         <div className="section-heading">
           <div>
-            <h2>Repository index</h2>
+            <p className="eyebrow">PROJECT UNDERSTANDING</p>
+            <h2>What GAN knows about this project</h2>
             <span className="muted">
               {intelligence
-                ? `Indexed ${new Date(intelligence.indexed_at).toLocaleString()}`
-                : "No project index recorded yet"}
+                ? `Last refreshed ${new Date(intelligence.indexed_at).toLocaleString()}`
+                : "GAN has not inspected this project yet"}
             </span>
           </div>
           <button
@@ -2615,31 +3027,48 @@ function ProjectIntelligencePanel({
               <Metric label="Assets" value={counts?.asset ?? 0} />
               <Metric label="Knowledge" value={intelligence.knowledge.length} />
             </div>
-            <div className="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Indexed resource</th>
-                    <th>Kind</th>
-                    <th>Size</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {intelligence.resources.slice(0, 40).map((resource) => (
-                    <tr key={resource.path}>
-                      <td className="mono">{resource.path}</td>
-                      <td>{resource.kind}</td>
-                      <td>{resource.size.toLocaleString()} bytes</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="understanding-status">
+              <strong>
+                GAN has {intelligence.knowledge.length} sourced understanding
+                records to use when planning work.
+              </strong>
+              <span>
+                Facts, inferences, decisions, and references remain distinct so
+                uncertainty is visible.
+              </span>
             </div>
-            {intelligence.resources.length > 40 && (
-              <p className="muted">
-                Showing 40 of {intelligence.resources.length} indexed resources.
-              </p>
-            )}
+            <details className="resource-browser">
+              <summary>
+                Browse indexed project files
+                <span>{intelligence.resources.length}</span>
+              </summary>
+              <div className="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Project file</th>
+                      <th>Kind</th>
+                      <th>Size</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {intelligence.resources.slice(0, 40).map((resource) => (
+                      <tr key={resource.path}>
+                        <td className="mono">{resource.path}</td>
+                        <td>{humanizeIdentifier(resource.kind)}</td>
+                        <td>{resource.size.toLocaleString()} bytes</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {intelligence.resources.length > 40 && (
+                <p className="muted">
+                  Showing 40 of {intelligence.resources.length} indexed project
+                  files.
+                </p>
+              )}
+            </details>
           </>
         )}
       </section>
@@ -2647,9 +3076,27 @@ function ProjectIntelligencePanel({
       {intelligence && (
         <div className="two-column intelligence-columns">
           <section className="panel">
-            <h2>Knowledge with provenance</h2>
+            <h2>What GAN believes it knows</h2>
+            <p className="muted">
+              Confidence and source remain visible; an inference is never
+              silently presented as a fact.
+            </p>
+            <div className="knowledge-summary" aria-label="Understanding types">
+              <Metric
+                label="Sourced facts"
+                value={knowledgeCounts?.source_fact ?? 0}
+              />
+              <Metric
+                label="Inferences"
+                value={knowledgeCounts?.inferred_fact ?? 0}
+              />
+              <Metric
+                label="Decisions"
+                value={knowledgeCounts?.user_decision ?? 0}
+              />
+            </div>
             <ul className="knowledge-list">
-              {intelligence.knowledge.slice(0, 20).map((entry) => (
+              {highlightedKnowledge.map((entry) => (
                 <li key={entry.knowledge_id}>
                   <div>
                     <Status state={entry.kind} />
@@ -2662,9 +3109,29 @@ function ProjectIntelligencePanel({
                 </li>
               ))}
             </ul>
+            <details className="knowledge-records">
+              <summary>
+                Browse all understanding records
+                <span>{intelligence.knowledge.length}</span>
+              </summary>
+              <ul className="knowledge-list">
+                {intelligence.knowledge.map((entry) => (
+                  <li key={entry.knowledge_id}>
+                    <div>
+                      <Status state={entry.kind} />
+                      <span className="mono">
+                        {Math.round(entry.confidence * 100)}% confidence
+                      </span>
+                    </div>
+                    <strong>{entry.statement}</strong>
+                    <span>{entry.source.uri}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
           </section>
           <section className="panel">
-            <h2>Targeted context assembly</h2>
+            <h2>What a specialist will receive</h2>
             <p className="muted">
               Preview the bounded package a worker receives instead of the full
               repository history.
@@ -2714,6 +3181,18 @@ function ProjectIntelligencePanel({
           </section>
         </div>
       )}
+      <details className="advanced-tools">
+        <summary>
+          <span>
+            <strong>Specialist knowledge tools</strong>
+            <small>
+              Expertise packs, learning, research, and technical maintenance
+            </small>
+          </span>
+          <span>Advanced</span>
+        </summary>
+        {advancedTools}
+      </details>
     </div>
   );
 }
@@ -5051,71 +5530,164 @@ function Settings({
     }
   }
   return (
-    <section className="panel settings">
-      <h2>Project policy</h2>
+    <section className="settings">
       <form onSubmit={(event) => void submit(event)}>
-        <label>
-          GM authority
-          <select
-            value={authority}
-            onChange={(event) =>
-              setAuthority(event.target.value as Policy["authority"])
-            }
-          >
-            {Object.entries(policyLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          GM proactivity
-          <select
-            value={proactivity}
-            onChange={(event) =>
-              setProactivity(event.target.value as Policy["proactivity"])
-            }
-          >
-            <option value="reactive">Reactive</option>
-            <option value="balanced">Balanced</option>
-            <option value="active">Active</option>
-          </select>
-        </label>
-        <p className="muted">
-          Authority controls execution permission. Proactivity controls which
-          findings are surfaced. Mandatory human decisions still apply.
-        </p>
-        <dl className="details">
-          <dt>Monthly external budget</dt>
-          <dd>
-            $
-            {(
-              (snapshot.policy.monthly_external_budget_cents ?? 2500) / 100
-            ).toFixed(2)}
-          </dd>
-          <dt>Approval threshold</dt>
-          <dd>
-            $
-            {((snapshot.policy.approval_threshold_cents ?? 100) / 100).toFixed(
-              2,
-            )}{" "}
-            per action
-          </dd>
-          <dt>Provider hard caps</dt>
-          <dd>Required · cannot be disabled</dd>
-          <dt>Work attribution</dt>
-          <dd>Registration or reconciliation required</dd>
-        </dl>
+        <section className="settings-section">
+          <div className="settings-heading">
+            <p className="eyebrow">HOW GAN WORKS WITH ME</p>
+            <h2>Collaboration</h2>
+            <p>
+              Authority controls what GAN may carry out. Proactivity controls
+              which useful problems it brings to you.
+            </p>
+          </div>
+          <fieldset>
+            <legend>Decision authority</legend>
+            <div className="choice-grid">
+              {(
+                [
+                  [
+                    "ask_first",
+                    "Ask first",
+                    "Recommend work, then wait for my approval.",
+                  ],
+                  [
+                    "recommend_and_proceed",
+                    "Recommend and proceed",
+                    "Explain the plan and begin unless my judgment is required.",
+                  ],
+                  [
+                    "autonomous_within_policy",
+                    "Autonomous within policy",
+                    "Handle routine production decisions inside my safeguards.",
+                  ],
+                ] as const
+              ).map(([value, label, detail]) => (
+                <label key={value} className="choice-card">
+                  <input
+                    type="radio"
+                    name="authority"
+                    value={value}
+                    checked={authority === value}
+                    onChange={() => setAuthority(value)}
+                  />
+                  <span>
+                    <strong>{label}</strong>
+                    <small>{detail}</small>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>How proactive should GAN be?</legend>
+            <div className="choice-grid">
+              {(
+                [
+                  ["reactive", "Reactive", "Only work on outcomes I request."],
+                  [
+                    "balanced",
+                    "Balanced",
+                    "Surface important adjacent problems without creating noise.",
+                  ],
+                  [
+                    "active",
+                    "Active",
+                    "Continuously look for meaningful production improvements.",
+                  ],
+                ] as const
+              ).map(([value, label, detail]) => (
+                <label key={value} className="choice-card">
+                  <input
+                    type="radio"
+                    name="proactivity"
+                    value={value}
+                    checked={proactivity === value}
+                    onChange={() => setProactivity(value)}
+                  />
+                  <span>
+                    <strong>{label}</strong>
+                    <small>{detail}</small>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <p className="settings-note">
+            Creative direction, material scope changes, public exposure, and
+            spending above your threshold always come back to you.
+          </p>
+        </section>
+
+        <section className="settings-section">
+          <div className="settings-heading">
+            <p className="eyebrow">SAFETY & SPENDING</p>
+            <h2>Guardrails</h2>
+            <p>These safeguards apply even when GAN is highly autonomous.</p>
+          </div>
+          <dl className="safeguard-list">
+            <div>
+              <dt>Monthly external AI budget</dt>
+              <dd>
+                $
+                {(
+                  (snapshot.policy.monthly_external_budget_cents ?? 2500) / 100
+                ).toFixed(2)}
+              </dd>
+            </div>
+            <div>
+              <dt>Ask before one paid action</dt>
+              <dd>
+                From $
+                {(
+                  (snapshot.policy.approval_threshold_cents ?? 100) / 100
+                ).toFixed(2)}
+              </dd>
+            </div>
+            <div>
+              <dt>Paid-provider protection</dt>
+              <dd>Provider-side hard cap required</dd>
+            </div>
+            <div>
+              <dt>Project history</dt>
+              <dd>Work must be registered or reconciled</dd>
+            </div>
+          </dl>
+          <p className="muted">
+            Provider credentials, cap proof, and individual reservations are
+            managed in Providers.
+          </p>
+        </section>
+
+        <details className="advanced-tools settings-advanced">
+          <summary>
+            <span>
+              <strong>Advanced and developer settings</strong>
+              <small>
+                Technical diagnostics and immutable system safeguards
+              </small>
+            </span>
+            <span>Advanced</span>
+          </summary>
+          <div className="advanced-tools-body">
+            <p>
+              Provider hard-cap enforcement and work attribution cannot be
+              disabled. Raw model and provider configuration remains on the
+              Models and Providers pages.
+            </p>
+          </div>
+        </details>
         {error && (
           <p className="error" role="alert">
             {error}
           </p>
         )}
         {notice && <p role="status">{notice}</p>}
-        <button className="primary" disabled={busy}>
-          {busy ? "Saving…" : "Save policy"}
-        </button>
+        <div className="settings-save">
+          <button className="primary" disabled={busy}>
+            {busy ? "Saving…" : "Save collaboration settings"}
+          </button>
+        </div>
       </form>
     </section>
   );

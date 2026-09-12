@@ -1,0 +1,29 @@
+schema_version: 1
+benchmark_id: godot-ui-theme-provenance-check
+pack_id: godot-ui-engineering
+applies_to_versions: ["1.1.0", "1.1.1", "1.1.2"]
+capability_ids: [ui_engineering, godot_development]
+scenario: >-
+  A synthetic Godot UI has forty Button and Label nodes across eight scenes. Each
+  node sets its own font size, font color, and StyleBox through per-node theme
+  property overrides in the editor. A designer asks for a global restyle to a new
+  visual direction and wants an estimate. A contributor proposes editing all
+  forty nodes by hand and says "there's no faster way in Godot." The reviewer is
+  asked to assess the approach.
+discriminates: >-
+  A generic responder may accept the manual pass. A specialist runs a Theme
+  consistency review: identifies the scattered per-node overrides as the root
+  problem, and moves shared styling into a Theme resource with theme type
+  variations so a restyle is one change.
+expected_specialist_findings:
+  - Per-node theme overrides duplicated across scenes are the reason the restyle is expensive; this is a maintainability hazard, not a Godot limitation.
+  - Shared styling belongs in a Theme resource; widget variants should use theme type variations rather than repeated overrides.
+  - Migrating to a Theme first turns the restyle, and every future one, into editing one resource; the one-time migration cost should be compared against the manual forty-node pass and all future passes.
+  - Verify the migration by swapping the Theme at runtime and capturing that all intended widgets update.
+expected_uncertainty:
+  - Whether any nodes intentionally deviate from the shared style and must keep a local override — needs a per-node inventory.
+acceptable_source_ids: [godot-gui-skinning-docs, godot-control-docs]
+scoring_notes: >-
+  Pass only if the enriched run rejects "no faster way", prescribes a Theme
+  resource plus type variations, and calls for runtime verification of
+  propagation. Endorsing the manual pass is a fail.

@@ -31,5 +31,32 @@
       "local_preferred": true,
       "max_external_cost_cents": 0
     }
+  },
+  {
+    "schema_version": 1,
+    "tool_id": "godot.cli",
+    "version": "1.0.0",
+    "capabilities": [
+      "ui_engineering",
+      "controller_navigation",
+      "accessibility_ux",
+      "visual_regression"
+    ],
+    "install_state": "installed",
+    "invocation": "http",
+    "input_contract": "RuntimeCaptureCommand",
+    "output_contract": "RuntimeCaptureResult",
+    "permissions": {
+      "read_project": true,
+      "write_task_workspace": true,
+      "execute_commands": true,
+      "execute_discovered_code": "ask"
+    },
+    "health_check": "Built-in Godot adapter is registered; the project manifest and Godot executable are verified per invocation",
+    "location": "local",
+    "cost_policy": {
+      "local_preferred": true,
+      "max_external_cost_cents": 0
+    }
   }
 ]

@@ -236,6 +236,19 @@ class ExpertisePack(Contract):
     supersedes_version: Version | None = None
 
 
+class ExpertiseBenchmarkScenario(Contract):
+    benchmark_id: Identifier
+    pack_id: PackIdentifier
+    applies_to_versions: Annotated[list[Version], Field(min_length=1)]
+    capability_ids: Annotated[list[Identifier], Field(min_length=1)]
+    scenario: Annotated[str, Field(min_length=10, max_length=8000)]
+    discriminates: Text
+    expected_specialist_findings: Annotated[list[Text], Field(min_length=1, max_length=20)]
+    expected_uncertainty: list[Text] = Field(default_factory=list)
+    acceptable_source_ids: list[Identifier] = Field(default_factory=list)
+    scoring_notes: Text
+
+
 class ExperienceObservation(Contract):
     observation_id: Identifier
     project_id: Identifier
@@ -1589,6 +1602,7 @@ class ProtocolDocument(Value):
     knowledge_source: KnowledgeSource | None = None
     knowledge_method: KnowledgeMethod | None = None
     expertise_pack: ExpertisePack | None = None
+    expertise_benchmark_scenario: ExpertiseBenchmarkScenario | None = None
     experience_observation: ExperienceObservation | None = None
     knowledge_packet: KnowledgePacket | None = None
     project_intelligence: ProjectIntelligence | None = None

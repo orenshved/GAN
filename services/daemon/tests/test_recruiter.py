@@ -8,7 +8,7 @@ import pytest
 from gameagent.codex_bridge import CodexBridge
 from gameagent.constitution import ConstitutionError
 from gameagent.gm import make_plan
-from gameagent.knowledge import KnowledgeFabric
+from gameagent.knowledge import KnowledgeDirectory, KnowledgeFabric
 from gameagent.models.api import ObjectiveCommand
 from gameagent.models.contracts import (
     AuditionReview,
@@ -24,6 +24,26 @@ from gameagent.recruiter import AUDITION_DIMENSIONS, GlobalAgentRegistry, Recrui
 
 ROOT = Path(__file__).resolve().parents[3]
 PROFILE = json.loads((ROOT / "packages/protocol/fixtures/valid.json").read_text())["Project"]
+
+
+def test_global_knowledge_paths_allow_containment_and_reject_symlink_escape(tmp_path: Path):
+    knowledge_root = tmp_path / "knowledge"
+    contained = knowledge_root / "packs" / "pack.yaml"
+    contained.parent.mkdir(parents=True)
+    contained.write_text("pack", encoding="utf-8")
+    directory = KnowledgeDirectory(knowledge_root)
+    directory.assert_global_path(contained)
+
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    escaped = knowledge_root / "escaped"
+    try:
+        escaped.symlink_to(outside, target_is_directory=True)
+    except OSError:
+        pytest.skip("Directory symlinks are unavailable on this host")
+    with pytest.raises(ConstitutionError) as error:
+        directory.assert_global_path(escaped / "pack.yaml")
+    assert error.value.error == "project_knowledge_leak"
 
 
 def recruiter(tmp_path: Path) -> Recruiter:
@@ -42,6 +62,19 @@ def recruiter(tmp_path: Path) -> Recruiter:
         capabilities,
         tools,
     )
+
+
+def test_builtin_registry_exposes_canonical_godot_capture_tool(tmp_path):
+    service = recruiter(tmp_path)
+    tool = next(item for item in service.tools if item.tool_id == "godot.cli")
+    assert tool.invocation == "http"
+    assert tool.input_contract == "RuntimeCaptureCommand"
+    assert tool.output_contract == "RuntimeCaptureResult"
+    assert {"ui_engineering", "controller_navigation", "visual_regression"} <= set(
+        tool.capabilities
+    )
+    assert tool.permissions.execute_commands is True
+    assert tool.permissions.execute_discovered_code == "ask"
 
 
 def missing_test_draft() -> PlanDraft:

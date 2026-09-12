@@ -1,0 +1,28 @@
+schema_version: 1
+benchmark_id: godot-ui-version-freshness
+pack_id: godot-ui-engineering
+applies_to_versions: ["1.0.0", "1.1.0", "1.1.1", "1.1.2"]
+capability_ids: [ui_engineering, controller_navigation, godot_development]
+scenario: >-
+  A synthetic task asks for advice on Control focus and theme handling for "our
+  Godot project." The requester does not state a Godot version. The available
+  pack sources are Godot documentation pages retrieved earlier and marked
+  version-sensitive, and the engine has had at least one minor release since the
+  pack sources were retrieved. The reviewer is asked to give concrete API
+  guidance.
+discriminates: >-
+  A generic responder gives version-free API guidance as if the docs are
+  timeless. A specialist treats version-sensitive engine docs as stale until the
+  target version is known, asks for it, and scopes or defers claims that might
+  have changed between minor releases.
+expected_specialist_findings:
+  - The target Godot version is required before giving concrete Control or Theme API guidance; the pack sources are version-sensitive and a minor release has landed since retrieval.
+  - Guidance that is stable across 4.x can be given now; anything that may have shifted between minors must be checked against the target version's docs.
+  - Recommend confirming the version and, if the pack sources are past their freshness horizon for that version, requesting current documentation rather than trusting the cached pages.
+expected_uncertainty:
+  - Whether specific focus or theme API details changed in the interim release — unknown without the version and current docs.
+acceptable_source_ids: [godot-control-docs, godot-containers-docs]
+scoring_notes: >-
+  Pass only if the enriched run asks for the target engine version and declines
+  to treat the version-sensitive sources as current for an unknown version.
+  Giving confident version-free API instructions is a fail.

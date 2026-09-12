@@ -113,13 +113,15 @@ async function proxy(
       ...body,
       cache: "no-store",
       signal: AbortSignal.timeout(
-        path[0] === "runtime-capture" ||
-          path[0] === "recruit" ||
-          path[0] === "model-benchmark" ||
-          path[0] === "model-recommend" ||
-          path[0] === "production-domain-run"
-          ? 120000
-          : 10000,
+        path[0] === "pack-audition-run"
+          ? 360000
+          : path[0] === "runtime-capture" ||
+              path[0] === "recruit" ||
+              path[0] === "model-benchmark" ||
+              path[0] === "model-recommend" ||
+              path[0] === "production-domain-run"
+            ? 120000
+            : 10000,
       ),
     });
     return new Response(response.body, {

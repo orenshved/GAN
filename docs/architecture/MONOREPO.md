@@ -1,9 +1,10 @@
-# Monorepo structure (Phases 7–11)
+# Monorepo structure (Phases 7–12)
 
 ```text
 apps/studio/                    Next 16 / React 19 local production Studio
   app/api/daemon/              Server-only authenticated loopback proxy
   app/network.tsx              Project task dependency graph
+apps/desktop/                   Electron lifecycle and browser-security shell
 services/daemon/
   gameagent/models/            Canonical Pydantic contracts
   gameagent/constitution.py    Pure state/authority admission rules
@@ -151,6 +152,15 @@ event. The scans validate discoverability and structural readability only. They 
 not execute discovered code or claim creative quality, behavior, continuity, mix
 quality or fun. Studio presents the same definitions, tool health, evidence and run
 history returned by the daemon.
+
+Phase 12 packages the existing local architecture without moving authority into the
+desktop layer. Electron verifies and extracts a content-addressed Next.js standalone
+archive, launches Studio and the PyInstaller daemon on loopback, loads a random or
+configured bearer token, denies remote navigation and browser permissions, and owns
+child-process shutdown. The same daemon bundle is copied to a headless distribution,
+so project initialization, status, rebuild, task registration, reconciliation and
+serving remain available without Electron. The first distribution target is Windows
+x64.
 
 ## Wire conventions
 

@@ -3251,6 +3251,103 @@
       "title": "ExpertiseBaselineStatus",
       "type": "object"
     },
+    "ExpertiseBenchmarkScenario": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptable_source_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "title": "Acceptable Source Ids",
+          "type": "array"
+        },
+        "applies_to_versions": {
+          "items": {
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Applies To Versions",
+          "type": "array"
+        },
+        "benchmark_id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Benchmark Id",
+          "type": "string"
+        },
+        "capability_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Capability Ids",
+          "type": "array"
+        },
+        "discriminates": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Discriminates",
+          "type": "string"
+        },
+        "expected_specialist_findings": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Expected Specialist Findings",
+          "type": "array"
+        },
+        "expected_uncertainty": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Expected Uncertainty",
+          "type": "array"
+        },
+        "pack_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "title": "Pack Id",
+          "type": "string"
+        },
+        "scenario": {
+          "maxLength": 8000,
+          "minLength": 10,
+          "title": "Scenario",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "scoring_notes": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Scoring Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "benchmark_id",
+        "pack_id",
+        "applies_to_versions",
+        "capability_ids",
+        "scenario",
+        "discriminates",
+        "expected_specialist_findings",
+        "scoring_notes"
+      ],
+      "title": "ExpertiseBenchmarkScenario",
+      "type": "object"
+    },
     "ExpertiseKnowledgeItem": {
       "additionalProperties": false,
       "properties": {
@@ -7234,32 +7331,13 @@
           "title": "Benchmark Id",
           "type": "string"
         },
-        "expected_findings": {
-          "items": {
-            "minLength": 1,
-            "pattern": "\\S",
-            "type": "string"
-          },
-          "maxItems": 20,
-          "minItems": 1,
-          "title": "Expected Findings",
-          "type": "array"
-        },
         "pack": {
           "$ref": "#/$defs/ExpertisePackRef"
-        },
-        "scenario": {
-          "maxLength": 8000,
-          "minLength": 10,
-          "title": "Scenario",
-          "type": "string"
         }
       },
       "required": [
         "pack",
-        "benchmark_id",
-        "scenario",
-        "expected_findings"
+        "benchmark_id"
       ],
       "title": "PackAutomatedAuditionCommand",
       "type": "object"
@@ -13473,6 +13551,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/ExperienceObservation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "expertise_benchmark_scenario": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExpertiseBenchmarkScenario"
         },
         {
           "type": "null"

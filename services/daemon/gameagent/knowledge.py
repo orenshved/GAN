@@ -42,6 +42,7 @@ from gameagent.models.contracts import (
     AgentDefinition,
     ExperienceLesson,
     ExperienceObservation,
+    ExpertiseBenchmarkScenario,
     ExpertiseKnowledgeItem,
     ExpertisePack,
     ExpertisePackRef,
@@ -118,7 +119,12 @@ class KnowledgeDirectory:
     through this abstraction.
     """
 
-    def __init__(self, root: Path, builtin_root: Path | None = None) -> None:
+    def __init__(
+        self,
+        root: Path,
+        builtin_root: Path | None = None,
+        benchmark_root: Path | None = None,
+    ) -> None:
         self.root = root.expanduser().resolve()
         self.packs_root = self.root / "packs"
         self.blobs_root = self.root / "blobs" / "sha256"
@@ -126,17 +132,31 @@ class KnowledgeDirectory:
         self.builtin_root = builtin_root or (
             Path(__file__).resolve().parents[3] / "expertise" / "builtin"
         )
+        self.benchmark_root = benchmark_root or (
+            Path(__file__).resolve().parents[3] / "expertise" / "benchmarks"
+        )
 
     @classmethod
     def from_environment(
-        cls, root: Path | None = None, builtin_root: Path | None = None
+        cls,
+        root: Path | None = None,
+        builtin_root: Path | None = None,
+        benchmark_root: Path | None = None,
     ) -> KnowledgeDirectory:
         load_dotenv()
         configured = os.environ.get("GAMEAGENT_KNOWLEDGE_HOME")
+        configured_builtin = os.environ.get("GAMEAGENT_BUILTIN_EXPERTISE_PATH")
+        configured_benchmarks = os.environ.get("GAMEAGENT_EXPERTISE_BENCHMARK_PATH")
         selected = root or (
             Path(configured) if configured else Path.home() / ".gameagent" / "knowledge"
         )
-        return cls(selected, builtin_root)
+        selected_builtin = builtin_root or (
+            Path(configured_builtin) if configured_builtin else None
+        )
+        selected_benchmarks = benchmark_root or (
+            Path(configured_benchmarks) if configured_benchmarks else None
+        )
+        return cls(selected, selected_builtin, selected_benchmarks)
 
     def initialize(self) -> None:
         self.packs_root.mkdir(parents=True, exist_ok=True)
@@ -161,8 +181,13 @@ class KnowledgeDirectory:
         return sorted(self.packs_root.glob("*/*/pack.yaml"))
 
     def assert_global_path(self, path: Path) -> None:
-        resolved = path.resolve()
-        require(resolved.is_relative_to(self.root), "project_knowledge_leak", str(path))
+        root = self.root.absolute()
+        candidate = path.absolute()
+        require(candidate.is_relative_to(root), "project_knowledge_leak", str(path))
+        current = root
+        for part in candidate.relative_to(root).parts:
+            current /= part
+            require(not current.is_symlink(), "project_knowledge_leak", str(path))
 
 
 class ExpertisePackRegistry:
@@ -871,6 +896,38 @@ class KnowledgeFabric:
         self._write_immutable(self.directory.blobs_root / digest, content)
         return SourceRef(uri=f"sha256:{digest}", media_type="text/plain", sha256=digest)
 
+    def benchmark(self, ref: ExpertisePackRef, benchmark_id: str) -> ExpertiseBenchmarkScenario:
+        candidate = self._candidate(ref)
+        require(
+            benchmark_id in candidate.evaluation_ids,
+            "unknown_pack_benchmark",
+            benchmark_id,
+        )
+        path = self.directory.benchmark_root / ref.pack_id / f"{benchmark_id}.yaml"
+        require(path.is_file(), "pack_benchmark_missing", f"{ref.pack_id}/{benchmark_id}")
+        benchmark = ExpertiseBenchmarkScenario.model_validate(
+            yaml.safe_load(path.read_text(encoding="utf-8"))
+        )
+        require(
+            benchmark.pack_id == ref.pack_id
+            and benchmark.benchmark_id == benchmark_id
+            and ref.version in benchmark.applies_to_versions,
+            "pack_benchmark_identity_mismatch",
+            f"{ref.pack_id}@{ref.version}/{benchmark_id}",
+        )
+        require(
+            set(benchmark.capability_ids) <= set(candidate.capability_ids),
+            "pack_benchmark_capability_mismatch",
+            benchmark_id,
+        )
+        require(
+            set(benchmark.acceptable_source_ids)
+            <= {source.source_id for source in candidate.sources},
+            "pack_benchmark_source_mismatch",
+            benchmark_id,
+        )
+        return benchmark
+
     def propose_pack(self, pack: ExpertisePack) -> ExpertisePack:
         require(
             pack.state == "draft" and pack.reviewed_at is None, "draft_pack_required", pack.pack_id
@@ -979,22 +1036,33 @@ class KnowledgeFabric:
                     "pack_source_review_required",
                     candidate.pack_id,
                 )
-                auditions = [
+                recorded_auditions = [
                     item for item in self.catalog().auditions if item.candidate_sha256 == digest
                 ]
+                auditions = {
+                    benchmark_id: max(
+                        (item for item in recorded_auditions if item.benchmark_id == benchmark_id),
+                        key=lambda item: item.recorded_at,
+                        default=None,
+                    )
+                    for benchmark_id in candidate.evaluation_ids
+                }
                 require(
-                    set(candidate.evaluation_ids) <= {item.benchmark_id for item in auditions},
+                    all(item is not None for item in auditions.values()),
                     "pack_audition_missing",
                     candidate.pack_id,
                 )
+                latest_auditions = [item for item in auditions.values() if item is not None]
                 require(
-                    all(item.candidate_score >= item.baseline_score for item in auditions)
-                    and any(item.candidate_score > item.baseline_score for item in auditions),
+                    all(item.candidate_score >= item.baseline_score for item in latest_auditions)
+                    and any(
+                        item.candidate_score > item.baseline_score for item in latest_auditions
+                    ),
                     "pack_benchmark_regression",
                     candidate.pack_id,
                 )
                 require(
-                    all(item.candidate_score >= 0.8 for item in auditions),
+                    all(item.candidate_score >= 0.8 for item in latest_auditions),
                     "pack_benchmark_below_threshold",
                     candidate.pack_id,
                 )
@@ -1256,9 +1324,12 @@ class KnowledgeFabric:
 
     @classmethod
     def from_environment(
-        cls, root: Path | None = None, builtin_root: Path | None = None
+        cls,
+        root: Path | None = None,
+        builtin_root: Path | None = None,
+        benchmark_root: Path | None = None,
     ) -> KnowledgeFabric:
-        return cls(KnowledgeDirectory.from_environment(root, builtin_root))
+        return cls(KnowledgeDirectory.from_environment(root, builtin_root, benchmark_root))
 
 
 __all__ = [

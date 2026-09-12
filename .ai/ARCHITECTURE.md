@@ -8,6 +8,7 @@
 - Canonical rotated JSONL project events and immutable global YAML/JSON knowledge records.
 - Rebuildable SQLite project projections and FTS5 expertise index.
 - Playwright end-to-end smoke; pytest and Node contract tests.
+- Electron Windows shell, Next.js standalone server, and PyInstaller daemon bundle.
 
 ## Entry Points
 
@@ -16,11 +17,14 @@
 - `services/daemon/gameagent/api.py` — authenticated loopback API.
 - `services/daemon/gameagent/cli.py` — `gameagent` CLI.
 - `services/daemon/gameagent/projects.py` — canonical commands and replay.
+- `apps/desktop/main.mjs` — desktop lifecycle, security policy, and service ownership.
+- `scripts/package-desktop.mjs` — reproducible Windows package assembly.
 
 ## Module Map
 
 ```text
 apps/studio/                       Director-facing UI and loopback proxy
+apps/desktop/                      Thin local desktop process/security shell
 packages/protocol/                 Generated cross-language contracts
 services/daemon/gameagent/
   api.py                           API composition and background maintenance
@@ -62,7 +66,8 @@ Task + agent + Project Intelligence + Expertise + Research + Experience
 - The daemon and Studio are local-first; the daemon API is loopback-only with a bearer token.
 - Pydantic is the only contract authority.
 - Global agent/knowledge stores must not receive project identity or history.
-- Phase 12 packaging is paused.
+- Desktop packaging is Windows x64 only; the first release has no trusted-publisher signature.
+- Electron owns process lifecycle only. The daemon remains authoritative and independently usable from the headless distribution.
 - Professional expertise quality is a curated program, not inferred from passing code tests.
 
 ---

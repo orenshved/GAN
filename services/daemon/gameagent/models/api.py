@@ -190,8 +190,6 @@ class PackBuildCommand(Value):
 class PackAutomatedAuditionCommand(Value):
     pack: ExpertisePackRef
     benchmark_id: Identifier
-    scenario: Annotated[str, Field(min_length=10, max_length=8000)]
-    expected_findings: Annotated[list[Text], Field(min_length=1, max_length=20)]
 
 
 class PackAuditionCommand(Value):

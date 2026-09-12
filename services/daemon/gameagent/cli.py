@@ -10,6 +10,7 @@ from uuid import uuid4
 import uvicorn
 import yaml
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 from gameagent.constitution import ConstitutionError
 from gameagent.intake import inspect
@@ -21,6 +22,15 @@ from gameagent.models.api import (
 )
 from gameagent.models.contracts import Project
 from gameagent.projects import ProjectStore, initialize
+
+
+def _json_output(value: object) -> str:
+    """Return console-safe JSON even when a frozen Windows process inherits an ANSI code page."""
+    return json.dumps(value, indent=2, ensure_ascii=True)
+
+
+def _print_model(value: BaseModel) -> None:
+    print(_json_output(value.model_dump(mode="json")))
 
 
 def main() -> None:
@@ -95,7 +105,7 @@ def main() -> None:
                         deliverables=args.deliverable or ["Reported project changes"],
                     )
                 )
-                print(started.model_dump_json(indent=2))
+                _print_model(started)
             elif args.task_command == "status":
                 snapshot = store.snapshot()
                 if args.task_id:
@@ -104,7 +114,7 @@ def main() -> None:
                     )
                     if selected_task is None:
                         raise ConstitutionError("task_not_found", args.task_id)
-                    print(selected_task.model_dump_json(indent=2))
+                    _print_model(selected_task)
                 else:
                     print(
                         json.dumps(
@@ -130,7 +140,7 @@ def main() -> None:
                     if args.task_command == "block"
                     else store.complete_task(command)
                 )
-                print(progressed.model_dump_json(indent=2))
+                _print_model(progressed)
         elif args.command == "reconcile":
             snapshot = store.detect_external_changes()
             unresolved = [item for item in snapshot.reconciliations if item.state == "unresolved"]
@@ -150,7 +160,7 @@ def main() -> None:
                     detail=args.detail,
                 )
             )
-            print(reconciled.model_dump_json(indent=2))
+            _print_model(reconciled)
         elif args.command == "serve":
             from gameagent.api import create_app
 
@@ -174,11 +184,11 @@ def main() -> None:
             )
         elif args.command == "propose":
             proposal = TaskProposal.model_validate_json(args.file.read_text(encoding="utf-8"))
-            print(store.propose(proposal).model_dump_json(indent=2))
+            _print_model(store.propose(proposal))
         elif args.command == "rebuild":
-            print(store.rebuild().model_dump_json(indent=2))
+            _print_model(store.rebuild())
         else:
-            print(store.snapshot().model_dump_json(indent=2))
+            _print_model(store.snapshot())
     except (ConstitutionError, ValueError, OSError, KeyError) as exc:
         label = exc.error if isinstance(exc, ConstitutionError) else "command_failed"
         print(json.dumps({"error": label, "detail": str(exc)}), file=sys.stderr)

@@ -37,3 +37,8 @@ jobs:
         env:
           NEXT_TELEMETRY_DISABLED: "1"
           TURBO_TELEMETRY_DISABLED: "1"
+      - if: runner.os == 'Windows'
+        run: pnpm desktop:package:dir
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+          TURBO_TELEMETRY_DISABLED: "1"

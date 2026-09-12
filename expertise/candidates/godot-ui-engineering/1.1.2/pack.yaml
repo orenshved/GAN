@@ -1,0 +1,201 @@
+# Candidate successor to godot-ui-engineering 1.0.0. Version 1.1.2 records the
+# license of the cited rendered documentation artifact as CC BY 3.0. The
+# underlying generated class-reference sources are MIT-derived.
+# state: draft — NOT installed, NOT reviewed, NOT trusted for routing.
+# Proposed via governance.propose_pack after the corrected benchmark fixtures
+# merge and the normal auditions plus human review complete. See
+# docs/EXPERTISE_PACK_AUDIT.md and .ai/handoffs/claude-to-codex.md.
+# Codex (2026-09-10) confirmed the candidate path and the tool id: the
+# canonical engine-adapter tool is `godot.cli` (runtime PNG capture via the
+# Godot adapter and /runtime-capture; no video, no arbitrary scene recording).
+schema_version: 1
+pack_id: godot-ui-engineering
+name: Godot UI Engineering
+version: 1.1.2
+description: >-
+  Container-driven Control layout, focus and gamepad navigation, and Theme-based
+  styling practice for the Godot 4.x stable series, with runtime verification and
+  explicit engine-version sensitivity.
+state: draft
+supersedes_version: 1.0.0
+domain_ids: [godot, game_ui, engineering]
+capability_ids:
+  [ui_engineering, controller_navigation, accessibility_ux, godot_development]
+required_tool_ids: [godot.cli]
+sources:
+  - schema_version: 1
+    source_id: godot-control-docs
+    title: Godot Control class reference
+    author: Godot Engine contributors
+    publisher: Godot Engine
+    uri: https://docs.godotengine.org/en/stable/classes/class_control.html
+    source_type: official_documentation
+    retrieved_at: "2026-09-10T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-03-10T00:00:00Z"
+    license: CC BY 3.0
+    applicable_capability_ids:
+      [ui_engineering, controller_navigation, godot_development]
+  - schema_version: 1
+    source_id: godot-containers-docs
+    title: Using Containers in Godot
+    author: Godot Engine contributors
+    publisher: Godot Engine
+    uri: https://docs.godotengine.org/en/stable/tutorials/ui/gui_containers.html
+    source_type: official_documentation
+    retrieved_at: "2026-09-10T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-03-10T00:00:00Z"
+    license: CC BY 3.0
+    applicable_capability_ids: [ui_engineering]
+  - schema_version: 1
+    source_id: godot-gui-navigation-docs
+    title: Godot GUI keyboard, gamepad, and mouse navigation
+    author: Godot Engine contributors
+    publisher: Godot Engine
+    uri: https://docs.godotengine.org/en/stable/tutorials/ui/gui_navigation.html
+    source_type: official_documentation
+    retrieved_at: "2026-09-10T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-03-10T00:00:00Z"
+    license: CC BY 3.0
+    applicable_capability_ids:
+      [controller_navigation, accessibility_ux, ui_engineering]
+  - schema_version: 1
+    source_id: godot-gui-skinning-docs
+    title: Introduction to GUI skinning in Godot
+    author: Godot Engine contributors
+    publisher: Godot Engine
+    uri: https://docs.godotengine.org/en/stable/tutorials/ui/gui_skinning.html
+    source_type: official_documentation
+    retrieved_at: "2026-09-10T00:00:00Z"
+    authority: official_documentation
+    freshness_class: version_sensitive
+    fresh_until: "2027-03-10T00:00:00Z"
+    license: CC BY 3.0
+    applicable_capability_ids: [ui_engineering, godot_development]
+methods:
+  - schema_version: 1
+    method_id: godot-ui-structure-review
+    title: Godot UI structure review
+    purpose: Validate that Control layout is container-driven, responsive, and testable in the target scene rather than pinned to fixed editor coordinates.
+    applicable_capability_ids:
+      [ui_engineering, controller_navigation, godot_development]
+    steps:
+      - Identify the active Control hierarchy, containers, anchors, and size flags.
+      - Confirm the layout is expressed through containers and size flags, not absolute rect overrides.
+      - Verify behavior at the target minimum and maximum viewport sizes with runtime capture.
+      - Record the Godot version under test because Control and Container behavior is version-sensitive.
+    evidence_requirements:
+      - Active .tscn path or running scene identifier.
+      - Runtime capture at more than one viewport size.
+      - The exact Godot version and renderer used for the capture.
+    source_ids: [godot-control-docs, godot-containers-docs]
+  - schema_version: 1
+    method_id: godot-ui-focus-navigation-review
+    title: Godot focus and gamepad navigation review
+    purpose: Check that keyboard and gamepad traversal of a Control tree is complete, ordered, and trap-free using focus modes, focus neighbours, and the ui_* input actions.
+    applicable_capability_ids:
+      [controller_navigation, accessibility_ux, ui_engineering]
+    steps:
+      - List every focusable Control and its focus_mode, and confirm non-interactive nodes are not focusable.
+      - Trace focus_neighbor_left/top/right/bottom, focus_next, and focus_previous against the intended visual order.
+      - Confirm ui_up, ui_down, ui_left, ui_right, ui_accept, and ui_cancel are mapped for both keyboard and joypad in the InputMap.
+      - Drive the traversal at runtime with a gamepad or simulated joypad input and confirm no dead ends or unescapable modals.
+    evidence_requirements:
+      - Runtime PNG capture at each focus step, for keyboard and for gamepad input, showing the focused Control.
+      - The InputMap joypad bindings for the ui_* actions.
+      - The Godot version under test.
+    source_ids: [godot-control-docs, godot-gui-navigation-docs]
+  - schema_version: 1
+    method_id: godot-ui-theme-consistency-review
+    title: Godot Theme consistency review
+    purpose: Confirm visual styling is driven by Theme resources and theme type variations rather than per-node property overrides, and that a theme change propagates across the UI.
+    applicable_capability_ids: [ui_engineering, godot_development]
+    steps:
+      - Inventory per-node theme overrides versus styling inherited from a Theme resource.
+      - Identify shared widget variants and confirm they use theme type variations instead of duplicated overrides.
+      - Swap or edit the Theme resource at runtime and capture whether all intended widgets update.
+    evidence_requirements:
+      - The Theme resource path and the list of per-node overrides found.
+      - Runtime capture before and after a theme change.
+      - The Godot version under test.
+    source_ids: [godot-gui-skinning-docs, godot-control-docs]
+items:
+  - schema_version: 1
+    item_id: godot-ui-container-layout
+    title: Prefer container-owned layout
+    kind: professional_knowledge
+    statement: Express responsive layout through Control containers, anchors, and size flags; fixed editor coordinates are an editor convenience, not the layout contract.
+    domain_ids: [godot, game_ui]
+    capability_ids: [ui_engineering, godot_development]
+    source_ids: [godot-control-docs, godot-containers-docs]
+    method_ids: [godot-ui-structure-review]
+    freshness_class: version_sensitive
+    confidence: 0.97
+  - schema_version: 1
+    item_id: godot-ui-focus-runtime
+    title: Verify focus at runtime
+    kind: professional_knowledge
+    statement: Focus order and controller traversal require runtime verification in the active scene for the target engine version; node presence in the tree is not sufficient.
+    domain_ids: [godot, accessibility]
+    capability_ids: [controller_navigation, accessibility_ux, ui_engineering]
+    source_ids: [godot-control-docs, godot-gui-navigation-docs]
+    method_ids: [godot-ui-focus-navigation-review]
+    freshness_class: version_sensitive
+    confidence: 0.97
+  - schema_version: 1
+    item_id: godot-ui-focus-neighbors
+    title: Set explicit focus neighbours when order diverges from layout
+    kind: standard
+    statement: When the intended traversal order does not match container child order, set focus_neighbor_* or focus_next/focus_previous explicitly; relying on implicit order produces wrong or trapped navigation.
+    domain_ids: [godot, game_ui, accessibility]
+    capability_ids: [controller_navigation, ui_engineering]
+    source_ids: [godot-control-docs, godot-gui-navigation-docs]
+    method_ids: [godot-ui-focus-navigation-review]
+    freshness_class: version_sensitive
+    confidence: 0.95
+  - schema_version: 1
+    item_id: godot-ui-default-actions
+    title: Gamepad menu navigation depends on ui_* joypad bindings
+    kind: standard
+    statement: Godot UI navigation is driven by the ui_up/down/left/right/accept/cancel input actions; if these are not mapped to joypad inputs in the InputMap, gamepad menu navigation silently fails even when focus neighbours are correct.
+    domain_ids: [godot, game_ui]
+    capability_ids: [controller_navigation, ui_engineering, godot_development]
+    source_ids: [godot-gui-navigation-docs]
+    method_ids: [godot-ui-focus-navigation-review]
+    freshness_class: version_sensitive
+    confidence: 0.94
+  - schema_version: 1
+    item_id: godot-ui-at-support-limited
+    title: Control structure is not assistive-technology support
+    kind: anti_pattern
+    statement: A well-formed Control tree does not establish screen-reader or OS accessibility support; Godot's assistive-technology integration is limited and varies by engine version and platform, so accessibility claims must be verified against the specific target build.
+    domain_ids: [godot, accessibility]
+    capability_ids: [accessibility_ux, ui_engineering]
+    source_ids: [godot-control-docs, godot-gui-navigation-docs]
+    method_ids: [godot-ui-focus-navigation-review]
+    freshness_class: version_sensitive
+    confidence: 0.9
+  - schema_version: 1
+    item_id: godot-ui-theme-provenance
+    title: Style through Theme resources, not scattered overrides
+    kind: professional_knowledge
+    statement: Shared widget styling should come from a Theme resource and theme type variations; per-node overrides duplicated across scenes prevent consistent restyling and are a maintenance and review hazard.
+    domain_ids: [godot, game_ui, engineering]
+    capability_ids: [ui_engineering, godot_development]
+    source_ids: [godot-gui-skinning-docs]
+    method_ids: [godot-ui-theme-consistency-review]
+    freshness_class: version_sensitive
+    confidence: 0.93
+evaluation_ids:
+  [
+    godot-ui-method-contract,
+    godot-ui-version-freshness,
+    godot-ui-focus-traversal,
+    godot-ui-theme-provenance-check,
+  ]
+created_at: "2026-09-10T00:00:00Z"

@@ -7,17 +7,17 @@
 | Metric              | Value                    |
 | ------------------- | ------------------------ |
 | Source files        | 143                      |
-| Total source tokens | ~461.8k                  |
-| Naive context cost  | ~461.8k (critical waste) |
+| Total source tokens | ~462.1k                  |
+| Naive context cost  | ~462.1k (critical waste) |
 | Smart context cost  | ~0 (excellent)           |
-| Potential savings   | ~461.8k (100%)           |
+| Potential savings   | ~462.1k (100%)           |
 
 ## Context Strategy Comparison
 
 | Strategy                    | Tokens  | Assessment         |
 | --------------------------- | ------- | ------------------ |
-| Naive (read everything)     | ~461.8k | !!! critical waste |
-| README-first                | ~70.3k  | !! expensive       |
+| Naive (read everything)     | ~462.1k | !!! critical waste |
+| README-first                | ~70.5k  | !! expensive       |
 | Smart (.ai/ + entry points) | ~0      | ✓ excellent        |
 
 ## Large Files (Top Token Consumers)
@@ -46,17 +46,9 @@
 
 - `Logo.psd` — very large — splits context budget severely (~1.1M tokens)
 - `packages/protocol/schema/protocol.schema.json` — very large — splits context budget severely (~83.2k tokens)
-- `apps/studio/tsconfig.tsbuildinfo` — very large — splits context budget severely (~44.8k tokens)
 - `apps/studio/app/studio.tsx` — very large — splits context budget severely (~42.9k tokens)
 - `services/daemon/gameagent/projects.py` — very large — splits context budget severely (~34.7k tokens)
 - `packages/protocol/src/generated.ts` — very large — splits context budget severely (~34.6k tokens)
-
-## Bloat Directories
-
-> These exist on disk but agents should never index them.
-
-- `node_modules/` — vendor dependencies — never index
-- `.turbo/` — Turborepo cache — regenerable
 
 ## Documentation Issues
 
@@ -92,24 +84,16 @@
 
 > High-churn = frequently broken = agents should check known issues before editing.
 
-- `README.md` — 7 changes
-- `packages/protocol/schema/protocol.schema.json` — 7 changes
-- `packages/protocol/src/generated.ts` — 7 changes
-- `AGENTS.md` — 6 changes
-- `apps/studio/app/api/daemon/[...path]/route.ts` — 6 changes
-- `apps/studio/app/studio.css` — 6 changes
-- `apps/studio/app/studio.tsx` — 6 changes
-- `docs/architecture/MONOREPO.md` — 6 changes
-- `scripts/smoke.mjs` — 6 changes
-- `services/daemon/gameagent/api.py` — 6 changes
-
-## Recommended .repomixignore / .aiignore Additions
-
-```
-# ai-audit suggestions
-node_modules/
-.turbo/
-```
+- `README.md` — 8 changes
+- `packages/protocol/schema/protocol.schema.json` — 8 changes
+- `packages/protocol/src/generated.ts` — 8 changes
+- `apps/studio/app/api/daemon/[...path]/route.ts` — 7 changes
+- `apps/studio/app/studio.css` — 7 changes
+- `apps/studio/app/studio.tsx` — 7 changes
+- `docs/architecture/MONOREPO.md` — 7 changes
+- `scripts/smoke.mjs` — 7 changes
+- `services/daemon/gameagent/api.py` — 7 changes
+- `services/daemon/gameagent/models/api.py` — 7 changes
 
 ## Language Breakdown
 
@@ -118,7 +102,7 @@ node_modules/
 | Python     | 35    | ~165.0k |
 | JSON       | 28    | ~105.7k |
 | TypeScript | 15    | ~85.9k  |
-| Markdown   | 44    | ~69.0k  |
+| Markdown   | 44    | ~69.2k  |
 | JavaScript | 13    | ~21.9k  |
 | CSS        | 2     | ~10.3k  |
 | YAML       | 5     | ~3.9k   |

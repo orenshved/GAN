@@ -1,0 +1,29 @@
+schema_version: 1
+benchmark_id: qa-method-contract
+pack_id: game-qa-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [functional_testing, visual_regression, ux_testing]
+scenario: >-
+  A synthetic task claims: "The new inventory screen is done. It looks good, it
+  feels responsive, and the sorting works." The evidence attached is one unit
+  test asserting a sort function returns an ordered list, plus a single
+  screenshot of the screen at one resolution. A reviewer is asked to set the
+  completion gate state and explain it.
+discriminates: >-
+  A generic reviewer may pass the gate because there is a test and a screenshot.
+  A specialist builds a claim-to-evidence matrix: separates the technical,
+  visual, and subjective claims, checks whether the attached evidence class can
+  establish each, and blocks the claims that are unevidenced.
+expected_specialist_findings:
+  - The technical claim (sorting works) is partially supported by the unit test for the sort function, but not for the screen wiring that displays the sorted result.
+  - The visual claim (looks good) needs comparative or human evidence; one screenshot at one resolution is not visual-regression evidence.
+  - The subjective claim (feels responsive) requires measured input-to-response timing or human judgment; nothing attached addresses it.
+  - "Gate result: the technical sub-claim is inconclusive pending an integration check; the visual and subjective claims are blocked and stay visible until evidenced or explicitly waived by the Director."
+expected_uncertainty:
+  - Whether the screen renders the sorted list correctly across resolutions — not evidenced.
+  - Perceived responsiveness under realistic input load — not measured.
+acceptable_source_ids: [gan-qa-policy]
+scoring_notes: >-
+  Pass only if the enriched run splits the three claims by type, rejects the
+  screenshot as visual proof, and leaves the unevidenced claims blocking. A
+  single overall pass or fail verdict is a fail.

@@ -1,0 +1,29 @@
+schema_version: 1
+benchmark_id: qa-independence-contract
+pack_id: game-qa-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [automated_testing, accessibility_qa, ux_testing]
+scenario: >-
+  A synthetic workflow has one model agent implement a feature and then, in the
+  same run, produce the QA verdict for it. The verdict reads: "I reviewed the
+  accessibility of the menu and it is fully accessible; I also confirmed the
+  animations feel smooth." No external tool output, capture, or human review is
+  attached. A reviewer is asked whether this verdict can stand as the QA gate.
+discriminates: >-
+  A generic reviewer may accept the verdict as a good-faith self-check. A
+  specialist rejects a model's self-authored verdict as a source of runtime,
+  accessibility, or "feel" evidence, and specifies independent evidence and an
+  eligible evaluator.
+expected_specialist_findings:
+  - The implementer and the evaluator are the same agent in the same run; this is not independent verification.
+  - A model may interpret independent evidence but cannot be the source of accessibility or runtime evidence it did not observe through a tool or capture.
+  - The "fully accessible" claim needs concrete checks (focus traversal capture, contrast measurement, AT behavior on the target platform); the "feels smooth" claim needs measured frame timing or human judgment.
+  - "Gate result: blocked until independent evidence exists and an eligible or human evaluator records the result."
+expected_uncertainty:
+  - Actual accessibility conformance — unestablished.
+  - Animation smoothness under target hardware — unmeasured.
+acceptable_source_ids: [gan-qa-policy]
+scoring_notes: >-
+  Pass only if the enriched run rejects the self-verdict on independence grounds
+  and names the independent evidence and evaluator needed. Treating the
+  self-review as sufficient, or objecting only that it is "brief", is a fail.

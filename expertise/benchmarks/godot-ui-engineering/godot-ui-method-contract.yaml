@@ -1,0 +1,28 @@
+schema_version: 1
+benchmark_id: godot-ui-method-contract
+pack_id: godot-ui-engineering
+applies_to_versions: ["1.0.0", "1.1.0", "1.1.1", "1.1.2"]
+capability_ids: [ui_engineering, godot_development]
+scenario: >-
+  A synthetic Godot scene defines a pause menu as a Control with three Button
+  children, each given an explicit position and size in the editor and no
+  containers. A contributor says: "Layout is done, it looks right at 1920x1080."
+  A reviewer is asked whether the layout is production-ready and how to check it.
+discriminates: >-
+  A generic reviewer may accept it because it looks right at one resolution. A
+  specialist runs a Godot UI structure review: flags the absence of containers,
+  predicts breakage at other viewport sizes, and requires runtime capture at
+  multiple sizes plus the engine version.
+expected_specialist_findings:
+  - Fixed editor positions are not the layout contract; without containers, anchors, and size flags the menu will not adapt to other resolutions or aspect ratios.
+  - Checking only 1920x1080 is a single-size check; the menu must be captured at the target minimum and maximum viewport sizes.
+  - Recommend re-expressing the layout with a container (for example a VBoxContainer) and size flags, then re-verifying at runtime.
+  - The report must record the Godot version because Control and Container behavior is version-sensitive.
+expected_uncertainty:
+  - Behavior at ultrawide or small-window sizes — unverified.
+  - Whether the target platforms include resizable windows — not stated.
+acceptable_source_ids: [godot-control-docs, godot-containers-docs]
+scoring_notes: >-
+  Pass only if the enriched run flags the container-less fixed layout and
+  requires multi-size runtime capture plus the engine version. Accepting the
+  single-resolution check is a fail.

@@ -1,0 +1,31 @@
+schema_version: 1
+benchmark_id: ux-source-provenance
+pack_id: game-ux-core
+applies_to_versions: ["1.0.0"]
+capability_ids: [accessibility_ux, controller_navigation, interaction_design]
+scenario: >-
+  A synthetic console game menu is under accessibility review. A contributor
+  writes: "Our menus meet accessibility standards because every button has a
+  visible label and the text passes a 4.5:1 contrast check." The reviewer is
+  asked to confirm the claim and cite the standard it rests on. The build
+  supports gamepad and mouse; no keyboard. There is no data on focus visibility
+  during gamepad navigation, no remapping support, and no check of motion or
+  timing settings.
+discriminates: >-
+  A generic reviewer accepts "meets accessibility standards" and may cite a
+  vague standard. A specialist ties each sub-claim to a specific normative
+  source, separates what contrast alone covers from what it does not, and flags
+  the unaddressed accessibility dimensions and the missing input path.
+expected_specialist_findings:
+  - Contrast 4.5:1 corresponds to a specific WCAG 2.2 success criterion for normal-size text and does not by itself establish "meets accessibility standards".
+  - Label presence and contrast say nothing about visible focus during gamepad traversal, input remapping, motion reduction, or adjustable timing.
+  - The claim should be narrowed to the criteria actually evidenced, with the rest listed as untested.
+  - Every player-facing accessibility claim must cite the specific criterion it satisfies.
+expected_uncertainty:
+  - Whether focus is visible throughout gamepad navigation — not evidenced.
+  - Whether players needing remapping or reduced motion are supported — not evidenced.
+acceptable_source_ids: [wcag-2-2, gan-ux-evidence-policy]
+scoring_notes: >-
+  Pass only if the enriched run refuses the blanket "meets standards" claim,
+  maps the contrast sub-claim to a named criterion, and enumerates untested
+  dimensions. Generic praise of the labels-and-contrast work is a fail.

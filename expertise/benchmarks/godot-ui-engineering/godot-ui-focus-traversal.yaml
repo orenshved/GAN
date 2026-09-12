@@ -1,0 +1,30 @@
+schema_version: 1
+benchmark_id: godot-ui-focus-traversal
+pack_id: godot-ui-engineering
+applies_to_versions: ["1.1.0", "1.1.1", "1.1.2"]
+capability_ids: [controller_navigation, accessibility_ux, ui_engineering]
+scenario: >-
+  A synthetic Godot options screen has a left column of category buttons and a
+  right panel of settings controls, built with two VBoxContainers side by side.
+  With a gamepad, testers report that pressing down cycles through the left
+  column fine, but pressing right from a category never moves focus into the
+  settings panel, and from the last settings control pressing down does nothing.
+  Mouse works. A contributor says "focus is automatic in Godot, this must be an
+  input driver bug." The reviewer is asked to diagnose.
+discriminates: >-
+  A generic responder may accept the input-driver theory. A specialist runs a
+  focus and gamepad navigation review: checks focus_mode on the controls,
+  focus_neighbor assignments across the two columns, and whether the ui_* actions
+  are bound to the joypad.
+expected_specialist_findings:
+  - Implicit focus order follows container child order within a column; crossing from the left container to the right one needs explicit focus_neighbor_right / focus_neighbor_left (or focus_next / focus_previous) — it is not automatic.
+  - "The dead end at the last settings control is the same cause: no focus neighbour defined past the end of the container."
+  - Confirm ui_left / ui_right / ui_up / ui_down are mapped to the gamepad in the InputMap; if only keyboard is bound, gamepad traversal fails even with correct neighbours.
+  - This is a scene and InputMap configuration issue, not an input-driver bug; verify the fix with a runtime capture of the gamepad focus path.
+expected_uncertainty:
+  - Whether any controls have focus_mode set to disabled/none — needs the scene to confirm.
+acceptable_source_ids: [godot-control-docs, godot-gui-navigation-docs]
+scoring_notes: >-
+  Pass only if the enriched run rejects the driver-bug explanation and points at
+  cross-container focus neighbours and ui_* joypad bindings. Endorsing the
+  input-driver theory, or suggesting only "add more containers", is a fail.

@@ -35,6 +35,28 @@ new tasks select the latest trusted version. Inspector retrieval distinguishes a
 current-context preview from recorded onboarding and worker packets. Legacy workers
 without a stored packet remain explicitly without one on resume.
 
+### Expertise source freshness
+
+Pack authors set `fresh_until` to the earlier of the source's expected next
+publication/release and the class ceiling below. A known upstream release,
+standard revision, or policy effective date always shortens the horizon. Every
+non-`stable` source requires `fresh_until`; an undated `stable` source must still
+be rechecked when its publisher issues a successor.
+
+| Freshness class     | Maximum review horizon |
+| ------------------- | ---------------------- |
+| `stable`            | 24 months              |
+| `slow_changing`     | 12 months              |
+| `version_sensitive` | 6 months               |
+| `policy_sensitive`  | 30 days                |
+| `live`              | 24 hours               |
+
+Expired sources are not silently treated as current. The pack must be refreshed
+and reviewed, or the affected claim must remain explicitly stale. Moving
+documentation URLs such as `/stable/` also require the pack to name the target
+product series and the worker to verify the exact project version before applying
+version-sensitive API guidance.
+
 ## Consequences
 
 Specialist reasoning becomes inspectable and reproducible. Global packs can be

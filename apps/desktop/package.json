@@ -1,0 +1,85 @@
+{
+  "name": "@gameagent/desktop",
+  "version": "0.0.1",
+  "description": "Local desktop shell for Game Agent Network Studio and daemon",
+  "author": "Game Agent Network",
+  "private": true,
+  "type": "module",
+  "main": "main.mjs",
+  "scripts": {
+    "build": "node --check main.mjs && node --check runtime.mjs",
+    "typecheck": "pnpm run build",
+    "test": "node --test tests/runtime.test.mjs"
+  },
+  "dependencies": {
+    "@electron/asar": "4.3.0",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "electron": "44.3.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.gameagent.studio",
+    "productName": "Game Agent Network",
+    "asar": true,
+    "directories": {
+      "output": "../../dist/desktop"
+    },
+    "files": [
+      "main.mjs",
+      "runtime.mjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../../dist/desktop-stage/studio.asar",
+        "to": "studio.asar"
+      },
+      {
+        "from": "../../dist/desktop-stage/studio.sha256",
+        "to": "studio.sha256"
+      },
+      {
+        "from": "../studio/public/logo.png",
+        "to": "desktop/logo.png"
+      },
+      {
+        "from": "../../services/daemon/dist/gameagent-daemon",
+        "to": "daemon"
+      },
+      {
+        "from": "../../agents",
+        "to": "definitions/agents"
+      },
+      {
+        "from": "../../capabilities",
+        "to": "definitions/capabilities"
+      },
+      {
+        "from": "../../expertise",
+        "to": "definitions/expertise"
+      },
+      {
+        "from": "../../tools",
+        "to": "definitions/tools"
+      },
+      {
+        "from": "../../.env.example",
+        "to": "desktop.env.example"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "../studio/public/logo.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Game Agent Network",
+      "artifactName": "Game-Agent-Network-${version}-${arch}.${ext}"
+    }
+  }
+}

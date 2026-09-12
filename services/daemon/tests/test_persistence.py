@@ -10,10 +10,12 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 from fastapi.testclient import TestClient
 
 from gameagent.adapters.godot import GodotAdapter
 from gameagent.api import create_app
+from gameagent.cli import _json_output
 from gameagent.cli import main as cli_main
 from gameagent.codex_bridge import CodexBridge
 from gameagent.constitution import ConstitutionError
@@ -43,6 +45,8 @@ from gameagent.models.contracts import (
     AgentDefinition,
     Evaluation,
     Evidence,
+    ExpertiseBenchmarkScenario,
+    ExpertisePack,
     ExpertisePackRef,
     GMRecord,
     PlanDraft,
@@ -60,6 +64,12 @@ TOKEN = "test-token-" + "a" * 32
 ORIGIN = "http://studio.test"
 
 
+def test_cli_json_is_safe_for_windows_ansi_consoles():
+    output = _json_output({"marker": "●"})
+    output.encode("cp1252")
+    assert "\\u25cf" in output
+
+
 @pytest.fixture
 def store(tmp_path):
     initialize(tmp_path, Project.model_validate(PROFILE))
@@ -75,6 +85,53 @@ def proposal(request_id="request-a", **patch):
         deliverables=["Findings with evidence"],
         **patch,
     )
+
+
+def test_repository_benchmark_scenarios_are_complete_and_valid():
+    benchmark_root = ROOT / "expertise" / "benchmarks"
+    if not benchmark_root.is_dir():
+        pytest.skip("Claude-owned benchmark fixtures have not been merged yet")
+    manifests = {}
+    manifest_paths = [*(ROOT / "expertise" / "builtin").glob("*/pack.yaml")]
+    candidate_root = ROOT / "expertise" / "candidates"
+    if candidate_root.is_dir():
+        manifest_paths.extend(candidate_root.glob("*/*/pack.yaml"))
+    for path in manifest_paths:
+        pack = ExpertisePack.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+        manifests[(pack.pack_id, pack.version)] = pack
+
+    scenario_files = [
+        (
+            path,
+            ExpertiseBenchmarkScenario.model_validate(
+                yaml.safe_load(path.read_text(encoding="utf-8"))
+            ),
+        )
+        for path in sorted(benchmark_root.glob("*/*.yaml"))
+    ]
+    assert scenario_files
+    for path, scenario in scenario_files:
+        assert path.parent.name == scenario.pack_id
+        assert path.stem == scenario.benchmark_id
+        for version in scenario.applies_to_versions:
+            pack = manifests[(scenario.pack_id, version)]
+            assert scenario.benchmark_id in pack.evaluation_ids
+            assert set(scenario.capability_ids) <= set(pack.capability_ids)
+            assert set(scenario.acceptable_source_ids) <= {
+                source.source_id for source in pack.sources
+            }
+
+    scenarios = [scenario for _, scenario in scenario_files]
+    benchmark_pack_ids = {scenario.pack_id for scenario in scenarios}
+    for pack in manifests.values():
+        if pack.pack_id not in benchmark_pack_ids:
+            continue
+        covered = {
+            scenario.benchmark_id
+            for scenario in scenarios
+            if scenario.pack_id == pack.pack_id and pack.version in scenario.applies_to_versions
+        }
+        assert set(pack.evaluation_ids) <= covered
 
 
 def production_draft():
@@ -712,19 +769,58 @@ def test_pack_promotion_requires_audit_and_nonregressing_benchmark(tmp_path):
     with pytest.raises(ConstitutionError):
         fabric.review_pack(review.model_copy(update={"pack": bad_ref}))
     assert fabric.registry.latest(candidate.pack_id).version == "1.1.0"
+    for benchmark in candidate.evaluation_ids:
+        fabric.record_audition(
+            PackAuditionCommand(
+                pack=bad_ref,
+                benchmark_id=benchmark,
+                baseline_score=0.6,
+                candidate_score=0.9,
+                evidence_text="Corrected synthetic retry: 9 of 10 versus 6 of 10.",
+                detail="Corrected fixture retry",
+            )
+        )
+    fabric.review_pack(
+        review.model_copy(
+            update={"pack": bad_ref, "detail": "Corrected independent synthetic audit"}
+        )
+    )
+    assert fabric.registry.latest(candidate.pack_id).version == "1.2.0"
 
 
 @pytest.mark.parametrize("invented_source", [False, True])
 def test_automated_pack_audition_is_isolated_and_does_not_promote(store, tmp_path, invented_source):
     from gameagent.models.api import PackAutomatedAuditionCommand
 
-    fabric = KnowledgeFabric.from_environment(tmp_path / "global")
+    benchmark_root = tmp_path / "benchmarks"
+    fabric = KnowledgeFabric.from_environment(tmp_path / "global", benchmark_root=benchmark_root)
     original = fabric.registry.latest("game-ux-core")
     candidate = original.model_copy(
         update={"version": "1.1.0", "state": "draft", "reviewed_at": None}
     )
     fabric.propose_pack(candidate)
+    benchmark_path = benchmark_root / candidate.pack_id / f"{candidate.evaluation_ids[0]}.yaml"
+    benchmark_path.parent.mkdir(parents=True)
+    benchmark_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "benchmark_id": candidate.evaluation_ids[0],
+                "pack_id": candidate.pack_id,
+                "applies_to_versions": [candidate.version],
+                "capability_ids": [candidate.capability_ids[0]],
+                "scenario": "A synthetic menu cannot be navigated using a keyboard.",
+                "discriminates": "The specialist identifies the missing keyboard path.",
+                "expected_specialist_findings": ["Keyboard navigation is missing"],
+                "expected_uncertainty": ["The active focus tree is not supplied"],
+                "acceptable_source_ids": [candidate.sources[0].source_id],
+                "scoring_notes": "Do not award unsupported implementation claims.",
+            }
+        ),
+        encoding="utf-8",
+    )
     workspaces = []
+    prompts = []
 
     class FakeTurn:
         def __init__(self, response):
@@ -740,13 +836,14 @@ def test_automated_pack_audition_is_isolated_and_does_not_promote(store, tmp_pat
     class FakeThread:
         async def turn(self, prompt, **kwargs):
             assert kwargs["sandbox"].value == "read-only"
+            prompts.append(prompt)
             if "Independently evaluate" in prompt:
                 return FakeTurn(
                     {
                         "baseline_score": 0.5,
                         "candidate_score": 0.9,
                         "rationale": "Synthetic fixture comparison",
-                        "critical_issues": [],
+                        "critical_issues": ["Baseline omitted expected uncertainty"],
                     }
                 )
             return FakeTurn(
@@ -777,8 +874,6 @@ def test_automated_pack_audition_is_isolated_and_does_not_promote(store, tmp_pat
             PackAutomatedAuditionCommand(
                 pack=ExpertisePackRef(pack_id=candidate.pack_id, version=candidate.version),
                 benchmark_id=candidate.evaluation_ids[0],
-                scenario="A synthetic menu cannot be navigated using a keyboard.",
-                expected_findings=["Keyboard navigation is missing"],
             ),
             fabric,
         )
@@ -786,6 +881,16 @@ def test_automated_pack_audition_is_isolated_and_does_not_promote(store, tmp_pat
         assert receipt.reviewer_id == "expertise-curator"
         assert receipt.candidate_score == (0 if invented_source else 0.9)
         assert len(set(workspaces)) == 3
+        enriched_prompt = next(prompt for prompt in prompts if "Relevant expertise: " in prompt)
+        supplied = json.loads(enriched_prompt.split("Relevant expertise: ", 1)[1])
+        acceptable_sources = {candidate.sources[0].source_id}
+        assert {source["source_id"] for source in supplied["sources"]} == acceptable_sources
+        assert all(set(item["source_ids"]) <= acceptable_sources for item in supplied["items"])
+        assert all(
+            set(method["source_ids"]) <= acceptable_sources for method in supplied["methods"]
+        )
+        evaluator_prompt = next(prompt for prompt in prompts if "Independently evaluate" in prompt)
+        assert '"supplied_expertise"' in evaluator_prompt
         assert fabric.registry.latest(candidate.pack_id).version == "1.0.0"
         await bridge.close()
 

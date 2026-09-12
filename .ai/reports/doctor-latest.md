@@ -1,84 +1,78 @@
 # Context Plan
 
-<!-- generated 2026-09-10 for task: "Stabilize, verify, commit, and push the current Knowledge Fabric checkpoint without starting new scope" -->
+<!-- generated 2026-09-10 for task: "Implement Phase 12 desktop packaging while preserving daemon authority and headless operation" -->
 
 ## Task
 
-> Stabilize, verify, commit, and push the current Knowledge Fabric checkpoint without starting new scope
+> Implement Phase 12 desktop packaging while preserving daemon authority and headless operation
 
-**Type:** general
-**Domains:** general
-**Branch:** main
+**Type:** feature
+**Domains:** auth
+**Branch:** codex/platform-runtime
 
 ## Known Related Issues
 
 > Check these before you start. They may save you from repeating a failed approach.
 
-- Include: what the bug is, what was tried, what didn't work, what the current theory is. -->
-- Read the "Current theory" to pick up where the last agent left off.
-- **Current theory:** The session cookie is being set before the `returnTo` param is saved.
-- <!-- List areas that are known to be brittle, even if not currently broken. -->
+- **Affected paths:** `services/daemon/gameagent/`, `apps/studio/`, acceptance tests
+- **Next:** Codex implements these as separate verified slices.
+- **Symptoms:** The passing daemon suite emits two upstream deprecation warnings involving Starlette/httpx compatibility aliases.
+- **Fix:** Derive all/available network and registry counts from daemon responses.
+- **Root cause:** Vendored RepoDoctor utilities use CommonJS while project ESLint treats JavaScript as ESM/TypeScript.
 
 ## Recently Changed Files
 
-- `.env.example`
-- `.gameagent/events/events-0001.jsonl`
-- `.github/workflows/ci.yml`
-- `README.md`
-- `agents/builtin/roster.json`
-- `apps/studio/app/api/daemon/[...path]/route.ts`
-- `apps/studio/app/network.tsx`
-- `apps/studio/app/studio.css`
-- `apps/studio/app/studio.tsx`
-- `docs/architecture/INVARIANTS.md`
+- `.ai/reports/token-audit-latest.md`
 
 ## Recommended Starting Files
 
 > Read these first. Ranked by relevance to the task.
 
-| File                                                           | Tokens | Relevance |
-| -------------------------------------------------------------- | ------ | --------- |
-| `docs/decisions/0012-canonical-knowledge-fabric-storage.md`    | ~1.7k  | high      |
-| `GAN_PRD_ADDENDUM_KNOWLEDGE_FABRIC_SPECIALIST_INTELLIGENCE.md` | ~14.9k | high      |
-| `docs/decisions/0009-recruiter-trust-before-qa-fabric.md`      | ~552   | medium    |
-| `services/daemon/gameagent/knowledge.py`                       | ~13.3k | medium    |
-| `adapters/engines/godot/README.md`                             | ~136   | low       |
-| `adapters/generation/comfyui/README.md`                        | ~42    | low       |
-| `adapters/inference/ollama/README.md`                          | ~79    | low       |
-| `adapters/source-control/git/README.md`                        | ~42    | low       |
+| File                                            | Tokens | Relevance |
+| ----------------------------------------------- | ------ | --------- |
+| `apps/studio/app/api/daemon/[...path]/route.ts` | ~871   | medium    |
+| `docs/decisions/0003-python-daemon.md`          | ~397   | medium    |
+| `docs/development/PHASE_0_HANDOFF.md`           | ~835   | medium    |
+| `docs/development/PHASE_10_HANDOFF.md`          | ~651   | medium    |
+| `docs/development/PHASE_11_HANDOFF.md`          | ~557   | medium    |
+| `docs/development/PHASE_1_HANDOFF.md`           | ~976   | medium    |
+| `docs/development/PHASE_2_HANDOFF.md`           | ~1.1k  | medium    |
+| `docs/development/PHASE_3_HANDOFF.md`           | ~633   | medium    |
 
 ## Recommended Tools
 
+- **codebase-memory-mcp** — Trace dependencies and module relationships without reading full files
+- **Serena** — Find symbol references, rename safely, edit only affected code
+- **Serena** — Find all auth-related symbol references before making security changes
 - **.ai/ files** — Pre-summarized project state — read before anything else
 
 ## Do NOT Read
 
 - `Logo.psd` — 1.1M tokens — too large
 - `packages/protocol/schema/protocol.schema.json` — 83.2k tokens — too large
-- `apps/studio/tsconfig.tsbuildinfo` — 44.7k tokens — too large
 - `apps/studio/app/studio.tsx` — 42.9k tokens — too large
 - `services/daemon/gameagent/projects.py` — 34.7k tokens — too large
 - `packages/protocol/src/generated.ts` — 34.6k tokens — too large
 - `pnpm-lock.yaml` — generated
-- `apps/studio/next-env.d.ts` — generated
 
 ## Token Budget
 
 | Approach                | Est. Tokens   |
 | ----------------------- | ------------- |
-| Naive (read all source) | ~459.5k       |
-| Recommended path        | ~31.6k        |
-| Savings                 | ~427.9k (93%) |
+| Naive (read all source) | ~462.1k       |
+| Recommended path        | ~7.6k         |
+| Savings                 | ~454.5k (98%) |
 
 ## Recommended Workflow
 
 1. Read `.ai/PROJECT_STATE.md` — understand current state
 2. Read `.ai/KNOWN_ISSUES.md` — check for related prior failures
-3. Use codebase-memory-mcp to trace module dependencies
-4. Use Serena to find exact symbol references
-5. Read only the recommended files above
-6. After task: update `.ai/WORKING_HISTORY.md` and `.ai/KNOWN_ISSUES.md`
+3. Read `.ai/DECISIONS.md` — auth/security decisions matter here
+4. Use codebase-memory-mcp to trace module dependencies
+5. Use Serena to find exact symbol references
+6. Read only the recommended files above
+7. After task: update `.ai/WORKING_HISTORY.md` and `.ai/KNOWN_ISSUES.md`
 
 ---
 
-_Regenerate: `node scripts/ai-doctor.js --task "Stabilize, verify, commit, and push the current Knowledge Fabric checkpoint without starting new scope"`_
+_Regenerate: `node scripts/ai-doctor.js --task "Implement Phase 12 desktop packaging while preserving daemon authority and headless operation"`_

@@ -751,13 +751,13 @@ def create_app(
         if watcher_failures:
             return {
                 "status": "degraded",
-                "phase": "11",
+                "phase": "12",
                 "error": "workspace_watcher_failed",
                 "detail": "; ".join(
                     f"{root}: {detail}" for root, detail in watcher_failures.items()
                 ),
             }
-        return {"status": "ready", "phase": "11"}
+        return {"status": "ready", "phase": "12"}
 
     @app.get("/projects", response_model=ProjectCatalog)
     def projects() -> ProjectCatalog:
